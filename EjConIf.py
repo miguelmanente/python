@@ -1,3 +1,4 @@
+#EJERCICIO Nº 1
 """ Escribir un programa que determine si el primero de una lista de tres números dados es menor que los otros dos. 
 
 a = int(input("Ingrese el 1er numero entero: "))
@@ -13,6 +14,7 @@ elif c < a and c < b:
 else:
      print("No exiten menores")  """
 
+# EJERCICIO Nº 2
 """ Se ingresa por teclado una sucesión no vacía y finita de números positivos, nulos o negativos.
 Por medio de un programa determinar la cantidad de números positivos que se presentan antes
 del primer número negativo de la sucesión y obtener la suma y el promedio 
@@ -35,8 +37,8 @@ print("Se ingresaron ",contPos," números positivos")
 print("Se ingresaron ",contNeg," números negativos")
 print("Se ingresaron ",contIgu," números nulos")
 """
-
-""" Escribir un programa que determine si una lista de cuatro valores numéricos dada está ordenada de menor a mayor. """
+# EJERCICIO Nº 3
+""" Escribir un programa que determine si una lista de cuatro valores numéricos dada está ordenada de menor a mayor. 
 
 lista = [10, 20, 30 , 40, 50]
 
@@ -56,4 +58,36 @@ if cv == cant:
     print("La lista esta ordenada de menor a mayor")
 else: 
     print("La lista No está ordenada de menor a mayor")
+"""
 
+# EJERCICIO Nº 4
+""" Realizar un programa que imprima todos los números primos comprendidos entre el 2 y un
+valor límite que se ingresará al ejecutar el programa. 
+
+def es_primo(num):
+    if num < 2:     #si es menos que 2 no es primo, por lo tanto devolverá Falso
+        return False
+    
+    for i in range(2, num):  #un rango desde el dos hasta el numero que nosotros elijamos
+        if num % i == 0:     #si el resto da 0 no es primo, por lo tanto devuelve Falso
+            return False
+    
+    return True    #de lo contrario devuelve Verdadero
+
+
+def primos(num1):
+
+    cont = 0
+
+    for i in range(num1):
+        if es_primo(i) == True:     #Llamamos a la primera funcion para ahorrar trabajo 😉
+            cont += 1               #Que va a determinar si es primo o no
+            print (i, end=' ')
+
+    print ("Hay", cont, "numeros primos")       #Total de numeros primos
+
+num1 = int(input("Ingrese hasta donde desea mostrar números primos:  "))
+
+primos(num1)
+
+"""

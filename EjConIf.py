@@ -15,7 +15,7 @@ else:
 
 """ Se ingresa por teclado una sucesión no vacía y finita de números positivos, nulos o negativos.
 Por medio de un programa determinar la cantidad de números positivos que se presentan antes
-del primer número negativo de la sucesión y obtener la suma y el promedio """
+del primer número negativo de la sucesión y obtener la suma y el promedio 
 
 num, contPos, contNeg, contIgu = 1, 0, 0, 0
 
@@ -34,5 +34,26 @@ while num <= 10:
 print("Se ingresaron ",contPos," números positivos")
 print("Se ingresaron ",contNeg," números negativos")
 print("Se ingresaron ",contIgu," números nulos")
+"""
 
+""" Escribir un programa que determine si una lista de cuatro valores numéricos dada está ordenada de menor a mayor. """
+
+lista = [10, 20, 30 , 40, 50]
+
+cant =len(lista)
+num = lista[0]
+cv = 0
+cf = 0
+
+for i in range(cant):
+    if num <= lista[i]:
+        num = lista[i]
+        cv = cv + 1
+    else:
+        cf =cf + 1
+
+if cv == cant:
+    print("La lista esta ordenada de menor a mayor")
+else: 
+    print("La lista No está ordenada de menor a mayor")
 

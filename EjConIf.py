@@ -91,3 +91,34 @@ num1 = int(input("Ingrese hasta donde desea mostrar números primos:  "))
 primos(num1)
 
 """
+
+# EJERCICIO Nº 5
+
+""" Escribir un programa que al ingresar una fecha en formato DD/MM, determine si es válida o no.
+Para simplificar la lógica, considerar que el año no es bisiesto. Usar la estructura de control
+switch(). """
+
+dia = int(input("Ingrese el día:  "))
+mes = int(input("Ingrese el mes del año que desea averiguar:  "))
+
+switch ={                   #SWITCH NO EXISTE EN PYTHON ,PERO SE PUEDE EMULAR USANDO UN DICCIONARIO
+    1: "Enero",
+    2: "Febrero",
+    3: "Marzo",
+    4: "Abril",
+    5: "Mayo",
+    6: "Junio",
+    7: "Julio",
+    8: "Agosto",
+    9: "Setiembre",
+    10: "Octubre",
+    11: "Noviembre",
+    12: "Diciembre"
+}
+
+if (dia >= 1 and dia <= 31 and mes >= 1 and mes <= 12):
+    nroMes = switch.get(mes,"No es número del mes correcto")    #LLAMADO AL DICCIONARIO USANDO GET Y DOS ARGUMENTOS EL NUMERO DE OPCION Y EL MENSAJE DE ERROR 
+    print("El día es: ",dia)
+    print("El mes es: ",nroMes)
+else:
+    print("La fecha solicitada no es correcta")

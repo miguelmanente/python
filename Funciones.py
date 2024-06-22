@@ -10,13 +10,18 @@ def menorMayor(numero):
     cantidad = len(numero)
     menor = numero[0]
     mayor = numero[0]
-
+    array = [0,0]
+    
     for i in range(cantidad):
+        if numero[i] < menor:
+            menor = numero[i]
+            array[0] = menor        
+        
         if numero[i] > mayor:
             mayor = numero[i]
+            array[1] = mayor
+        
+    return array
+print(menorMayor([4, 6, 1, 7, 15]))
 
-        if menor < numero[i]:
-            menor = numero[i]
-            return menor
 
-menorMayor[4, 6, 1, 7, 15]

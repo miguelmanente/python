@@ -22,6 +22,7 @@ def menorMayor(numero):
             array[1] = mayor
         
     return array
+
 print(menorMayor([4, 6, 1, 7, 15]))
 
 

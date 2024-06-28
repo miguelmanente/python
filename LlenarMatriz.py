@@ -27,7 +27,6 @@ for i in range(fila):
 
     for j in range(columna):
         filas.append(randint(1,100))
-
+        
     matriz.append(filas)
-
-print(matriz)    
+print(matriz)

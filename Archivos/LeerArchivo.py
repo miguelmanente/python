@@ -55,13 +55,13 @@ with open(ruta,'r') as archivo:
 '''
 # Crear y escribir un nuevo archivo .txt con write
 ruta = 'Archivos/data1.txt'
-with open(ruta,'w') as archivo:
-    archivo.write('Miguel\nAngel\nManente')
+with open(ruta,'w') as archivo:             # Se crea archivo si no existe lo crea
+    archivo.write('Miguel\nAngel\nManente')     # Almacena en el archivo creado los datos con write
 
-with open(ruta,'a') as archivo:
-    archivo.write('\nBelkis\nGuadalupe\nSioli')
+with open(ruta,'a') as archivo:                     # Habilita al archivo para agregar (a) datos al archivo            
+    archivo.write('\nBelkis\nGuadalupe\nSioli')     # Agrega los datos con write al archivo
 
 with open(ruta,'r') as archivo1:  #leer archivo creado
-    lineas = archivo1.read()
-    contenido =lineas.split('\n')
+    lineas = archivo1.read()                            
+    contenido =lineas.split('\n')       # Al final de cada líneas elimina \n y se mostraran un al lado del otro
     print(contenido)

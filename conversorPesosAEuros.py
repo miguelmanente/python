@@ -7,24 +7,32 @@ class ConversorPesosAEuros():
         self.monedaCovertida = monedaconvertida
      
 
-    def calculoEuro(self, valorMoneda, cantidadMoneda, tipoMoneda, monedaConvertida):
+    def calculoMoneda(self, valorMoneda, cantidadMoneda, tipoMoneda, monedaConvertida):
         totalMoneda =  cantidadMoneda / valorMoneda
         print("La cantidad de ", cantidadMoneda, " ", tipoMoneda, " en ", monedaConvertida, " es: ", totalMoneda)
     
+    def calculoMoneda1(self, valorMoneda, cantidadMoneda, tipoMoneda, monedaConvertida):
+        totalMoneda =  cantidadMoneda * valorMoneda
+        print("La cantidad de ", cantidadMoneda, " ", tipoMoneda, " en ", monedaConvertida, " es: ", totalMoneda)
 
-cantidadBilletes = ConversorPesosAEuros(1550, 930000, 'moneda', 'cantidad')
+cantidadBilletes = ConversorPesosAEuros(0, 0, 'tipoMoneda', 'monedaConvertida')
 
-print("Ingrese que conversión de divisas desea realizar:  -Pesos a Euros(pe) - Euros a Pesos(ep)")
+print("  ")
+tipoCambio = input("Ingrese que operacion desea realizar Comprar/Vender: ")
+print(" ")
+tipoMoneda = input("Ingrese tipo de moneda a comprar/vender? ")
+print(" ")
+monedaConvertida = input("Ingrese el tipo de moneda en que quiere los billetes? ")
+print(" ")
+valorMoneda = int(input("Ingrese el valor de la moneda que va comprar/vender? "))
+print(" ")
+cantidadMoneda = int(input("Ingrese la cantidad de billetes que desea comprar/vender: "))
+print(" ")
 
-tipoMoneda = input("Ingrese tipo de moneda a convertir? ")
-
-monedaCovertida = input("Ingrese el tipo de moneda en que va a convertir? ")
-
-valorMoneda = int(input("Ingrese el valor de la moneda en que va a convertir? "))
-
-cantidadMoneda = int(input("Ingrese la cantidad de la moneda que convertira: "))
-
-cantidadBilletes.calculoEuro(valorMoneda, cantidadMoneda, tipoMoneda, monedaCovertida)
+if tipoCambio == 'vender':
+    cantidadBilletes.calculoMoneda1(valorMoneda, cantidadMoneda, tipoMoneda, monedaConvertida)
+else:
+    cantidadBilletes.calculoMoneda(valorMoneda, cantidadMoneda, tipoMoneda, monedaConvertida)
 
 
 

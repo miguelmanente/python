@@ -9,11 +9,11 @@ class ConversorPesosAEuros():
 
     def calculoMoneda(self, valorMoneda, cantidadMoneda, tipoMoneda, monedaConvertida):
         totalMoneda =  cantidadMoneda / valorMoneda
-        print("La cantidad de ", cantidadMoneda, " ", tipoMoneda, " en ", monedaConvertida, " es: ", totalMoneda)
+        print(f"La cantidad de {cantidadMoneda} {tipoMoneda} son {totalMoneda} {monedaConvertida}")
     
     def calculoMoneda1(self, valorMoneda, cantidadMoneda, tipoMoneda, monedaConvertida):
         totalMoneda =  cantidadMoneda * valorMoneda
-        print("La cantidad de ", cantidadMoneda, " ", tipoMoneda, " en ", monedaConvertida, " es: ", totalMoneda)
+        print(f"La cantidad de {cantidadMoneda} {tipoMoneda} son {totalMoneda} {monedaConvertida}")
 
 cantidadBilletes = ConversorPesosAEuros(0, 0, 'tipoMoneda', 'monedaConvertida')
 

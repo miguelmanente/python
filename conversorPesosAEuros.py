@@ -4,7 +4,7 @@ class ConversorPesosAEuros():
         self.valorEuro = valorMoneda
         self.cantidadPesos = cantidadMoneda
         self.tipoMoneda = tipoMoneda
-        self.monedaCovertida = monedaconvertida
+        self.monedaConvertida = monedaconvertida
      
 
     def calculoMoneda(self, valorMoneda, cantidadMoneda, tipoMoneda, monedaConvertida):
@@ -13,26 +13,31 @@ class ConversorPesosAEuros():
     
     def calculoMoneda1(self, valorMoneda, cantidadMoneda, tipoMoneda, monedaConvertida):
         totalMoneda =  cantidadMoneda * valorMoneda
-        print(f"La cantidad de {cantidadMoneda} {tipoMoneda} son {totalMoneda} {monedaConvertida}")
+        print(f"La cantidad de {cantidadMoneda} {tipoMoneda} son {totalMoneda} {tipoMoneda1}")
 
 cantidadBilletes = ConversorPesosAEuros(0, 0, 'tipoMoneda', 'monedaConvertida')
 
 print("  ")
-tipoCambio = input("Ingrese que operacion desea realizar Comprar/Vender: ")
+tipoCambio = input("Ingrese que operacion desea realizar Comprar y/o Vender: ")
 print(" ")
-tipoMoneda = input("Ingrese tipo de moneda a comprar/vender? ")
+tipoMoneda = input("Ingrese tipo de moneda a vender? ")
 print(" ")
-monedaConvertida = input("Ingrese el tipo de moneda en que quiere los billetes? ")
-print(" ")
-valorMoneda = int(input("Ingrese el valor de la moneda que va comprar/vender? "))
-print(" ")
-cantidadMoneda = int(input("Ingrese la cantidad de billetes que desea comprar/vender: "))
+tipoMoneda1 = input("Ingrese tipo de moneda a comprar? ")
 print(" ")
 
 if tipoCambio == 'vender':
-    cantidadBilletes.calculoMoneda1(valorMoneda, cantidadMoneda, tipoMoneda, monedaConvertida)
+    valorMoneda = float(input(f"Ingrese el valor de la moneda ({tipoMoneda}) que va {tipoCambio}? "))
+    print(" ")
+    cantidadMoneda = float(input(f"Ingrese la cantidad de ({tipoMoneda})que desea {tipoCambio}: "))
+    print(" ")
+    cantidadBilletes.calculoMoneda1(valorMoneda, cantidadMoneda, tipoMoneda, tipoMoneda1)
 else:
-    cantidadBilletes.calculoMoneda(valorMoneda, cantidadMoneda, tipoMoneda, monedaConvertida)
+    print(" ")
+    valorMoneda = float(input(f"Ingrese el valor de la moneda ({tipoMoneda1})que va a comprar? "))
+    print(" ")
+    cantidadMoneda = float(input(f"Ingrese la cantidad de ({tipoMoneda}) que desea vender: "))
+    print(" ")
+    cantidadBilletes.calculoMoneda(valorMoneda, cantidadMoneda, tipoMoneda, tipoMoneda1)
 
 
 

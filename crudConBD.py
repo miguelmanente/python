@@ -144,6 +144,7 @@ def borrar():
     except:
         messagebox.showwarning("ADVERTENCIA", "Ocurrió un error al tratar de eliminar el registro...")
         pass
+    
     limpiarCampos()
     mostrar()
 ########################## CREACIÓN DE WIDGETS EN LAS VISTAS #########################

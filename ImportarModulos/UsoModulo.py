@@ -1,7 +1,7 @@
 # UsoModulo.py
 
 import ImportarModulos
-import oBurbuja
+import MetodosOrdenacion.oBurbuja as oBurbuja
 
 resultado = ImportarModulos.sumar(7, 5)
 

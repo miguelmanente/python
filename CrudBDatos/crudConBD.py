@@ -18,7 +18,7 @@ miSalario = StringVar()
 #Conexión a la base de datos
 
 def conexionBBDD():
-    miConexion = sqlite3.connect("base")
+    miConexion = sqlite3.connect("/Users/migue/OneDrive/Escritorio/Python/CrudBDatos/base")
     miCursor = miConexion.cursor()
 
     try:
@@ -31,7 +31,7 @@ def conexionBBDD():
 #Eliminar la base de datos
 
 def eliminarBBDD():
-    miConexion = sqlite3.connect("base")
+    miConexion = sqlite3.connect("/Users/migue/OneDrive/Escritorio/Python/CrudBDatos/base")
     miCursor = miConexion.cursor()
     if messagebox.askyesno(message="¿Los datos se perderán definitivamente, Desea continuar?", title="ADVERTENCIA"):
         miCursor.execute("DROP TABLE empleado")
@@ -67,7 +67,7 @@ def mensaje():
 ######################## Métodos CRUD ##################
 #Insertar los campos de las cajas textos
 def crear():
-    miConexion = sqlite3.connect("base")
+    miConexion = sqlite3.connect("/Users/migue/OneDrive/Escritorio/Python/CrudBDatos/base")
     miCursor = miConexion.cursor()
     try:
         datos = miNombre.get(), miCargo.get(), miSalario.get()
@@ -81,7 +81,7 @@ def crear():
 
 #Mostrar los campos insertados
 def mostrar():
-    miConexion = sqlite3.connect("base")
+    miConexion = sqlite3.connect("/Users/migue/OneDrive/Escritorio/Python/CrudBDatos/base")
     miCursor = miConexion.cursor()
     registros = tree.get_children()
     for elemento in registros:
@@ -118,7 +118,7 @@ tree.bind("<Double-1>", seleccionarUsandoClick)
 #Actualizar campos(modificar)
 
 def actualizar():
-    miConexion = sqlite3.connect("base")
+    miConexion = sqlite3.connect("/Users/migue/OneDrive/Escritorio/Python/CrudBDatos/base")
     miCursor = miConexion.cursor()
        
     try:
@@ -134,7 +134,7 @@ def actualizar():
 #Borrar registros
 
 def borrar():
-    miConexion = sqlite3.connect("base")
+    miConexion = sqlite3.connect("/Users/migue/OneDrive/Escritorio/Python/CrudBDatos/base")
     miCursor = miConexion.cursor()
        
     try:

@@ -1,12 +1,13 @@
 from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
+import functools
 import sqlite3
 
 
 ################################  CREACIÓN VENTANA PRINCIPAL ############################
 root = Tk()
-root.config(width="800", height="600")
+root.config(width="800", height="800")
 root.title("Turnos Kinesiologia")
 root.iconbitmap("ClientesKinesio/icono2.ico")
 
@@ -16,6 +17,8 @@ fecha = StringVar()
 hora = StringVar()
 nombres = StringVar()
 asistencia = StringVar()
+turno = StringVar()
+
 
 #################################  CREAR Y CONECTAR LA BASE DE DATOS ###########################
 def conexionBBDD():
@@ -124,14 +127,14 @@ menubar.add_cascade(label="Ayuda", menu=ayudamenu)
 
 #################   TITULO PRINCIPAL DE LA APLICACIÓN  ###########################
 
-lblTitPpal = Label(root, text="TURNOS PARA CLIENTES DE KINESIOLOGÍA", bg="#6A9C89", fg="white", bd=5, font=("Comic Snas MS", 16, 'bold'))
-lblTitPpal.place(x=270, y=20)
-lblTitPpal.config(relief="sunken")
+#lblTitPpal = Label(root, text="TURNOS PARA CLIENTES DE KINESIOLOGÍA", bg="#6A9C89", fg="white", bd=5, font=("Comic Snas MS", 16, 'bold'))
+#lblTitPpal.place(x=270, y=20)
+#lblTitPpal.config(relief="sunken")
 
 ######################  CUADRO IZQUIERDO FRAME1  ##########################
-frame1 = Frame(root, width=326, height=350)
+frame1 = Frame(root, width=350, height=350)
 
-frame1.pack(padx=10, pady=80, side="left", anchor="n")
+frame1.pack(padx=10, pady=10, side="left", anchor="n")
 frame1.config(bg="#C1CFA1")
 
 frame1.config(bd="3")
@@ -173,11 +176,11 @@ textAsist.place(x=10, y=310, width=50)
 
 ######### TREEVIEW PARA MOSTRAR LOS DATOS AGREGADOS - FRAME2  #############
 
-frame2 = Frame(root, width=630, height=610)
-frame2.pack(padx=10, pady=80, side="left", anchor="n")
+frame2 = Frame(root, width=630, height=750)
+frame2.pack(padx=10, pady=10, side="left", anchor="n")
 
 tree = ttk.Treeview(frame2, height=10, columns=('#0','#1','#2','#3','#4'))
-tree.place(x=10, width=620, height=620)
+tree.place(x=10, width=620, height=735)
 tree.column('#0', width=50)
 tree.heading('#0',text="ID", anchor=CENTER)
 tree.column('#1', width=100, anchor='center')
@@ -250,12 +253,13 @@ def buscarNombre():
         miCursor.execute("SELECT * FROM clientes WHERE nombres=?", (buscar, ))
         fila=miCursor.fetchall()
         for row in fila:
-            tree.insert("",0,text=row[0], values=(row[1],row[2],row[3],row[4],row[5]))              
+            tree.insert("",0,text=row[0], values=(row[1],row[2],row[3],row[4],row[5]))             
     except:
-        messagebox.showwarning("ADVERTENCIA", "Los registros buscados NO EXISTEN...")
+        messagebox.showwarning("ADVERTENCIA", "El registros buscado NO EXISTE...")
         pass
     #limpiarCampos()
 
+####################################### CONTADOR DE ASISTENCIAS DE CLIENTES ######################################
 def contadorAsistencia():
     miConexion = sqlite3.connect("/Users/migue/OneDrive/Escritorio/Python/ClientesKinesio/ckinesio")
     miCursor = miConexion.cursor()
@@ -283,17 +287,39 @@ def contadorAsistencia():
     lbl5 =Label(ventana, text="Asistencias",font=('Rockwell',14,'bold'), fg='blue')
     lbl5.place(x=225, y=80)
 
+#########################################   LISTADO POR TURNOS #################################################
+def listarTurnos():
+    miConexion = sqlite3.connect("/Users/migue/OneDrive/Escritorio/Python/ClientesKinesio/ckinesio")
+    miCursor = miConexion.cursor()
+
+    try:
+        miTurno = txtTurno.get()
+        miCursor.execute("SELECT * FROM clientes")
+        fila=miCursor.fetchall()
+        for row in fila:
+            if miTurno == 'Mañana':
+                if row[3]>='12:00' and row[3]<='15:00':
+                    tree.insert("",0,text=row[0], values=(row[1],row[2],row[3],row[4],row[5])) 
+            elif miTurno=='Tarde':
+                if row[3]>='15:00' and row[3]<='20:00':
+                    tree.insert("",0,text=row[0], values=(row[1],row[2],row[3],row[4],row[5])) 
+
+    except:
+        messagebox.showwarning("ADVERTENCIA", "El registros buscado NO EXISTE...")
+        pass
+    #limpiarCampos()
+
 
 ###########################  MARCO DE BOTONES  -  FRAME3  ##################################
 
-frame3 = Frame(root, width=450, height=350)
-frame3.place(x=10, y=450)
+frame3 = Frame(root)
+frame3.place(x=10, y=370, width=350, height=380)
 frame3.config(bg="#C1CFA1")
 frame3.config(bd="3")
 frame3.config(relief="sunken") 
 
 lblCtrl = Label(frame3, text = 'Botones de Control',fg='white', bg ='black', font=('Rockwell',12,'bold'))
-lblCtrl.grid(columnspan=3, column=0,row=0, pady=10, padx=1)         
+lblCtrl.grid(columnspan=3, column=0,row=0, pady=3, padx=1)         
 btnRegistrar = Button(frame3, command= crear, text=' REGISTRAR CLIENTES ', font=('Arial',8,'bold'))
 btnRegistrar.grid(column=0,row=1, pady=10, padx=1)
 btnLimpiar =Button(frame3, text=' LIMPIAR TABLA ', command = limpiarDatos, font=('Arial',8,'bold')) 
@@ -303,15 +329,23 @@ btnBuscar.grid(column = 1, row=2)
 EtiBuscar = Entry(frame3, font=('Arial',8), width=23) 
 EtiBuscar.grid(column=0,row=2, pady=1, padx=1)
 btnListar = Button(frame3, command = mostrar, text=' MOSTRAR LISTA DE CLIENTES ', font=('Arial',8,'bold')) 
-btnListar.grid(column=0,row=3, pady=8)
+btnListar.grid(column=0,row=3, padx=10, pady=8)
 btnEliminar = Button(frame3, text=' ELIMINAR ', command = borrarReg, font=('Arial',8,'bold'), bg='red', fg='white') 
-btnEliminar.grid(column=1,row=3, pady=8)
-btnModificar = Button(frame3, text=' ACTUALIZAR REGISTROS ',  command = actualizar, font=('Arial',8,'bold')) #, 'command = modificarReg'
+btnEliminar.grid(column=1,row=3, padx=5, pady=8)
+btnModificar = Button(frame3, text=' ACTUALIZAR REGISTROS',  command = actualizar, font=('Arial',8,'bold')) 
 btnModificar.grid(column=0,row=4, padx=1, pady=8)
-btnListarTurnos= Button(frame3,  text=' LISTAR POR TURNOS ', font=('Arial',8,'bold')) #'command = listarTurnos',
-btnListarTurnos.grid(column=1,row=4, padx=10, pady=8)
-btnListarTurnos= Button(frame3,  text=' CONTADOR DE ASISTENCIA ', command=contadorAsistencia, font=('Arial',8,'bold')) #'command = listarTurnos',
-btnListarTurnos.grid(column=0,row=5, padx=10, pady=8)
+btnTAsis= Button(frame3,  text='TOTAL ASISTENCIAS', command=contadorAsistencia, font=('Arial',8,'bold')) 
+btnTAsis.grid(column=1,row=4, padx=1, pady=8)
+lblTurnos = Label(frame3, text='LISTAR POR TURNOS',  fg='white', bg ='gray', font=('Arial',12,'bold'))
+lblTurnos.grid(columnspan=2,column=0,row=6, pady=10, padx=1)
+lblTurno = Label(frame3, text='Ingrese el turno')
+lblTurno.grid(column=0,row=7, padx=2, pady=8)
+txtTurno = Entry(frame3, textvariable=turno)
+txtTurno.grid(columnspan=3,column=1,row=7, padx=5, pady=8)
+
+
+btnListarTurnos= Button(frame3, command = listarTurnos,  text=' LISTAR POR TURNOS ', font=('Arial',8,'bold')) 
+btnListarTurnos.grid(columnspan=3, column=0,row=9, padx=10, pady=8)
 
 root.config(menu=menubar)
 root.mainloop()

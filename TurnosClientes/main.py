@@ -8,25 +8,27 @@ import sqlite3
 ################################  CREACIÓN VENTANA PRINCIPAL ############################
 root = Tk()
 root.config(width="800", height="800")
-root.title("Turnos Kinesiologia")
-root.iconbitmap("ClientesKinesio/icono2.ico")
+root.title("TURNOS - CLIENTES")
+root.iconbitmap("TurnosClientes/icono2.ico")
 
-id=StringVar()
+id = StringVar()
+mes = StringVar()
 dia = StringVar()
 fecha = StringVar()
 hora = StringVar()
 nombres = StringVar()
 asistencia = StringVar()
 turno = StringVar()
-
+miDia = StringVar()
+miFecha = StringVar()
 
 #################################  CREAR Y CONECTAR LA BASE DE DATOS ###########################
 def conexionBBDD():
-    miConexion = sqlite3.connect("/Users/migue/OneDrive/Escritorio/Python/ClientesKinesio/ckinesio")
+    miConexion = sqlite3.connect("/Users/migue/OneDrive/Escritorio/Python/TurnosClientes/tclientes")
     miCursor = miConexion.cursor()
 
     try:
-        miCursor.execute("CREATE TABLE clientes (ID INTEGER PRIMARY KEY AUTOINCREMENT, DIA VARCHAR(10) NOT NULL, FECHA VARCHAR(10) NOT NULL, HORA VARCHAR(5) NOT NULL, NOMBRES VARCHAR(50) NOT NULL, ASISTENCIA INT NOT NULL)")
+        miCursor.execute("CREATE TABLE clientes (ID INTEGER PRIMARY KEY AUTOINCREMENT, MES VARCHAR(10) NOT NULL, DIA VARCHAR(10) NOT NULL, FECHA VARCHAR(10) NOT NULL, HORA VARCHAR(5) NOT NULL, NOMBRES VARCHAR(50) NOT NULL, ASISTENCIA INT NOT NULL)")
 
         messagebox.showinfo("CONEXIÓN","Base de datos Creada Exitosamente")
     except:
@@ -35,7 +37,7 @@ def conexionBBDD():
 ####################################### ELIMINAR LA BASE DE DATOS  #################################
 
 def eliminarBBDD():
-    miConexion = sqlite3.connect("/Users/migue/OneDrive/Escritorio/Python/ClientesKinesio/ckinesio")
+    miConexion = sqlite3.connect("/Users/migue/OneDrive/Escritorio/Python/TurnosClientes/tclientes")
     miCursor = miConexion.cursor()
     
     if messagebox.askyesno(message="¿Los datos se perderán definitivamente, Desea continuar?", title="ADVERTENCIA"):
@@ -57,6 +59,7 @@ def salirAplicación():
 
 ########################  LIMPIAR CAMPOS TREEVIEW  ############################################
 def limpiarCampos():
+    mes.set("")
     dia.set("")
     fecha.set("")
     hora.set("")
@@ -66,6 +69,7 @@ def limpiarCampos():
 ########################  LIMPRIAR CAMPOS DEL TREEVIEW  ############################################
 def limpiarDatos():
     tree.delete(*tree.get_children())
+    mes.set('')
     dia.set('')
     fecha.set('')
     hora.set('')
@@ -74,7 +78,7 @@ def limpiarDatos():
 
 ############################### MOSTRAR LOS CAMPOS INSERTADOS ###################################
 def mostrar():
-    miConexion = sqlite3.connect("/Users/migue/OneDrive/Escritorio/Python/ClientesKinesio/ckinesio")
+    miConexion = sqlite3.connect("/Users/migue/OneDrive/Escritorio/Python/TurnosClientes/tclientes")
     miCursor = miConexion.cursor()
     registros = tree.get_children()
     for elemento in registros:
@@ -82,17 +86,17 @@ def mostrar():
     try:
         miCursor.execute("SELECT * FROM clientes")
         for row in miCursor:
-            tree.insert("",0,text=row[0], values=(row[1],row[2],row[3],row[4],row[5]))
+            tree.insert("",0,text=row[0], values=(row[1],row[2],row[3],row[4],row[5],row[6]))
     except:
         pass
 
 #################################   AGREGAR O INSERTAR REGISTRO A LA BD #########################
 def crear():
-    miConexion = sqlite3.connect("/Users/migue/OneDrive/Escritorio/Python/ClientesKinesio/ckinesio")
+    miConexion = sqlite3.connect("/Users/migue/OneDrive/Escritorio/Python/TurnosClientes/tclientes")
     miCursor = miConexion.cursor()
     try:  
-        datos = dia.get(), fecha.get(), hora.get(), nombres.get(), asistencia.get()
-        miCursor.execute("INSERT INTO clientes VALUES(NULL,?,?,?,?,?)",(datos))
+        datos = mes.get(), dia.get(), fecha.get(), hora.get(), nombres.get(), asistencia.get()
+        miCursor.execute("INSERT INTO clientes VALUES(NULL,?,?,?,?,?,?)",(datos))
         miConexion.commit()
     except:
         messagebox.showwarning("ADVERTENCIA", "Ocurrió un error al crear el registro, verifique la conexión BBDD")
@@ -140,68 +144,77 @@ frame1.config(bg="#C1CFA1")
 frame1.config(bd="3")
 frame1.config(relief="sunken") 
 
-lbltit = Label(frame1, text="INGRESO DE DATOS A BASE DE DATOS", anchor='center')
-lbltit.place(x=50, y=10)
+lbltit = Label(frame1, text="INGRESO DE DATOS A BASE DE DATOS", anchor='center', bg="green", fg='white', font=('Rockwell',12,'bold'))
+lbltit.place(x=10, y=10)
+
+lblMes = Label(frame1, text="MES")
+lblMes.place(x=10, y=60, width=100)
+
+textDia = Entry(frame1, textvariable=mes)
+textDia.place(x=10, y=90, width=100)
 
 lblDia = Label(frame1, text="DÍA")
-lblDia.place(x=10, y=40)
+lblDia.place(x=150, y=60)
 
 textDia = Entry(frame1, textvariable=dia)
-textDia.place(x=10, y=70, width=150)
+textDia.place(x=150, y=90, width=100)
 
 lblFecha = Label(frame1, text="FECHA")
-lblFecha.place(x=10, y=100)
+lblFecha.place(x=10, y=120)
 
 textFecha = Entry(frame1, textvariable=fecha)
-textFecha.place(x=10, y=130, width=100)
+textFecha.place(x=10, y=150, width=100)
 
 lblHora = Label(frame1, text="HORA")
-lblHora.place(x=10, y=160)
+lblHora.place(x=150, y=120)
 
 textHora = Entry(frame1, textvariable=hora)
-textHora.place(x=10, y=190, width=50)
+textHora.place(x=150, y=150, width=50)
 
 lblNombres = Label(frame1, text="NOMBRES")
-lblNombres.place(x=10, y=220)
+lblNombres.place(x=10, y=180)
 
 textNombres = Entry(frame1, textvariable=nombres)
-textNombres.place(x=10, y=250, width=200)
+textNombres.place(x=10, y=210, width=200)
 
 lblAsist = Label(frame1, text="ASISTENCIA")
-lblAsist.place(x=10, y=280)
+lblAsist.place(x=10, y=240)
 
 textAsist = Entry(frame1, textvariable=asistencia)
-textAsist.place(x=10, y=310, width=50)
+textAsist.place(x=10, y=270, width=50)
 
 
 ######### TREEVIEW PARA MOSTRAR LOS DATOS AGREGADOS - FRAME2  #############
 
-frame2 = Frame(root, width=630, height=750)
+frame2 = Frame(root, width=750, height=750)
 frame2.pack(padx=10, pady=10, side="left", anchor="n")
 
-tree = ttk.Treeview(frame2, height=10, columns=('#0','#1','#2','#3','#4'))
-tree.place(x=10, width=620, height=735)
+tree = ttk.Treeview(frame2, height=10, columns=('#0','#1','#2','#3','#4','#5'))
+tree.place(x=10, width=740, height=735)
 tree.column('#0', width=50)
 tree.heading('#0',text="ID", anchor=CENTER)
 tree.column('#1', width=100, anchor='center')
-tree.heading('#1',text="DIA", anchor=CENTER)
+tree.heading('#1',text="MES", anchor=CENTER)
 tree.column('#2', width=100, anchor='center')
-tree.heading('#2',text="FECHA", anchor=CENTER)
-tree.column('#3', width=70, anchor='center')
-tree.heading('#3',text="HORA", anchor=CENTER)
-tree.column('#4', width=200, anchor='center')
-tree.heading('#4',text="NOMBRES", anchor=CENTER)
-tree.column('#5', width=100, anchor='center')
-tree.heading('#5',text="ASISTENCIA", anchor=CENTER)
+tree.heading('#2',text="DIA", anchor=CENTER)
+tree.column('#3', width=100, anchor='center')
+tree.heading('#3',text="FECHA", anchor=CENTER)
+tree.column('#4', width=70, anchor='center')
+tree.heading('#4',text="HORA", anchor=CENTER)
+tree.column('#5', width=200, anchor='center')
+tree.heading('#5',text="NOMBRES", anchor=CENTER)
+tree.column('#6', width=100, anchor='center')
+tree.heading('#6',text="ASISTENCIA", anchor=CENTER)
 
 def seleccionarUsandoClick(event):
     item = tree.identify('item',event.x,event.y)
     id.set(tree.item(item,"text"))
-    dia.set(tree.item(item,"values")[0])
-    fecha.set(tree.item(item,"values")[1])
-    hora.set(tree.item(item,"values")[2])
-    nombres.set(tree.item(item,"values")[3])
-    asistencia.set(tree.item(item,"values")[4])
+    mes.set(tree.item(item,"values")[0])
+    dia.set(tree.item(item,"values")[1])
+    fecha.set(tree.item(item,"values")[2])
+    hora.set(tree.item(item,"values")[3])
+    nombres.set(tree.item(item,"values")[4])
+    asistencia.set(tree.item(item,"values")[5])
 
 ejscrollbar= ttk.Scrollbar(root,orient=VERTICAL,command=tree.yview)
 ejscrollbar.pack(side='right',fill='y')
@@ -209,15 +222,15 @@ tree.configure(yscrollcommand=ejscrollbar.set)
 
 tree.bind("<Double-1>", seleccionarUsandoClick)
 
-#Actualizar campos(modificar)
+###############################  Actualizar campos(modificar)  ######################################
 
 def actualizar():
-    miConexion = sqlite3.connect("/Users/migue/OneDrive/Escritorio/Python/ClientesKinesio/ckinesio")
+    miConexion = sqlite3.connect("/Users/migue/OneDrive/Escritorio/Python/TurnosClientes/tclientes")
     miCursor = miConexion.cursor()
        
     try:
-        datos = dia.get(), fecha.get(), hora.get(), nombres.get(), asistencia.get()
-        miCursor.execute("UPDATE clientes SET  DIA=?, FECHA=?, HORA=?, NOMBRES=?, ASISTENCIA=? WHERE ID="+id.get(), (datos))
+        datos = mes.get(), dia.get(), fecha.get(), hora.get(), nombres.get(), asistencia.get()
+        miCursor.execute("UPDATE clientes SET MES=?, DIA=?, FECHA=?, HORA=?, NOMBRES=?, ASISTENCIA=? WHERE ID="+id.get(), (datos))
         miConexion.commit()
     except:
         messagebox.showwarning("ADVERTENCIA", "Ocurrió un error al actualizar el registro...")
@@ -229,7 +242,7 @@ def actualizar():
 
 ###############################  BORRAR REGISTROS  #############################################
 def borrarReg():
-    miConexion = sqlite3.connect("/Users/migue/OneDrive/Escritorio/Python/ClientesKinesio/ckinesio")
+    miConexion = sqlite3.connect("/Users/migue/OneDrive/Escritorio/Python/TurnosClientes/tclientes")
     miCursor = miConexion.cursor()
        
     try:
@@ -248,7 +261,7 @@ def borrarReg():
 
 ##################################################   BUSCAR POR CAMPOS ####################################  
 def buscarNombre():
-    miConexion = sqlite3.connect("/Users/migue/OneDrive/Escritorio/Python/ClientesKinesio/ckinesio")
+    miConexion = sqlite3.connect("/Users/migue/OneDrive/Escritorio/Python/TurnosClientes/tclientes")
     miCursor = miConexion.cursor()
 
     try:
@@ -257,7 +270,7 @@ def buscarNombre():
         miCursor.execute("SELECT * FROM clientes WHERE nombres=?", (buscar, ))
         fila=miCursor.fetchall()
         for row in fila:
-            tree.insert("",0,text=row[0], values=(row[1],row[2],row[3],row[4],row[5]))             
+            tree.insert("",0,text=row[0], values=(row[1],row[2],row[3],row[4],row[5],row[6]))             
     except:
         messagebox.showwarning("ADVERTENCIA", "El registros buscado NO EXISTE...")
         pass
@@ -265,7 +278,7 @@ def buscarNombre():
 
 ####################################### CONTADOR DE ASISTENCIAS DE CLIENTES ######################################
 def contadorAsistencia():
-    miConexion = sqlite3.connect("/Users/migue/OneDrive/Escritorio/Python/ClientesKinesio/ckinesio")
+    miConexion = sqlite3.connect("/Users/migue/OneDrive/Escritorio/Python/TurnosClientes/tclientes")
     miCursor = miConexion.cursor()
 
     tAsistencia = 0
@@ -274,8 +287,8 @@ def contadorAsistencia():
     miCursor.execute("SELECT * FROM clientes WHERE ASISTENCIA=?", ( buscar,))
     fila=miCursor.fetchall()
     for row in fila:
-        if row[4] == bnombre:
-            tAsistencia = tAsistencia + row[5]
+        if row[5] == bnombre:
+            tAsistencia = tAsistencia + row[6]
         
     ventana = Tk()
     ventana.title("TOTAL DE ASISTENCIA")
@@ -293,21 +306,27 @@ def contadorAsistencia():
 
 #########################################   LISTADO POR TURNOS #################################################
 def listarTurnos():
-    miConexion = sqlite3.connect("/Users/migue/OneDrive/Escritorio/Python/ClientesKinesio/ckinesio")
+    miConexion = sqlite3.connect("/Users/migue/OneDrive/Escritorio/Python/TurnosClientes/tclientes")
     miCursor = miConexion.cursor()
 
     try:
         miTurno = txtTurno.get()
+        miDia = txtMidia.get()
+        miFecha = txtMifecha.get()
         miCursor.execute("SELECT * FROM clientes")
         fila=miCursor.fetchall()
         for row in fila:
-            if miTurno == 'Mañana':
-                if row[3]>='12:00' and row[3]<='15:00':
-                    tree.insert("",0,text=row[0], values=(row[1],row[2],row[3],row[4],row[5])) 
-            elif miTurno=='Tarde':
-                if row[3]>='15:00' and row[3]<='20:00':
-                    tree.insert("",0,text=row[0], values=(row[1],row[2],row[3],row[4],row[5])) 
+            if miTurno.upper() == 'M' and row[2] == miDia and row[3] == miFecha:
+                if row[4]>='08:00' and row[4]<='12:00':
+                    tree.insert("",0,text=row[0], values=(row[1],row[2],row[3],row[4],row[5],row[6])) 
 
+            if miTurno.upper() == 'T'and row[2] == miDia and row[3] == miFecha:
+                if row[4]>='15:00' and row[4]<='20:00':
+                    tree.insert("",0,text=row[0], values=(row[1],row[2],row[3],row[4],row[5],row[6])) 
+
+            if miTurno.upper() =='MT'and row[2] == miDia and row[3] == miFecha:
+                    if row[4]>='08:00' and row[4]<='20:00':
+                        tree.insert("",0,text=row[0], values=(row[1],row[2],row[3],row[4],row[5],row[6])) 
     except:
         messagebox.showwarning("ADVERTENCIA", "El registros buscado NO EXISTE...")
         pass
@@ -322,7 +341,7 @@ frame3.config(bg="#C1CFA1")
 frame3.config(bd="3")
 frame3.config(relief="sunken") 
 
-lblCtrl = Label(frame3, text = 'Botones de Control',fg='white', bg ='black', font=('Rockwell',12,'bold'))
+lblCtrl = Label(frame3, text = 'BOTONES DE CONTROL',fg='white', bg ='green', font=('Rockwell',12,'bold'))
 lblCtrl.grid(columnspan=3, column=0,row=0, pady=3, padx=1)         
 btnRegistrar = Button(frame3, command= crear, text=' REGISTRAR CLIENTES ', font=('Arial',8,'bold'))
 btnRegistrar.grid(column=0,row=1, pady=10, padx=1)
@@ -340,16 +359,24 @@ btnModificar = Button(frame3, text=' ACTUALIZAR REGISTROS',  command = actualiza
 btnModificar.grid(column=0,row=4, padx=1, pady=8)
 btnTAsis= Button(frame3,  text='TOTAL ASISTENCIAS', command=contadorAsistencia, font=('Arial',8,'bold')) 
 btnTAsis.grid(column=1,row=4, padx=1, pady=8)
-lblTurnos = Label(frame3, text='LISTAR POR TURNOS',  fg='white', bg ='gray', font=('Arial',12,'bold'))
+lblTurnos = Label(frame3, text='LISTAR POR TURNOS',  fg='white', bg ='green', font=('Arial',12,'bold'))
 lblTurnos.grid(columnspan=2,column=0,row=6, pady=10, padx=1)
-lblTurno = Label(frame3, text='Ingrese el turno')
+lblTurno = Label(frame3, text='Ingrese el turno (M / T / MT)')
 lblTurno.grid(column=0,row=7, padx=2, pady=8)
 txtTurno = Entry(frame3, textvariable=turno)
 txtTurno.grid(columnspan=3,column=1,row=7, padx=5, pady=8)
+lblMidia = Label(frame3, text='Ingrese el día de la semana')
+lblMidia.grid(column=0,row=8, padx=2, pady=8)
+txtMidia = Entry(frame3, textvariable=miDia)
+txtMidia.grid(columnspan=3,column=1,row=8, padx=5, pady=8)
+lblMifecha = Label(frame3, text='Ingrese la fecha de la semana')
+lblMifecha.grid(column=0,row=9, padx=2, pady=8)
+txtMifecha = Entry(frame3, textvariable=miFecha)
+txtMifecha.grid(columnspan=3,column=1,row=9, padx=5, pady=8)
 
 
 btnListarTurnos= Button(frame3, command = listarTurnos,  text=' LISTAR POR TURNOS ', font=('Arial',8,'bold')) 
-btnListarTurnos.grid(columnspan=3, column=0,row=9, padx=10, pady=8)
+btnListarTurnos.grid(columnspan=3, column=0,row=10, padx=10, pady=8)
 
 root.config(menu=menubar)
 root.mainloop()

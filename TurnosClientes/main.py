@@ -9,7 +9,7 @@ import sqlite3
 root = Tk()
 root.config(width="800", height="800")
 root.title("TURNOS - CLIENTES")
-root.iconbitmap("TurnosClientes/icono2.ico")
+#root.iconbitmap("TurnosClientes\icono2.ico")
 
 id = StringVar()
 mes = StringVar()
@@ -229,13 +229,17 @@ def actualizar():
     miCursor = miConexion.cursor()
        
     try:
-        datos = mes.get(), dia.get(), fecha.get(), hora.get(), nombres.get(), asistencia.get()
-        miCursor.execute("UPDATE clientes SET MES=?, DIA=?, FECHA=?, HORA=?, NOMBRES=?, ASISTENCIA=? WHERE ID="+id.get(), (datos))
-        miConexion.commit()
+        if mes.get() != '' and dia != '' and fecha.get() != '' and hora.get() != '':
+            datos = mes.get(), dia.get(), fecha.get(), hora.get(), nombres.get(), asistencia.get()
+            miCursor.execute("UPDATE clientes SET MES=?, DIA=?, FECHA=?, HORA=?, NOMBRES=?, ASISTENCIA=? WHERE ID="+id.get(), (datos))
+            miConexion.commit()
+        else:
+            msg = "Los campos están vacios, elija un cliente en la tabla haciendo dobleclic sobre el cliente!!!"
+            messagebox.showerror("Error", msg)
     except:
         messagebox.showwarning("ADVERTENCIA", "Ocurrió un error al actualizar el registro...")
         pass
-    limpiarCampos()
+    limpiarDatos()
     mostrar()
 
 
@@ -270,10 +274,11 @@ def buscarNombre():
         miCursor.execute("SELECT * FROM clientes WHERE nombres=?", (buscar, ))
         fila=miCursor.fetchall()
         for row in fila:
-            tree.insert("",0,text=row[0], values=(row[1],row[2],row[3],row[4],row[5],row[6]))             
+            tree.insert("",0,text=row[0], values=(row[1],row[2],row[3],row[4],row[5],row[6])) 
     except:
-        messagebox.showwarning("ADVERTENCIA", "El registros buscado NO EXISTE...")
+        messagebox.showerror("ERROR", "se equivoco")
         pass
+   
     #limpiarCampos()
 
 ####################################### CONTADOR DE ASISTENCIAS DE CLIENTES ######################################
@@ -284,6 +289,7 @@ def contadorAsistencia():
     tAsistencia = 0
     buscar = textAsist.get()
     bnombre =textNombres.get()
+    limpiarDatos()
     miCursor.execute("SELECT * FROM clientes WHERE ASISTENCIA=?", ( buscar,))
     fila=miCursor.fetchall()
     for row in fila:
@@ -303,6 +309,7 @@ def contadorAsistencia():
     lbl4.place(x=190, y=80)
     lbl5 =Label(ventana, text="Asistencias",font=('Rockwell',14,'bold'), fg='blue')
     lbl5.place(x=225, y=80)
+  
 
 #########################################   LISTADO POR TURNOS #################################################
 def listarTurnos():
@@ -313,24 +320,25 @@ def listarTurnos():
         miTurno = txtTurno.get()
         miDia = txtMidia.get()
         miFecha = txtMifecha.get()
+        limpiarDatos()
         miCursor.execute("SELECT * FROM clientes")
         fila=miCursor.fetchall()
         for row in fila:
-            if miTurno.upper() == 'M' and row[2] == miDia and row[3] == miFecha:
+            if miTurno == 'M' and row[2] == miDia and row[3] == miFecha:
                 if row[4]>='08:00' and row[4]<='12:00':
                     tree.insert("",0,text=row[0], values=(row[1],row[2],row[3],row[4],row[5],row[6])) 
 
-            if miTurno.upper() == 'T'and row[2] == miDia and row[3] == miFecha:
+            if miTurno == 'T' and row[2] == miDia and row[3] == miFecha:
                 if row[4]>='15:00' and row[4]<='20:00':
                     tree.insert("",0,text=row[0], values=(row[1],row[2],row[3],row[4],row[5],row[6])) 
 
-            if miTurno.upper() =='MT'and row[2] == miDia and row[3] == miFecha:
+            if miTurno =='MT' and row[2] == miDia and row[3] == miFecha:
                     if row[4]>='08:00' and row[4]<='20:00':
                         tree.insert("",0,text=row[0], values=(row[1],row[2],row[3],row[4],row[5],row[6])) 
     except:
         messagebox.showwarning("ADVERTENCIA", "El registros buscado NO EXISTE...")
         pass
-    #limpiarCampos()
+   
 
 
 ###########################  MARCO DE BOTONES  -  FRAME3  ##################################

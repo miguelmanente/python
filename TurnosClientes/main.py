@@ -32,7 +32,7 @@ def conexionBBDD():
 
         messagebox.showinfo("CONEXIÓN","Base de datos Creada Exitosamente")
     except:
-        messagebox.showinfo("CONEXIÓN"," Conexión exitoxa con la base de datos")
+        messagebox.showinfo("CONEXIÓN"," Conexión exitosa con la base de datos")
 
 ####################################### ELIMINAR LA BASE DE DATOS  #################################
 
@@ -76,10 +76,23 @@ def limpiarDatos():
     nombres.set('')
     asistencia.set('')
 
+############################  ORDENAR LA BASE DE DATOS #####################################
+def ordenarBD():
+    miConexion = sqlite3.connect("/Users/migue/OneDrive/Escritorio/Python/TurnosClientes/tclientes")
+    miCursor = miConexion.cursor()
+
+    try:
+        miCursor.execute("SELECT * FROM clientes ORDER BY fecha DESC")
+        for row in miCursor:
+            tree.insert("",0,text=row[0], values=(row[1],row[2],row[3],row[4],row[5],row[6]))
+    except:
+        pass
+
 ############################### MOSTRAR LOS CAMPOS INSERTADOS ###################################
 def mostrar():
     miConexion = sqlite3.connect("/Users/migue/OneDrive/Escritorio/Python/TurnosClientes/tclientes")
     miCursor = miConexion.cursor()
+    
     registros = tree.get_children()
     for elemento in registros:
         tree.delete(elemento)
@@ -89,6 +102,7 @@ def mostrar():
             tree.insert("",0,text=row[0], values=(row[1],row[2],row[3],row[4],row[5],row[6]))
     except:
         pass
+    mostrar()
 
 #################################   AGREGAR O INSERTAR REGISTRO A LA BD #########################
 def crear():
@@ -268,16 +282,17 @@ def buscarNombre():
     miConexion = sqlite3.connect("/Users/migue/OneDrive/Escritorio/Python/TurnosClientes/tclientes")
     miCursor = miConexion.cursor()
 
-    try:
-        buscar = EtiBuscar.get()
-        EtiBuscar.delete(0, END)
-        miCursor.execute("SELECT * FROM clientes WHERE nombres=?", (buscar, ))
-        fila=miCursor.fetchall()
+    limpiarDatos()
+    buscar = EtiBuscar.get()
+    EtiBuscar.delete(0, END)
+    miCursor.execute("SELECT * FROM clientes WHERE nombres=?", (buscar, ))
+    fila=miCursor.fetchall()
+    try: 
         for row in fila:
             tree.insert("",0,text=row[0], values=(row[1],row[2],row[3],row[4],row[5],row[6])) 
     except:
-        messagebox.showerror("ERROR", "se equivoco")
-        pass
+        msg ="El nombre del cliente buscado NO EXISTE..."
+        messagebox.showerror("ADVERTENCIA", msg)
    
     #limpiarCampos()
 
@@ -301,11 +316,11 @@ def contadorAsistencia():
     ventana.config(width="400", height="250")
     lbl1 = Label(ventana, text="ASISTENCIA DE: ", font=('Rockwell',12,'bold'), fg='blue')
     lbl1.place(x=50, y=50)
-    lbl2 =Label(ventana, text=bnombre, font=('Rockwell',14,'bold'), bg="red", fg='white')
+    lbl2 =Label(ventana, text=bnombre, font=('Rockwell',14,'bold'),  fg='blue')
     lbl2.place(x=190, y=50)
     lbl3 = Label(ventana, text="TOTAL:  ", font=('Rockwell',14,'bold'), fg='blue')
     lbl3.place(x=110, y=80)
-    lbl4 =Label(ventana, text=tAsistencia, font=('Rockwell',16,'bold'), bg="red", fg='white')
+    lbl4 =Label(ventana, text=tAsistencia, font=('Rockwell',16,'bold'),  fg='blue')
     lbl4.place(x=190, y=80)
     lbl5 =Label(ventana, text="Asistencias",font=('Rockwell',14,'bold'), fg='blue')
     lbl5.place(x=225, y=80)
@@ -338,7 +353,8 @@ def listarTurnos():
     except:
         messagebox.showwarning("ADVERTENCIA", "El registros buscado NO EXISTE...")
         pass
-   
+
+
 
 
 ###########################  MARCO DE BOTONES  -  FRAME3  ##################################
@@ -359,7 +375,7 @@ btnBuscar = Button(frame3, text=' BUSCAR POR NOMBRE ',command = buscarNombre, fo
 btnBuscar.grid(column = 1, row=2)
 EtiBuscar = Entry(frame3, font=('Arial',8), width=23) 
 EtiBuscar.grid(column=0,row=2, pady=1, padx=1)
-btnListar = Button(frame3, command = mostrar, text=' MOSTRAR LISTA DE CLIENTES ', font=('Arial',8,'bold')) 
+btnListar = Button(frame3, command = ordenarBD, text=' MOSTRAR LISTA DE CLIENTES ', font=('Arial',8,'bold')) 
 btnListar.grid(column=0,row=3, padx=10, pady=8)
 btnEliminar = Button(frame3, text=' ELIMINAR ', command = borrarReg, font=('Arial',8,'bold'), bg='red', fg='white') 
 btnEliminar.grid(column=1,row=3, padx=5, pady=8)

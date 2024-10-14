@@ -1,7 +1,6 @@
 from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
-from PyPDF2 import PdfFileReader
 import functools
 import sqlite3
 
@@ -47,7 +46,7 @@ def eliminarBBDD():
     else:
         messagebox.askyesno(message="LA BASE DE DATOS NO SE ELIMINÓ, VERIFIQUE...?")
         pass
-
+    miConexion.close()
 ###########################  SALIR DE LA APLICACIÓN  ##########################################
  
 def salirAplicación():
@@ -56,7 +55,7 @@ def salirAplicación():
         root.destroy()
     else:
         pass
-
+    
 
 ########################  LIMPIAR CAMPOS TREEVIEW  ############################################
 def limpiarCampos():
@@ -88,6 +87,8 @@ def ordenarBD():
             tree.insert("",0,text=row[0], values=(row[1],row[2],row[3],row[4],row[5],row[6]))
     except:
         pass
+    mostrar()
+    miConexion.close()
 
 ############################### MOSTRAR LOS CAMPOS INSERTADOS ###################################
 def mostrar():
@@ -103,7 +104,8 @@ def mostrar():
             tree.insert("",0,text=row[0], values=(row[1],row[2],row[3],row[4],row[5],row[6]))
     except:
         pass
-    mostrar()
+
+    miConexion.close()
 
 #################################   AGREGAR O INSERTAR REGISTRO A LA BD #########################
 def crear():
@@ -118,13 +120,15 @@ def crear():
         pass
     limpiarCampos()
     mostrar()
+    miConexion.close()
 
+#####################################  Manual del Usuario ###############################################
 def documenta():
     import os
     path = '/Users/migue/OneDrive/Escritorio/Python/TurnosClientes/Documentacion.pdf'
     os.system(path)
 
-
+######################################  Acerca de la Aplicación #############################
 def acerca():
     acerca = '''
     Aplicación para Agregar Clientes
@@ -251,7 +255,7 @@ def actualizar():
     miCursor = miConexion.cursor()
        
     try:
-        if mes.get() != '' and dia != '' and fecha.get() != '' and hora.get() != '':
+        if mes.get() != '':
             datos = mes.get(), dia.get(), fecha.get(), hora.get(), nombres.get(), asistencia.get()
             miCursor.execute("UPDATE clientes SET MES=?, DIA=?, FECHA=?, HORA=?, NOMBRES=?, ASISTENCIA=? WHERE ID="+id.get(), (datos))
             miConexion.commit()
@@ -263,6 +267,7 @@ def actualizar():
         pass
     limpiarDatos()
     mostrar()
+    miConexion.close()
 
 
 
@@ -282,8 +287,8 @@ def borrarReg():
         messagebox.showwarning("ADVERTENCIA", "Ocurrió un error al tratar de eliminar el registro...")
         pass
     
-    limpiarCampos()
     mostrar()
+    miConexion.close()
 
 ##################################################   BUSCAR POR CAMPOS ####################################  
 def buscarNombre():
@@ -301,7 +306,7 @@ def buscarNombre():
     except:
         msg ="El nombre del cliente buscado NO EXISTE..."
         messagebox.showerror("ADVERTENCIA", msg)
-   
+    miConexion.close()
     #limpiarCampos()
 
 ####################################### CONTADOR DE ASISTENCIAS DE CLIENTES ######################################
@@ -333,6 +338,7 @@ def contadorAsistencia():
     lbl5 =Label(ventana, text="Asistencias",font=('Rockwell',14,'bold'), fg='blue')
     lbl5.place(x=225, y=80)
   
+    miConexion.close()
 
 #########################################   LISTADO POR TURNOS #################################################
 def listarTurnos():
@@ -366,7 +372,7 @@ def listarTurnos():
         messagebox.showwarning("ADVERTENCIA", "El registros buscado NO EXISTE...")
         pass
 
-
+    miConexion.close()
 
 
 ###########################  MARCO DE BOTONES  -  FRAME3  ##################################
@@ -417,5 +423,6 @@ btnListarTurnos.grid(columnspan=3, column=0,row=10, padx=10, pady=8)
 root.config(menu=menubar)
 root.mainloop()
 
-
+##    Para hacer una paquete de un solo archivo y ejecutable debemos usar la siguiente línea en la consola
+####  pyinstaller --windowed --onefile main.py
       

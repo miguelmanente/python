@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
+from PyPDF2 import PdfFileReader
 import functools
 import sqlite3
 
@@ -118,11 +119,17 @@ def crear():
     limpiarCampos()
     mostrar()
 
+def documenta():
+    import os
+    path = '/Users/migue/OneDrive/Escritorio/Python/TurnosClientes/Documentacion.pdf'
+    os.system(path)
+
+
 def acerca():
     acerca = '''
-    Aplicación para Kinesiólogos
+    Aplicación para Agregar Clientes
     Versión 1.0
-    Copyright MAM 
+    Copyright Miguel Manente
     '''
     messagebox.showinfo(title="INFORMACIÓN", message=acerca)
 
@@ -139,7 +146,7 @@ menubasedat.add_command(label="Salir", command = salirAplicación)
 menubar.add_cascade(label="Inicio", menu=menubasedat)
 
 ayudamenu = Menu(menubar, tearoff=0)
-ayudamenu.add_command(label="Recuperar Campos", command = limpiarDatos)
+ayudamenu.add_command(label="Documentación", command = documenta)
 ayudamenu.add_command(label="Acerca", command = acerca)
 menubar.add_cascade(label="Ayuda", menu=ayudamenu)
 
@@ -163,6 +170,7 @@ lbltit.place(x=10, y=10)
 
 lblMes = Label(frame1, text="MES")
 lblMes.place(x=10, y=60, width=100)
+lblMes.focus()
 
 textDia = Entry(frame1, textvariable=mes)
 textDia.place(x=10, y=90, width=100)
@@ -350,6 +358,10 @@ def listarTurnos():
             if miTurno =='MT' and row[2] == miDia and row[3] == miFecha:
                     if row[4]>='08:00' and row[4]<='20:00':
                         tree.insert("",0,text=row[0], values=(row[1],row[2],row[3],row[4],row[5],row[6])) 
+        txtTurno.delete(0, END)
+        txtMidia.delete(0, END)
+        txtMifecha.delete(0, END)
+        txtTurno.focus()
     except:
         messagebox.showwarning("ADVERTENCIA", "El registros buscado NO EXISTE...")
         pass

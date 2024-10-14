@@ -82,12 +82,12 @@ def ordenarBD():
     miCursor = miConexion.cursor()
 
     try:
-        miCursor.execute("SELECT * FROM clientes ORDER BY fecha DESC")
+        miCursor.execute("SELECT * FROM clientes ORDER BY id DESC, fecha ASC")
         for row in miCursor:
             tree.insert("",0,text=row[0], values=(row[1],row[2],row[3],row[4],row[5],row[6]))
     except:
         pass
-    mostrar()
+ 
     miConexion.close()
 
 ############################### MOSTRAR LOS CAMPOS INSERTADOS ###################################
@@ -104,7 +104,7 @@ def mostrar():
             tree.insert("",0,text=row[0], values=(row[1],row[2],row[3],row[4],row[5],row[6]))
     except:
         pass
-
+    
     miConexion.close()
 
 #################################   AGREGAR O INSERTAR REGISTRO A LA BD #########################

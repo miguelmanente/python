@@ -21,6 +21,7 @@ asistencia = StringVar()
 turno = StringVar()
 miDia = StringVar()
 miFecha = StringVar()
+Meses = StringVar()
 
 #################################  CREAR Y CONECTAR LA BASE DE DATOS ###########################
 def conexionBBDD():
@@ -82,6 +83,7 @@ def ordenarBD():
     miCursor = miConexion.cursor()
 
     try:
+        limpiarDatos()
         miCursor.execute("SELECT * FROM clientes ORDER BY fecha DESC")
         for row in miCursor:
             tree.insert("",0,text=row[0], values=(row[1],row[2],row[3],row[4],row[5],row[6]))
@@ -161,7 +163,7 @@ menubar.add_cascade(label="Ayuda", menu=ayudamenu)
 #lblTitPpal.config(relief="sunken")
 
 ######################  CUADRO IZQUIERDO FRAME1  ##########################
-frame1 = Frame(root, width=350, height=350)
+frame1 = Frame(root, width=350, height=300)
 
 frame1.pack(padx=10, pady=10, side="left", anchor="n")
 frame1.config(bg="#C1CFA1")
@@ -173,47 +175,47 @@ lbltit = Label(frame1, text="INGRESO DE DATOS A BASE DE DATOS", anchor='center',
 lbltit.place(x=10, y=10)
 
 lblMes = Label(frame1, text="MES")
-lblMes.place(x=10, y=60, width=100)
+lblMes.place(x=10, y=50, width=100)
 lblMes.focus()
 
 textDia = Entry(frame1, textvariable=mes)
-textDia.place(x=10, y=90, width=100)
+textDia.place(x=10, y=80, width=100)
 
 lblDia = Label(frame1, text="DÍA")
-lblDia.place(x=150, y=60)
+lblDia.place(x=150, y=50)
 
 textDia = Entry(frame1, textvariable=dia)
-textDia.place(x=150, y=90, width=100)
+textDia.place(x=150, y=80, width=100)
 
 lblFecha = Label(frame1, text="FECHA")
-lblFecha.place(x=10, y=120)
+lblFecha.place(x=10, y=110)
 
 textFecha = Entry(frame1, textvariable=fecha)
-textFecha.place(x=10, y=150, width=100)
+textFecha.place(x=10, y=140, width=100)
 
 lblHora = Label(frame1, text="HORA")
-lblHora.place(x=150, y=120)
+lblHora.place(x=150, y=110)
 
 textHora = Entry(frame1, textvariable=hora)
-textHora.place(x=150, y=150, width=50)
+textHora.place(x=150, y=140, width=50)
 
 lblNombres = Label(frame1, text="NOMBRES")
-lblNombres.place(x=10, y=180)
+lblNombres.place(x=10, y=170)
 
 textNombres = Entry(frame1, textvariable=nombres)
-textNombres.place(x=10, y=210, width=200)
+textNombres.place(x=10, y=200, width=200)
 
 lblAsist = Label(frame1, text="ASISTENCIA")
-lblAsist.place(x=10, y=240)
+lblAsist.place(x=10, y=230)
 
 textAsist = Entry(frame1, textvariable=asistencia)
-textAsist.place(x=10, y=270, width=50)
+textAsist.place(x=10, y=260, width=50)
 
 
 ######### TREEVIEW PARA MOSTRAR LOS DATOS AGREGADOS - FRAME2  #############
 
-frame2 = Frame(root, width=750, height=750)
-frame2.pack(padx=10, pady=10, side="left", anchor="n")
+frame2 = Frame(root, width=750, height=690)
+frame2.pack(padx=1, pady=10, side="left", anchor="n")
 
 tree = ttk.Treeview(frame2, height=10, columns=('#0','#1','#2','#3','#4','#5'))
 tree.place(x=10, width=740, height=735)
@@ -315,6 +317,7 @@ def contadorAsistencia():
     miCursor = miConexion.cursor()
 
     tAsistencia = 0
+    tsesiones = 0
     buscar = textAsist.get()
     bnombre =textNombres.get()
     limpiarDatos()
@@ -323,20 +326,35 @@ def contadorAsistencia():
     for row in fila:
         if row[5] == bnombre:
             tAsistencia = tAsistencia + row[6]
-        
+            if tAsistencia > 10:
+                tAsistencia = tAsistencia - 10
+    
+    if tAsistencia > 0 and tAsistencia <= 10:
+            tsesiones = tsesiones + 1 
+    elif tAsistencia > 10 and tAsistencia <= 20:
+            tsesiones = tsesiones + 1
+    elif tAsistencia > 20 and tAsistencia <= 30:
+            tsesiones = tsesiones + 1
+
     ventana = Tk()
     ventana.title("TOTAL DE ASISTENCIA")
-    ventana.config(width="400", height="250")
+    ventana.config(width="500", height="250")
     lbl1 = Label(ventana, text="ASISTENCIA DE: ", font=('Rockwell',12,'bold'), fg='blue')
-    lbl1.place(x=50, y=50)
+    lbl1.place(x=20, y=50)
     lbl2 =Label(ventana, text=bnombre, font=('Rockwell',14,'bold'),  fg='blue')
-    lbl2.place(x=190, y=50)
-    lbl3 = Label(ventana, text="TOTAL:  ", font=('Rockwell',14,'bold'), fg='blue')
-    lbl3.place(x=110, y=80)
+    lbl2.place(x=240, y=50)
+    lbl3 = Label(ventana, text="Total Asistencias:   ", font=('Rockwell',14,'bold'), fg='blue')
+    lbl3.place(x=20, y=80)
     lbl4 =Label(ventana, text=tAsistencia, font=('Rockwell',16,'bold'),  fg='blue')
-    lbl4.place(x=190, y=80)
+    lbl4.place(x=240, y=80)
     lbl5 =Label(ventana, text="Asistencias",font=('Rockwell',14,'bold'), fg='blue')
-    lbl5.place(x=225, y=80)
+    lbl5.place(x=260, y=80)
+    lbl6 = Label(ventana, text="Cantidad de Sesiones:  ", font=('Rockwell',14,'bold'), fg='blue')
+    lbl6.place(x=20, y=110)
+    lbl7 =Label(ventana, text=tsesiones, font=('Rockwell',16,'bold'),  fg='blue')
+    lbl7.place(x=240, y=110)
+    lbl5 =Label(ventana, text="por 10 Sesiones",font=('Rockwell',14,'bold'), fg='blue')
+    lbl5.place(x=260, y=110)
   
     miConexion.close()
 
@@ -346,6 +364,7 @@ def listarTurnos():
     miCursor = miConexion.cursor()
 
     try:
+        Meses = txtMeses.get()
         miTurno = txtTurno.get()
         miDia = txtMidia.get()
         miFecha = txtMifecha.get()
@@ -353,20 +372,21 @@ def listarTurnos():
         miCursor.execute("SELECT * FROM clientes")
         fila=miCursor.fetchall()
         for row in fila:
-            if miTurno == 'M' and row[2] == miDia and row[3] == miFecha:
+            if row[1] == Meses and miTurno.upper() == 'M' and row[2] == miDia and row[3] == miFecha:
                 if row[4]>='08:00' and row[4]<='12:00':
                     tree.insert("",0,text=row[0], values=(row[1],row[2],row[3],row[4],row[5],row[6])) 
 
-            if miTurno == 'T' and row[2] == miDia and row[3] == miFecha:
+            if row[1] == Meses and miTurno.upper() == 'T' and row[2] == miDia and row[3] == miFecha:
                 if row[4]>='15:00' and row[4]<='20:00':
                     tree.insert("",0,text=row[0], values=(row[1],row[2],row[3],row[4],row[5],row[6])) 
 
-            if miTurno =='MT' and row[2] == miDia and row[3] == miFecha:
+            if row[1] == Meses and miTurno.upper() =='MT' and row[2] == miDia and row[3] == miFecha:
                     if row[4]>='08:00' and row[4]<='20:00':
                         tree.insert("",0,text=row[0], values=(row[1],row[2],row[3],row[4],row[5],row[6])) 
         txtTurno.delete(0, END)
         txtMidia.delete(0, END)
         txtMifecha.delete(0, END)
+        txtMeses.delete(0, END)
         txtTurno.focus()
     except:
         messagebox.showwarning("ADVERTENCIA", "El registros buscado NO EXISTE...")
@@ -378,7 +398,7 @@ def listarTurnos():
 ###########################  MARCO DE BOTONES  -  FRAME3  ##################################
 
 frame3 = Frame(root)
-frame3.place(x=10, y=370, width=350, height=380)
+frame3.place(x=10, y=320, width=350, height=385)
 frame3.config(bg="#C1CFA1")
 frame3.config(bd="3")
 frame3.config(relief="sunken") 
@@ -402,23 +422,27 @@ btnModificar.grid(column=0,row=4, padx=1, pady=8)
 btnTAsis= Button(frame3,  text='TOTAL ASISTENCIAS', command=contadorAsistencia, font=('Arial',8,'bold')) 
 btnTAsis.grid(column=1,row=4, padx=1, pady=8)
 lblTurnos = Label(frame3, text='LISTAR POR TURNOS',  fg='white', bg ='green', font=('Arial',12,'bold'))
-lblTurnos.grid(columnspan=2,column=0,row=6, pady=10, padx=1)
+lblTurnos.grid(columnspan=2,column=0,row=6, pady=1, padx=1)
 lblTurno = Label(frame3, text='Ingrese el turno (M / T / MT)')
 lblTurno.grid(column=0,row=7, padx=2, pady=8)
 txtTurno = Entry(frame3, textvariable=turno)
-txtTurno.grid(columnspan=3,column=1,row=7, padx=5, pady=8)
+txtTurno.grid(columnspan=3,column=1,row=7, padx=5, pady=4)
 lblMidia = Label(frame3, text='Ingrese el día de la semana')
-lblMidia.grid(column=0,row=8, padx=2, pady=8)
+lblMidia.grid(column=0,row=8, padx=2, pady=4)
 txtMidia = Entry(frame3, textvariable=miDia)
-txtMidia.grid(columnspan=3,column=1,row=8, padx=5, pady=8)
+txtMidia.grid(columnspan=3,column=1,row=8, padx=5, pady=4)
 lblMifecha = Label(frame3, text='Ingrese la fecha de la semana')
 lblMifecha.grid(column=0,row=9, padx=2, pady=8)
 txtMifecha = Entry(frame3, textvariable=miFecha)
-txtMifecha.grid(columnspan=3,column=1,row=9, padx=5, pady=8)
+txtMifecha.grid(columnspan=3,column=1,row=9, padx=5, pady=4)
+lblMeses = Label(frame3, text='Ingrese el mes a listar       ')
+lblMeses.grid(column=0,row=10, padx=2, pady=4)
+txtMeses = Entry(frame3, textvariable=Meses)
+txtMeses.grid(columnspan=3,column=1,row=10, padx=5, pady=4)
 
 
 btnListarTurnos= Button(frame3, command = listarTurnos,  text=' LISTAR POR TURNOS ', font=('Arial',8,'bold')) 
-btnListarTurnos.grid(columnspan=3, column=0,row=10, padx=10, pady=8)
+btnListarTurnos.grid(columnspan=3, column=0,row=11, padx=10, pady=4)
 
 root.config(menu=menubar)
 root.mainloop()

@@ -1,16 +1,24 @@
+################################### IMPORTAR LA BIBLIOTECAS A UTILIZAR ##########################
+
 from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
 import functools
 import sqlite3
 
+import arHClinicas.archivosHClinicas
+import arHClinicas.archivosHClinicas
+
+
+
 
 ################################  CREACIÓN VENTANA PRINCIPAL ############################
 root = Tk()
-root.config(width="800", height="800")
+root.config(width=1300, height=800)
 root.title("TURNOS - CLIENTES")
-#root.iconbitmap("TurnosClientes\icono2.ico")
+root.resizable(0,0)
 
+############################  DEFINICIÓN DE VARIABLES UTILIZADAS EN LA APLICACIÓN #####################
 id = StringVar()
 mes = StringVar()
 dia = StringVar()
@@ -23,8 +31,14 @@ miDia = StringVar()
 miFecha = StringVar()
 Meses = StringVar()
 
+
 #################################  CREAR Y CONECTAR LA BASE DE DATOS ###########################
 def conexionBBDD():
+
+    '''Esta función crea la base de datos tclientes SI ESTA NO se ha creado previamente 
+       en caso, de haber sido creada anteriormente, si ejecutamos nuevamente esta función
+       nos avisará que ya esta conectada la BD'''
+
     miConexion = sqlite3.connect("/Users/migue/OneDrive/Escritorio/Python/TurnosClientes/tclientes")
     miCursor = miConexion.cursor()
 
@@ -38,6 +52,9 @@ def conexionBBDD():
 ####################################### ELIMINAR LA BASE DE DATOS  #################################
 
 def eliminarBBDD():
+
+    ''' Esta función ELIMINA la BD por completo, perdiendose toda la información'''
+
     miConexion = sqlite3.connect("/Users/migue/OneDrive/Escritorio/Python/TurnosClientes/tclientes")
     miCursor = miConexion.cursor()
     
@@ -79,6 +96,11 @@ def limpiarDatos():
 
 ############################  ORDENAR LA BASE DE DATOS #####################################
 def ordenarBD():
+
+    ''' Al agregar registro a la BD, estos quedarán visualmente en la primera línea de la tabla(treeview)
+        si queremos visualizar esta función para que los registros salgan ordenados por fecha, debemos 
+        cliquear en el botón MOSTRAR LISTA DE CLIENTES para que se muestren los registros ordenados'''
+
     miConexion = sqlite3.connect("/Users/migue/OneDrive/Escritorio/Python/TurnosClientes/tclientes")
     miCursor = miConexion.cursor()
 
@@ -111,6 +133,11 @@ def mostrar():
 
 #################################   AGREGAR O INSERTAR REGISTRO A LA BD #########################
 def crear():
+
+    '''Inserta/Agrega registros a la BD, estos quedarán visualmente en la primera línea de la tabla(treeview)
+        si queremos visualizar esta función para que los registros salgan ordenados por fecha, debemos 
+        cliquear en el botón MOSTRAR LISTA DE CLIENTES para que se muestren los registros ordenados '''
+
     miConexion = sqlite3.connect("/Users/migue/OneDrive/Escritorio/Python/TurnosClientes/tclientes")
     miCursor = miConexion.cursor()
     try:  
@@ -137,11 +164,17 @@ def acerca():
     Versión 1.0
     Copyright Miguel Manente
     '''
-    messagebox.showinfo(title="INFORMACIÓN", message=acerca)
+    messagebox.showinfo(title="ACERCA DE LA APLICACIÓN", message=acerca)
 
+###################  Función que llama a la aplicación de Historias clínicas ################
+def hc():
+    import arHClinicas.archivosHClinicas as hc
 
+    hc.historiasClinicas()
+
+ 
 #######################   BARRA DE MENÚES  ######################
-frame4 = Frame(root, width=500, height=20)
+frame4 = Frame(root, width=100, height=20)
 frame4.place(x=0, y=0)
 
 menubar = Menu(root)
@@ -150,6 +183,10 @@ menubasedat.add_command(label="Crear/Conectar Base de Datos", command = conexion
 menubasedat.add_command(label="Eliminar Base de Datos", command = eliminarBBDD )
 menubasedat.add_command(label="Salir", command = salirAplicación)
 menubar.add_cascade(label="Inicio", menu=menubasedat)
+
+hclinica = Menu(menubar, tearoff=0)
+hclinica.add_command(label="Historias Clínicas", command= hc)
+menubar.add_cascade(label="Datos Personales", menu=hclinica)
 
 ayudamenu = Menu(menubar, tearoff=0)
 ayudamenu.add_command(label="Documentación", command = documenta)
@@ -424,25 +461,29 @@ btnTAsis.grid(column=1,row=4, padx=1, pady=8)
 lblTurnos = Label(frame3, text='LISTAR POR TURNOS',  fg='white', bg ='green', font=('Arial',12,'bold'))
 lblTurnos.grid(columnspan=2,column=0,row=6, pady=1, padx=1)
 lblTurno = Label(frame3, text='Ingrese el turno (M / T / MT)')
-lblTurno.grid(column=0,row=7, padx=2, pady=8)
+lblTurno.grid(column=0,row=7, padx=2, pady=2)
 txtTurno = Entry(frame3, textvariable=turno)
-txtTurno.grid(columnspan=3,column=1,row=7, padx=5, pady=4)
+txtTurno.grid(columnspan=3,column=1,row=7, padx=5, pady=1)
 lblMidia = Label(frame3, text='Ingrese el día de la semana')
-lblMidia.grid(column=0,row=8, padx=2, pady=4)
+lblMidia.grid(column=0,row=8, padx=2, pady=1)
 txtMidia = Entry(frame3, textvariable=miDia)
-txtMidia.grid(columnspan=3,column=1,row=8, padx=5, pady=4)
+txtMidia.grid(columnspan=3,column=1,row=8, padx=5, pady=1)
 lblMifecha = Label(frame3, text='Ingrese la fecha de la semana')
-lblMifecha.grid(column=0,row=9, padx=2, pady=8)
+lblMifecha.grid(column=0,row=9, padx=2, pady=1)
 txtMifecha = Entry(frame3, textvariable=miFecha)
-txtMifecha.grid(columnspan=3,column=1,row=9, padx=5, pady=4)
+txtMifecha.grid(columnspan=3,column=1,row=9, padx=5, pady=1)
 lblMeses = Label(frame3, text='Ingrese el mes a listar       ')
-lblMeses.grid(column=0,row=10, padx=2, pady=4)
+lblMeses.grid(column=0,row=10, padx=2, pady=1)
 txtMeses = Entry(frame3, textvariable=Meses)
-txtMeses.grid(columnspan=3,column=1,row=10, padx=5, pady=4)
+txtMeses.grid(columnspan=3,column=1,row=10, padx=5, pady=1)
 
 
 btnListarTurnos= Button(frame3, command = listarTurnos,  text=' LISTAR POR TURNOS ', font=('Arial',8,'bold')) 
-btnListarTurnos.grid(columnspan=3, column=0,row=11, padx=10, pady=4)
+btnListarTurnos.grid(columnspan=3, column=0,row=11, padx=10, pady=1)
+
+
+##################################################################################################
+
 
 root.config(menu=menubar)
 root.mainloop()

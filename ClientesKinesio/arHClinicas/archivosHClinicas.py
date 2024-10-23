@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from tkinter import scrolledtext as st
 
 def historiasClinicas():
@@ -23,12 +23,13 @@ def historiasClinicas():
             self.label2 = ttk.Label(self.ventana1, text=caracteres-1)
             self.label2.grid(column=0, row=2, padx=100, pady=60, sticky='w')
 
+           
+            if caracteres > 2:
+                ruta = '/Users/migue/OneDrive/Escritorio/Python/TurnosClientes/arHClinicas/hClinicas.txt'
+                with open(ruta,'w') as archivo:             # Se crea archivo si no existe lo crea
+                    archivo.write(datos)
+              
             self.boton1=ttk.Button(self.ventana1, text="Guardar", command=self.copiar)
             self.boton1.grid(column=1, row=4, padx=10, pady=10)
-
-            ruta = '/Users/migue/OneDrive/Escritorio/Python/TurnosClientes/arHClinicas/hClinicas.txt'
-            with open(ruta,'w') as archivo:             # Se crea archivo si no existe lo crea
-                archivo.write(datos)
-    
 
     aplicacion1=Aplicacion() 

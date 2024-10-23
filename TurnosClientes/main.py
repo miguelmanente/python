@@ -6,11 +6,6 @@ from tkinter import ttk
 import functools
 import sqlite3
 
-import arHClinicas.archivosHClinicas
-import arHClinicas.archivosHClinicas
-
-
-
 
 ################################  CREACIÓN VENTANA PRINCIPAL ############################
 root = Tk()
@@ -161,16 +156,16 @@ def documenta():
 def acerca():
     acerca = '''
     Aplicación para Agregar Clientes
-    Versión 1.0
+    Versión 1.1
     Copyright Miguel Manente
     '''
     messagebox.showinfo(title="ACERCA DE LA APLICACIÓN", message=acerca)
 
 ###################  Función que llama a la aplicación de Historias clínicas ################
 def hc():
-    import arHClinicas.archivosHClinicas as hc
+    import BlocNotas as hc
 
-    hc.historiasClinicas()
+    hc.blockNotas()
 
  
 #######################   BARRA DE MENÚES  ######################

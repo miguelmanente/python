@@ -27,7 +27,7 @@ def blockNotas():
             file = open(file, "r")
             text_area.insert(1.0, file.read()) 
         except:
-            showinfo("ERROR","No se puede leer el archivo") 
+            pass 
         finally:
             file.close()
                     
@@ -45,7 +45,7 @@ def blockNotas():
                 file = open(file, "w")
                 file.write(text_area.get(1.0, END))
             except:
-                showinfo("ERROR","No se puedo grabar el archivo") 
+                pass 
             finally:
                 file.close()
         
@@ -60,10 +60,10 @@ def blockNotas():
 
     def about():
         showinfo("Acerca del block de notas", 
-            '''Block de Notas es un editor de texo incluído en el sistema de
-        clientes.Su funcionalidad es la de poder tipear información 
-            sobre las historias clínicas de los pacientes que vendrán
-            hacer los tratamientos kinesiológicos ''')
+        '''Block de Notas es un editor de texo incluído en el sistema de
+        clientes.Su funcionalidad es la de poder tipear
+        información sobre las historias clínicas de los
+        pacientes que vendrán hacer los tratamientos kinesiológicos ''')
 
     def quit():
         window.destroy()
@@ -71,15 +71,15 @@ def blockNotas():
     window = Tk()
     window.title("Bloc de Notas")
     file = None
-
+    
     font_name = StringVar(window)     #variable para el tipo de letra a usar en el block de notas
     font_name.set("Arial")
 
     font_size = StringVar(window)     #Variable que se usará para saber el tamaño de la letra
     font_size.set("12")
 
-    window_width = 500     #Medidas que queremos darle a nuestra ventana
-    window_height = 500
+    window_width = 800     #Medidas que queremos darle a nuestra ventana
+    window_height = 600
     screen_width =window.winfo_screenwidth()  #Ancho y alto de la pantalla que tenemos
     screen_height =window.winfo_screenheight()
 
@@ -97,7 +97,7 @@ def blockNotas():
 
     frame =Frame(window)          #Creamos un frame para botones        
     frame.grid()
-
+   
     color_button = Button(frame, text="color", command=change_color) #Botón que va a cambiar el color del texto
     color_button.grid(row=0, column=0)
 
@@ -132,5 +132,5 @@ def blockNotas():
     menu_bar.add_cascade(label="Help", menu=help_menu)
     help_menu.add_command(label="About", command=about)
 
-
+  
     window.mainloop()

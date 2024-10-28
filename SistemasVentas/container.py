@@ -38,7 +38,7 @@ class Container(tk.Frame):
         btninventario = Button(frame1, bg="#c62e26", fg="White", font="sans 18 bold", text="Ir a Inventario", command=self.inventario)
         btninventario.place(x=500, y=130, width=240, height=60)
 
-        self.logo_image = Image.open("imagenes/registradora.jpg")
+        self.logo_image = Image.open("SistemasVentas/imagenes/registradora.jpg")
         self.logo_image = self.logo_image.resize((280,280))
         self.logo_image = ImageTk.PhotoImage(self.logo_image)
         self.logo_label = tk.Label(frame1, image=self.logo_image, bg="#C6D9E3")

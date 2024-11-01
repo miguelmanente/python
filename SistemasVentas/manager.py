@@ -1,6 +1,7 @@
 
 from tkinter import Tk, Frame
 from container import Container
+from ttkthemes import ThemedStyle
 
 class Mananger(Tk):
     def __init__(self, *args, **kwargs):
@@ -20,6 +21,12 @@ class Mananger(Tk):
         self.load_frames()
 
         self.show_frame(Container)
+
+        self.set_theme()
+    
+    def set_theme(self):
+        sytle = ThemedStyle(self)
+        sytle.set_theme("breeze")
 
 
     def load_frames(self):

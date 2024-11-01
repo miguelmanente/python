@@ -15,7 +15,7 @@ class Container(tk.Frame):
 
     def show_frames(self, container):
         top_level = tk.Toplevel(self)
-        frame = container(top_level )
+        frame = container(top_level)
         frame.config(bg="#C6D9E3")
         frame.pack(fill="both", expand=True)
         top_level.geometry("1100x650+12+20")

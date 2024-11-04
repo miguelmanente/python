@@ -1,10 +1,16 @@
+import sqlite3
 from tkinter import *
 import tkinter as tk
 from tkinter import ttk, messagebox
 
 class Inventario(tk.Frame):
-    def __init__(self, parent):
-        super().__init__(parent)
+    db_name ="SistemasVentas/database.db"
+
+    def __init__(self, padre):
+        super().__init__(padre)
+        self.pack()
+        self.conn = sqlite3.connect(self.db_name)
+        self.cursor = self.conn.cursor()
         self.widgets()
     
     def widgets(self):
@@ -83,4 +89,33 @@ class Inventario(tk.Frame):
         self.tre.column("COSTO", width=100, anchor="center")
         self.tre.column("STOCK", width=70, anchor="center")
 
-
+    def eje_consulta(self, consulta, parametros=()):
+        with sqlite3.connect(self.db_name) as conn:
+            cursor = conn.cursor()
+            result = cursor.execute(consulta, parametros)
+            conn.commit()
+        return result
+    
+    def validacion(self, nombre, prov, precio, costo, stock):
+        if not (nombre and prov and precio and costo and stock):
+            return False
+        try:
+            float(precio)
+            float(costo)
+            int(stock)
+        except ValueError:
+            return False
+        return True
+    
+    def mostrar(self):
+        consulta = "SELECT * FROM inventario ORDER BY id DESC"
+        result = self.eje_consulta(consulta)
+        for elem in result:
+            try:
+                precio_pesos = "$ {:..2f}".format(float(elem[3])) if elem[3] else ""
+                costo_pesos = "$ {:..2f}".format(float(elem[4])) if elem[4] else ""
+            except ValueError:
+                precio_pesos = elem[3]
+                costo_pesos = elem[4]
+            self.tre.insert("",0, text=elem[0], values = elem[0])
+            

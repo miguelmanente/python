@@ -21,6 +21,11 @@ class Container(tk.Frame):
         top_level.geometry("1100x650+12+20")
         top_level.resizable(False, False)
 
+        top_level.transient(self.master)
+        top_level.grab_set()
+        top_level.focus_set()
+        top_level.lift()
+
     def ventas(self):
         self.show_frames(Ventas)
     
@@ -32,10 +37,22 @@ class Container(tk.Frame):
         frame1.pack()
         frame1.place(x=0, y=0, width=800, height=400)
 
+        imagen_pil = Image.open("SistemasVentas/icono/btnventas.png")
+        imagen_resize =imagen_pil.resize((50,50))
+        imagen_tk = ImageTk.PhotoImage(imagen_resize)
+
         btnventas = Button(frame1, bg="#f4b400", fg="white",font="sans 18 bold",  text="Ir a Ventas", command=self.ventas)
+        btnventas.config(image=imagen_tk, compound=LEFT, padx=30)
+        btnventas.image = imagen_tk
         btnventas.place(x=500, y=30, width=240, height=60)
 
+        imagen_pil = Image.open("SistemasVentas/icono/btninventario.png")
+        imagen_resize =imagen_pil.resize((50,50))
+        imagen_tk = ImageTk.PhotoImage(imagen_resize)
+
         btninventario = Button(frame1, bg="#c62e26", fg="White", font="sans 18 bold", text="Ir a Inventario", command=self.inventario)
+        btninventario.config(image=imagen_tk, compound=LEFT, padx=10)
+        btninventario.image = imagen_tk
         btninventario.place(x=500, y=130, width=240, height=60)
 
         self.logo_image = Image.open("SistemasVentas/imagenes/registradora.jpg")

@@ -3,6 +3,8 @@ import tkinter as tk
 from  ventas import Ventas
 from  inventario import Inventario
 from PIL import Image, ImageTk
+import sys
+import os
 
 class Container(tk.Frame):
     def __init__(self, padre, controlador):
@@ -13,6 +15,14 @@ class Container(tk.Frame):
         self.configure(bg="#C6D9E3")
         self.widgets()
 
+    #Rutas para iconos del sistemas de ventas
+    def rutas(self, ruta):
+        try:
+            rutabase = sys.__MEIPASS
+        except Exception:
+            rutabase = os.path.abspath(".")
+        return os.path.join(rutabase, ruta)
+
     def show_frames(self, container):
         top_level = tk.Toplevel(self)
         frame = container(top_level)
@@ -20,6 +30,7 @@ class Container(tk.Frame):
         frame.pack(fill="both", expand=True)
         top_level.geometry("1100x650+12+20")
         top_level.resizable(False, False)
+       
 
         top_level.transient(self.master)
         top_level.grab_set()
@@ -37,7 +48,8 @@ class Container(tk.Frame):
         frame1.pack()
         frame1.place(x=0, y=0, width=800, height=400)
 
-        imagen_pil = Image.open("SistemasVentas/icono/btnventas.png")
+        ruta = self.rutas(r"SistemasVentas/icono/btnventas.png")
+        imagen_pil = Image.open(ruta)
         imagen_resize =imagen_pil.resize((50,50))
         imagen_tk = ImageTk.PhotoImage(imagen_resize)
 
@@ -46,7 +58,8 @@ class Container(tk.Frame):
         btnventas.image = imagen_tk
         btnventas.place(x=500, y=30, width=240, height=60)
 
-        imagen_pil = Image.open("SistemasVentas/icono/btninventario.png")
+        ruta = self.rutas(r"SistemasVentas/icono/btninventario.png")
+        imagen_pil = Image.open(ruta)
         imagen_resize =imagen_pil.resize((50,50))
         imagen_tk = ImageTk.PhotoImage(imagen_resize)
 
@@ -55,7 +68,8 @@ class Container(tk.Frame):
         btninventario.image = imagen_tk
         btninventario.place(x=500, y=130, width=240, height=60)
 
-        self.logo_image = Image.open("SistemasVentas/imagenes/registradora.jpg")
+        ruta = self.rutas(r"SistemasVentas/imagenes/registradora.jpg")
+        self.logo_image = Image.open(ruta)
         self.logo_image = self.logo_image.resize((280,280))
         self.logo_image = ImageTk.PhotoImage(self.logo_image)
         self.logo_label = tk.Label(frame1, image=self.logo_image, bg="#C6D9E3")

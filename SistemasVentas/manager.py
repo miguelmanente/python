@@ -2,6 +2,9 @@
 from tkinter import Tk, Frame
 from container import Container
 from ttkthemes import ThemedStyle
+from PIL import Image, ImageTk
+import sys
+import os
 
 class Mananger(Tk):
     def __init__(self, *args, **kwargs):
@@ -10,6 +13,7 @@ class Mananger(Tk):
         self.resizable(False, False)
         self.configure(bg="#C6D9E3")
         self.geometry("800x400+120+20")
+       
 
         self.container = Frame(self, bg="#C6D9E3" )
         self.container.pack(fill="both", expand=True)
@@ -23,6 +27,14 @@ class Mananger(Tk):
         self.show_frame(Container)
 
         self.set_theme()
+
+    #Rutas para iconos del sistemas de ventas
+    def rutas(self, ruta):
+        try:
+            rutabase = sys.__MEIPASS
+        except Exception:
+            rutabase = os.path.abspath(".")
+        return os.path.join(rutabase, ruta)
     
     def set_theme(self):
         sytle = ThemedStyle(self)

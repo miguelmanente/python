@@ -2,6 +2,9 @@ import sqlite3
 from tkinter import *
 import tkinter as tk
 from tkinter import ttk, messagebox
+from PIL import Image, ImageTk
+import sys
+import os
 
 class Inventario(tk.Frame):
     db_name ="SistemasVentas/database.db"
@@ -12,6 +15,16 @@ class Inventario(tk.Frame):
         self.conn = sqlite3.connect(self.db_name)
         self.cursor = self.conn.cursor()
         self.widgets()
+    
+    
+    #Rutas para iconos del sistemas de ventas
+    def rutas(self, ruta):
+        try:
+            rutabase = sys.__MEIPASS
+        except Exception:
+            rutabase = os.path.abspath(".")
+        return os.path.join(rutabase, ruta)
+    
     
     def widgets(self):
         frame1= tk.Frame(self, bg="#dddddd", highlightbackground="gray", highlightthickness=1)
@@ -53,10 +66,24 @@ class Inventario(tk.Frame):
         self.stock =ttk.Entry(labelframe, font="sans 14 bold")
         self.stock.place(x=140, y=260, width=240, height=40)
 
+        ruta = self.rutas(r"SistemasVentas/icono/carritoCompras.ico")
+        imagen_pil = Image.open(ruta)
+        imagen_resize =imagen_pil.resize((30,30))
+        imagen_tk = ImageTk.PhotoImage(imagen_resize)
+
         boton_agregar = tk.Button(labelframe, text="Agregar", font="sans 14 bold", bg="#dddddd", command=self.registrar)
+        boton_agregar.config(image=imagen_tk, compound=LEFT, padx=10)
+        boton_agregar.image = imagen_tk
         boton_agregar.place(x=80, y=340, width=240, height=40)
 
+        ruta = self.rutas(r"SistemasVentas/icono/EditarProductos.ico")
+        imagen_pil = Image.open(ruta)
+        imagen_resize =imagen_pil.resize((30,30))
+        imagen_tk = ImageTk.PhotoImage(imagen_resize)
+
         boton_editar = tk.Button(labelframe, text="Editar", font="sans 14 bold", bg="#dddddd", command=self.editar_producto)
+        boton_editar.config(image=imagen_tk, compound=LEFT, padx=10)
+        boton_editar.image = imagen_tk
         boton_editar.place(x=80, y=400, width=240, height=40)
 
         #Treeview
@@ -91,7 +118,14 @@ class Inventario(tk.Frame):
 
         self.mostrar()
 
+        ruta = self.rutas(r"SistemasVentas/icono/existencias.ico")
+        imagen_pil = Image.open(ruta)
+        imagen_resize =imagen_pil.resize((30,30))
+        imagen_tk = ImageTk.PhotoImage(imagen_resize)
+
         btn_actualizar = tk.Button(frame2, text="Actualizar Inventario", font="sans 14 bold", command=self.actualizar_inventario)
+        btn_actualizar.config(image=imagen_tk, compound=LEFT, padx=10)
+        btn_actualizar.image = imagen_tk
         btn_actualizar.place(x=440, y=480, width=260, height=50)
 
     def eje_consulta(self, consulta, parametros=()):

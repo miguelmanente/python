@@ -6,6 +6,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.platypus import Table
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from PIL import Image, ImageTk
 import datetime
 import sys
 import os
@@ -19,6 +20,15 @@ class Ventas(tk.Frame):
         self.numero_factura_actual = self.obtener_numero_factura_actual()
         self.widgets()
         self.mostrar_numero_factura()
+    
+    #Rutas para iconos del sistemas de ventas
+    def rutas(self, ruta):
+        try:
+            rutabase = sys.__MEIPASS
+        except Exception:
+            rutabase = os.path.abspath(".")
+        return os.path.join(rutabase, ruta)
+    
     
     def widgets(self):
         frame1= tk.Frame(self, bg="#dddddd", highlightbackground="gray", highlightthickness=1)
@@ -89,13 +99,35 @@ class Ventas(tk.Frame):
         lblframe1 = LabelFrame(frame2, text="Opciones", bg="#C6D9E3", font="sans 12 bold")
         lblframe1.place(x=10, y=380, width=1060, height=100)
 
+        ruta = self.rutas(r"SistemasVentas/icono/AgregarProducto.ico")
+        imagen_pil = Image.open(ruta)
+        imagen_resize =imagen_pil.resize((40,40))
+        imagen_tk = ImageTk.PhotoImage(imagen_resize)
+
         boton_agregar = tk.Button(lblframe1, text="Agregar Artículo",bg="#dddddd", font="sans 12 bold", command=self.registrar)
+        boton_agregar.config(image=imagen_tk, compound=LEFT, padx=10)
+        boton_agregar.image = imagen_tk
         boton_agregar.place(x=50, y=10, width=240, height=50)
+        
+        ruta = self.rutas(r"SistemasVentas/icono/pagar.ico")
+        imagen_pil = Image.open(ruta)
+        imagen_resize =imagen_pil.resize((35,35))
+        imagen_tk = ImageTk.PhotoImage(imagen_resize)
 
         boton_pagar = tk.Button(lblframe1, text="Pagar",bg="#dddddd", font="sans 12 bold", command=self.abrir_ventana_pago)
+        boton_pagar.config(image=imagen_tk, compound=LEFT, padx=20)
+        boton_pagar.image = imagen_tk
         boton_pagar.place(x=400, y=10, width=240, height=50)
         
+
+        ruta = self.rutas(r"SistemasVentas/icono/facturas.ico")
+        imagen_pil = Image.open(ruta)
+        imagen_resize =imagen_pil.resize((35,35))
+        imagen_tk = ImageTk.PhotoImage(imagen_resize)
+
         boton_ver_facturas = tk.Button(lblframe1, text="Ver Facturas", bg="#dddddd", font="sans 12 bold", command=self.abrir_ventana_factura)
+        boton_ver_facturas.config(image=imagen_tk, compound=LEFT, padx=20)
+        boton_ver_facturas.image = imagen_tk
         boton_ver_facturas.place(x=750, y=10, width=240, height=50)
 
         self.label_suma_total = tk.Label(frame2, text="Total a pagar: $", bg="#C6D9E3", font="sans 25 bold")
@@ -191,7 +223,7 @@ class Ventas(tk.Frame):
         for child in self.tree.get_children():
             subtotal = float(self.tree.item(child, "values")[3])
             total += subtotal
-            return total
+        return total
     
     def abrir_ventana_pago(self):
         if not self.tree.get_children():
@@ -243,14 +275,14 @@ class Ventas(tk.Frame):
             conn = sqlite3.connect(self.db_name)
             c = conn.cursor()
             try:
-                productos = []
+                productos1 = []
                 for child in self.tree.get_children():
                     item = self.tree.item(child, "values")
                     producto = item[0]
                     precio = item[1]
                     cantidad_vendida = int(item[2])
                     subtotal = float(item[3])
-                    productos.append([producto, precio, cantidad_vendida, subtotal])
+                    productos1.append([producto, precio, cantidad_vendida, subtotal])
                   
                     c.execute("INSERT INTo ventas (factura, nombre_articulo, valor_articulo, cantidad, subtotal) VALUES (?,?,?,?,?)",
                               (self.numero_factura_actual, producto, float(precio), cantidad_vendida, subtotal))
@@ -270,7 +302,7 @@ class Ventas(tk.Frame):
                 ventana_pago.destroy()
 
                 fecha = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                self.generar_factura_pdf(productos, total, self.numero_factura_actual - 1, fecha)
+                self.generar_factura_pdf(productos1, total, self.numero_factura_actual - 1, fecha)
 
             except sqlite3.Error as e:
                 conn.rollback()
@@ -280,7 +312,7 @@ class Ventas(tk.Frame):
         except ValueError:
             messagebox.showerror("Error", " Cantidad pagada no valida")    
          
-    def generar_factura_pdf(self, productos, total, factura_numero, fecha):
+    def generar_factura_pdf(self, productos1, total, factura_numero, fecha):
         archivo_pdf = f"SistemasVentas/facturas/factura_{factura_numero}.pdf" #SistemasVentas\facturas
 
         c = canvas.Canvas(archivo_pdf, pagesize=letter)
@@ -299,7 +331,7 @@ class Ventas(tk.Frame):
         c.setFont("Helvetica-Bold", 12)
         c.drawString(100, height - 100, "Información de la venta")
 
-        data = [["Producto", "Precio", "Cantidad", "Subtotal"]] + productos
+        data = [["Producto", "Precio", "Cantidad", "Subtotal"]] + productos1
         table = Table(data)
         table.wrapOn(c, width, height)
         table.drawOn(c, 100, height - 200)

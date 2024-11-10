@@ -13,7 +13,7 @@ import os
 
 class Ventas(tk.Frame):
 
-    db_name ="SistemasVentas/database.db" 
+    db_name ="database.db" 
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -99,7 +99,7 @@ class Ventas(tk.Frame):
         lblframe1 = LabelFrame(frame2, text="Opciones", bg="#C6D9E3", font="sans 12 bold")
         lblframe1.place(x=10, y=380, width=1060, height=100)
 
-        ruta = self.rutas(r"SistemasVentas/icono/AgregarProducto.ico")
+        ruta = self.rutas(r"icono/AgregarProducto.ico")
         imagen_pil = Image.open(ruta)
         imagen_resize =imagen_pil.resize((40,40))
         imagen_tk = ImageTk.PhotoImage(imagen_resize)
@@ -109,7 +109,7 @@ class Ventas(tk.Frame):
         boton_agregar.image = imagen_tk
         boton_agregar.place(x=50, y=10, width=240, height=50)
         
-        ruta = self.rutas(r"SistemasVentas/icono/pagar.ico")
+        ruta = self.rutas(r"icono/pagar.ico")
         imagen_pil = Image.open(ruta)
         imagen_resize =imagen_pil.resize((35,35))
         imagen_tk = ImageTk.PhotoImage(imagen_resize)
@@ -120,7 +120,7 @@ class Ventas(tk.Frame):
         boton_pagar.place(x=400, y=10, width=240, height=50)
         
 
-        ruta = self.rutas(r"SistemasVentas/icono/facturas.ico")
+        ruta = self.rutas(r"icono/facturas.ico")
         imagen_pil = Image.open(ruta)
         imagen_resize =imagen_pil.resize((35,35))
         imagen_tk = ImageTk.PhotoImage(imagen_resize)
@@ -313,7 +313,7 @@ class Ventas(tk.Frame):
             messagebox.showerror("Error", " Cantidad pagada no valida")    
          
     def generar_factura_pdf(self, productos1, total, factura_numero, fecha):
-        archivo_pdf = f"SistemasVentas/facturas/factura_{factura_numero}.pdf" #SistemasVentas\facturas
+        archivo_pdf = f"facturas/factura_{factura_numero}.pdf" #SistemasVentas\facturas
 
         c = canvas.Canvas(archivo_pdf, pagesize=letter)
         width, height = letter
@@ -355,7 +355,7 @@ class Ventas(tk.Frame):
         try:
             c.execute("SELECT MAX(factura) FROM ventas")
             factura = c.fetchone()[0]
-            max_factura = int(factura)
+            max_factura = float(factura)
             if max_factura:
                 return max_factura + 1
             else:

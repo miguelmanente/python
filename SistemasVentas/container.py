@@ -48,7 +48,7 @@ class Container(tk.Frame):
         frame1.pack()
         frame1.place(x=0, y=0, width=800, height=400)
 
-        ruta = self.rutas(r"SistemasVentas/icono/btnventas.png")
+        ruta = self.rutas(r"icono/btnventas.png")
         imagen_pil = Image.open(ruta)
         imagen_resize =imagen_pil.resize((50,50))
         imagen_tk = ImageTk.PhotoImage(imagen_resize)
@@ -58,7 +58,7 @@ class Container(tk.Frame):
         btnventas.image = imagen_tk
         btnventas.place(x=500, y=30, width=240, height=60)
 
-        ruta = self.rutas(r"SistemasVentas/icono/btninventario.png")
+        ruta = self.rutas(r"icono/btninventario.png")
         imagen_pil = Image.open(ruta)
         imagen_resize =imagen_pil.resize((50,50))
         imagen_tk = ImageTk.PhotoImage(imagen_resize)
@@ -68,7 +68,7 @@ class Container(tk.Frame):
         btninventario.image = imagen_tk
         btninventario.place(x=500, y=130, width=240, height=60)
 
-        ruta = self.rutas(r"SistemasVentas/imagenes/registradora.jpg")
+        ruta = self.rutas(r"imagenes/registradora.jpg")
         self.logo_image = Image.open(ruta)
         self.logo_image = self.logo_image.resize((280,280))
         self.logo_image = ImageTk.PhotoImage(self.logo_image)

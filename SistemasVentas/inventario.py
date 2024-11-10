@@ -7,7 +7,7 @@ import sys
 import os
 
 class Inventario(tk.Frame):
-    db_name ="SistemasVentas/database.db"
+    db_name ="database.db"
 
     def __init__(self, padre):
         super().__init__(padre)
@@ -66,7 +66,7 @@ class Inventario(tk.Frame):
         self.stock =ttk.Entry(labelframe, font="sans 14 bold")
         self.stock.place(x=140, y=260, width=240, height=40)
 
-        ruta = self.rutas(r"SistemasVentas/icono/carritoCompras.ico")
+        ruta = self.rutas(r"icono/carritoCompras.ico")
         imagen_pil = Image.open(ruta)
         imagen_resize =imagen_pil.resize((30,30))
         imagen_tk = ImageTk.PhotoImage(imagen_resize)
@@ -76,7 +76,7 @@ class Inventario(tk.Frame):
         boton_agregar.image = imagen_tk
         boton_agregar.place(x=80, y=340, width=240, height=40)
 
-        ruta = self.rutas(r"SistemasVentas/icono/EditarProductos.ico")
+        ruta = self.rutas(r"icono/EditarProductos.ico")
         imagen_pil = Image.open(ruta)
         imagen_resize =imagen_pil.resize((30,30))
         imagen_tk = ImageTk.PhotoImage(imagen_resize)
@@ -118,7 +118,7 @@ class Inventario(tk.Frame):
 
         self.mostrar()
 
-        ruta = self.rutas(r"SistemasVentas/icono/existencias.ico")
+        ruta = self.rutas(r"icono/existencias.ico")
         imagen_pil = Image.open(ruta)
         imagen_resize =imagen_pil.resize((30,30))
         imagen_tk = ImageTk.PhotoImage(imagen_resize)

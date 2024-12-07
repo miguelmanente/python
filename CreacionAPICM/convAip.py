@@ -15,7 +15,7 @@ def get_rates():
 
 def convert_currency(amount, from_currency, to_currency, rates):
     if from_currency != 'USD':
-        amount = amount / rates[from_currency]
+        amount = float(amount / rates[from_currency])
     return amount * rates[to_currency]
 
 def main():

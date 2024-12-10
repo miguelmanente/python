@@ -92,21 +92,5 @@ btnConvertir.grid(row=6, column=2, padx=5, pady=10, ipady=4 )
 btnLimpiar = Button(frameControles, text="Limpiar Datos", bg="#2E236C", fg="white", font="Arial 14 bold", command=limpiarDatos)
 btnLimpiar.grid(row=6, column=3, padx=5, pady=10, ipady=4 )
 
-
-
-
-   
-        
-    
-            
-            
-    
-
-
-
-    
-        
-      
-
 ventana.mainloop()
 

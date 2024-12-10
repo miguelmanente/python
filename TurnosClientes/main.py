@@ -11,7 +11,7 @@ import sqlite3
 root = Tk()
 root.config(width=1300, height=800)
 root.title("TURNOS - CLIENTES")
-root.resizable(0,0)
+#root.resizable(0,0)
 
 ############################  DEFINICIÓN DE VARIABLES UTILIZADAS EN LA APLICACIÓN #####################
 id = StringVar()
@@ -241,16 +241,25 @@ lblAsist = Label(frame1, text="ASISTENCIA")
 lblAsist.place(x=10, y=230)
 
 textAsist = Entry(frame1, textvariable=asistencia)
-textAsist.place(x=10, y=260, width=50)
+textAsist.place(x=30, y=260, width=50)
 
 
 ######### TREEVIEW PARA MOSTRAR LOS DATOS AGREGADOS - FRAME2  #############
 
-frame2 = Frame(root, width=750, height=690)
-frame2.pack(padx=1, pady=10, side="left", anchor="n")
+frame2 = Frame(root)
+frame2.place(x=370, y=10, width=690, height=680)
 
-tree = ttk.Treeview(frame2, height=10, columns=('#0','#1','#2','#3','#4','#5'))
-tree.place(x=10, width=740, height=735)
+scrol_y = ttk.Scrollbar(frame2, orient=VERTICAL)
+scrol_y.pack(side=RIGHT, fill=Y)
+
+scrol_x =ttk.Scrollbar(frame2, orient=HORIZONTAL)
+scrol_x.pack(side=BOTTOM, fill=X)
+
+tree = ttk.Treeview(frame2, columns=('ID','MES','DIA','FECHA','HORA','NOMBRES','ASISTENCIAS'), show ="headings", yscrollcommand=scrol_y.set, xscrollcommand=scrol_x.set)
+
+scrol_y.config(command=tree.yview)
+scrol_x.config(command=tree.xview)
+
 tree.column('#0', width=50)
 tree.heading('#0',text="ID", anchor=CENTER)
 tree.column('#1', width=100, anchor='center')
@@ -266,6 +275,8 @@ tree.heading('#5',text="NOMBRES", anchor=CENTER)
 tree.column('#6', width=100, anchor='center')
 tree.heading('#6',text="ASISTENCIA", anchor=CENTER)
 
+tree.pack(expand=True, fill=BOTH)
+
 def seleccionarUsandoClick(event):
     item = tree.identify('item',event.x,event.y)
     id.set(tree.item(item,"text"))
@@ -275,10 +286,6 @@ def seleccionarUsandoClick(event):
     hora.set(tree.item(item,"values")[3])
     nombres.set(tree.item(item,"values")[4])
     asistencia.set(tree.item(item,"values")[5])
-
-ejscrollbar= ttk.Scrollbar(root,orient=VERTICAL,command=tree.yview)
-ejscrollbar.pack(side='right',fill='y')
-tree.configure(yscrollcommand=ejscrollbar.set)
 
 tree.bind("<Double-1>", seleccionarUsandoClick)
 

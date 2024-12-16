@@ -72,7 +72,6 @@ lblTotal = Label(frameControles, text="Total Dinero: ", bg="#8967B3", fg="white"
 txtTotal = Entry(frameControles, bg="#D2E0FB", font="Arial 14 bold")
 
 #Posicionamientos de Controles
-#self.lblTitulo.pack()
 
 lblVendeMoneda.grid(row=3, column=0, padx=5, pady=10, ipady=4)
 txtVendeMoneda.grid(row=3, column=1, padx=5, pady=10, ipady=4)

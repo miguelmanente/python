@@ -111,7 +111,7 @@ for dic in diccionarios:        # Usando el bucle for - in podemos mostrar la li
 #------------------------------------------------------------------------------------------------------------------------------------------------
 
 #Creación de Listas de Diccionarios de mayor cantidad
-
+'''
 dic = []    #creación de lista vacía
 
 #Agregamos un primer diccionario a la lista dic
@@ -142,4 +142,37 @@ print(f"Total de diccionarios agregados son: {len(dic)}")
 
 #En pantalla se mostrará:
 #Total de diccionarios agregados son: 3
+'''
 
+#convertir un diccionario en JSON 
+
+#Convertir un diccionario a una cadena JSON (serialización)
+
+import json     #Importar el módulo JSON
+
+#d0 ={'nombre': 'Miguel', 'apellido':'Manente', 'edad': 64, 'profesion':'Profesor', 'estudio': 'Analista de Sistemas' } #Creación de un diccionario
+
+'''
+cadenaJson = json.dumps(d0)    #Convertirmos  un diccionarios a través dumps en una cadena JSON
+
+print(cadenaJson)    #mostramos el resultado de la conversión: 
+                    # En pantalla se vería: {"nombre": "Miguel", "apellido": "Manente", "edad": 64, "profesi\u00f3n": "Profesor", "estudio": "Analista de Sistemas"}
+
+#Convertir una cadena JSON a un diccionario (deserialización)
+
+d0 = json.loads(cadenaJson)
+
+print(d0)
+'''
+#Si deseamos guardar la cadena JSON en un archivo, hacemos lo siguiente:
+'''
+with open("datos.json", "w") as archivoJSON:
+    json.dump(d0, archivoJSON)
+'''
+
+#Leer JSON desde un archivo
+
+with open("datos.json", "r") as cadenaJSON:
+    d0 = json.load(cadenaJSON)
+
+print(d0)

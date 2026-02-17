@@ -58,9 +58,18 @@ except (ZeroDivisionError, TypeError):
 
 
 #Uso del FINALLY en las excepciones
+# try:
+#     x = 5 / 0
+# except:
+#     print("Entra en except, ha ocurrido una excepción")
+# finally:
+#     print("Entra en finally, se ejecuta siempre, haya o no haya excepción")
+
+# Ejemplo de excepciones con manejos de archivos
 try:
-    x = 5 / 0
-except:
-    print("Entra en except, ha ocurrido una excepción")
-finally:
-    print("Entra en finally, se ejecuta siempre, haya o no haya excepción")
+    with open('fichero.txt') as file:
+        read_data = file.read()
+# Capturamos una excepción concreta
+except OSError:
+    print('OSError. No se pudo abrir el archivo fichero.txt')
+    

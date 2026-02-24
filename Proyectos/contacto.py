@@ -40,3 +40,5 @@ class Contacto:
 
         self.db.ejecutar(sql, valores)
         self.db.guardar()
+    
+#print("METODOS DE CONTACTO:", dir(Contacto))

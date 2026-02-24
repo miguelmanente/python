@@ -4,7 +4,7 @@ class CRUD:
         self.db = db
         self.tabla = tabla
 
-    def crear(self, datos):
+    def agregar(self, datos):
         columnas = ', '.join(datos.keys())
         valores = ', '.join(['%s'] * len(datos))
 

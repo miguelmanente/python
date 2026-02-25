@@ -1,6 +1,6 @@
 import tkinter as tk
+from tkinter import ttk, messagebox
 from contacto import Contacto
-from tkinter import messagebox
 
 
 def vista_actualizar(frame):
@@ -8,49 +8,81 @@ def vista_actualizar(frame):
     for widget in frame.winfo_children():
         widget.destroy()
 
-    # GENERA FORMULARIO
     form = tk.Frame(frame)
-    form.grid(row=0, column=0)
-    form.grid_anchor("center")
+    form.pack(pady=20)
 
-    form.grid_columnconfigure(0, weight=1)
-    form.grid_columnconfigure(1, weight=1)
-
-    # TITULO
     tk.Label(form, text="Actualizar Contacto",
-             font=("Arial", 20)).grid(row=1, column=0, columnspan=2, pady=20)
+             font=("Arial", 20)).pack(pady=10)
 
-    # ID
-    tk.Label(form, text="ID:").grid(row=2, column=0, padx=10, pady=5, sticky="e")
-    id_contacto = tk.Entry(form)
-    id_contacto.grid(row=2, column=1, padx=10, pady=5, sticky="ew")
+    # 🔎 BUSCADOR
+    tk.Label(form, text="Buscar por apellido:").pack()
+    buscar_apellido = tk.Entry(form)
+    buscar_apellido.pack()
 
-    # NOMBRE
-    tk.Label(form, text="Nombre:").grid(row=3, column=0, padx=10, pady=5, sticky="e")
-    nombre = tk.Entry(form)
-    nombre.grid(row=3, column=1, padx=10, pady=5, sticky="ew")
+    tree = ttk.Treeview(form, columns=("ID", "Nombre", "Telefono"),
+                        show="headings", height=6)
 
-    # TELEFONO
-    tk.Label(form, text="Telefono:").grid(row=4, column=0, padx=10, pady=5, sticky="e")
-    telefono = tk.Entry(form)
-    telefono.grid(row=4, column=1, padx=10, pady=5, sticky="ew")
+    tree.heading("ID", text="ID")
+    tree.heading("Nombre", text="Nombre")
+    tree.heading("Telefono", text="Telefono")
 
-    # ACTUALIZA CONTACTO
-    def actualizar(id=id_contacto, nombre=nombre, telefono=telefono):
+    tree.pack(pady=10)
 
-        if id_contacto.get() == 0 or nombre.get() == "" or telefono.get() == "":
-            messagebox.showwarning("Campos vacíos", "Debe completar todos los campos")
+    # 🔎 FUNCION BUSCAR
+    def buscar():
+
+        for item in tree.get_children():
+            tree.delete(item)
+
+        c = Contacto()
+        resultados = c.buscar_por_apellido(buscar_apellido.get())
+
+        for fila in resultados:
+            tree.insert("", tk.END, values=fila)
+
+    tk.Button(form, text="Buscar", command=buscar).pack()
+
+    # 📥 ENTRIES PARA EDITAR
+    tk.Label(form, text="Nombre").pack()
+    entry_nombre = tk.Entry(form)
+    entry_nombre.pack()
+
+    tk.Label(form, text="Telefono").pack()
+    entry_telefono = tk.Entry(form)
+    entry_telefono.pack()
+
+    selected_id = tk.StringVar()
+
+    # 📌 CUANDO SELECCIONA EN TREEVIEW
+    def seleccionar(event):
+        item = tree.selection()
+        if item:
+            valores = tree.item(item)["values"]
+            selected_id.set(valores[0])
+
+            entry_nombre.delete(0, tk.END)
+            entry_telefono.delete(0, tk.END)
+
+            entry_nombre.insert(0, valores[1])
+            entry_telefono.insert(0, valores[2])
+
+    tree.bind("<<TreeviewSelect>>", seleccionar)
+
+    # 💾 ACTUALIZAR
+    def actualizar():
+
+        if selected_id.get() == "":
+            messagebox.showwarning("Error", "Seleccione un contacto")
             return
 
         c = Contacto()
-        c.actualizar(id_contacto.get(), nombre.get(), telefono.get())
+        c.actualizar(selected_id.get(),
+                     entry_nombre.get(),
+                     entry_telefono.get())
 
-        messagebox.showinfo("Actualizado", "Contacto actualizado correctamente")
+        messagebox.showinfo("Actualizado",
+                            "Contacto actualizado correctamente")
 
-        # LIMPIAR CAMPOS
-        id_contacto.delete(0, tk.END)
-        nombre.delete(0, tk.END)
-        telefono.delete(0, tk.END)
+        buscar()  # refresca lista
 
-    tk.Button(form, text="Actualizar",
-              command=actualizar).grid(row=5, column=0, columnspan=2, pady=10)
+    tk.Button(form, text="Actualizar", command=actualizar).pack(pady=10)

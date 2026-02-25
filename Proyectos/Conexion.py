@@ -3,6 +3,7 @@ import mysql.connector
 class ConexionDB:
 
     def __init__(self):
+
         self.conexion = mysql.connector.connect(
             host="localhost",
             user="root",
@@ -10,19 +11,18 @@ class ConexionDB:
             database="agenda"
         )
 
+        # 🔴 ESTO TE FALTABA
+        self.cursor = self.conexion.cursor()
+
     def ejecutar(self, sql, valores=None):
-        cursor = self.conexion.cursor()
 
-        if valores:
-            cursor.execute(sql, valores)
-        else:
-            cursor.execute(sql)
-
-        return cursor
+        self.cursor.execute(sql, valores or ())
 
     def guardar(self):
+
         self.conexion.commit()
 
     def cerrar(self):
+
         self.conexion.close()
 

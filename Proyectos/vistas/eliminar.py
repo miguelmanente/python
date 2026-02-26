@@ -9,28 +9,46 @@ def vista_eliminar(frame):
         widget.destroy()
 
     form = tk.Frame(frame)
-    form.pack(pady=20)
+    form.grid(row=0, column=0)
 
+    frame.grid_rowconfigure(0, weight=1)
+    frame.grid_columnconfigure(0, weight=1)
+
+    # 🟢 TITULO
     tk.Label(form, text="Eliminar Contacto",
-             font=("Arial", 20)).pack(pady=10)
+             font=("Arial", 20)).grid(row=0, column=0, columnspan=3, pady=10)
 
     # 🔎 BUSCADOR
-    tk.Label(form, text="Buscar por apellido:").pack()
+    tk.Label(form, text="Buscar por apellido:").grid(row=1, column=0, padx=5)
     buscar_apellido = tk.Entry(form)
-    buscar_apellido.pack()
+    buscar_apellido.grid(row=1, column=1, padx=5)
 
-    tree = ttk.Treeview(form,
-                        columns=("ID", "Nombre", "Telefono"),
-                        show="headings",
-                        height=6)
+    # BOTON BUSCAR
+    tk.Button(form, text="Buscar").grid(row=1, column=2, padx=5)
+
+    # 🧾 TREEVIEW
+    tree = ttk.Treeview(
+        form,
+        columns=("ID", "Nombre", "Telefono"),
+        show="headings",
+        height=6
+    )
 
     tree.heading("ID", text="ID")
     tree.heading("Nombre", text="Nombre")
     tree.heading("Telefono", text="Telefono")
 
-    tree.pack(pady=10)
+    tree.column("ID", width=50, anchor="center")
+    tree.column("Nombre", width=150)
+    tree.column("Telefono", width=120)
 
-  
+    tree.grid(row=2, column=0, columnspan=2, sticky="ew", pady=10)
+
+    # 📜 SCROLL
+    scroll = ttk.Scrollbar(form, orient="vertical", command=tree.yview)
+    scroll.grid(row=2, column=2, sticky="ns")
+
+    tree.configure(yscrollcommand=scroll.set)
 
     selected_id = tk.StringVar()
 
@@ -46,9 +64,10 @@ def vista_eliminar(frame):
         for fila in resultados:
             tree.insert("", tk.END, values=fila)
 
-    tk.Button(form, text="Buscar", command=buscar).pack()
+    # asignar comando ahora
+    tk.Button(form, text="Buscar", command=buscar).grid(row=1, column=2)
 
-    # 📌 SELECCIONAR FILA
+    # 📌 SELECCIONAR
     def seleccionar(event):
         item = tree.selection()
         if item:
@@ -78,10 +97,10 @@ def vista_eliminar(frame):
                                 "Contacto eliminado correctamente")
 
             selected_id.set("")
-            buscar()  # refresca lista
+            buscar()
 
     tk.Button(form,
               text="Eliminar",
               bg="red",
               fg="white",
-              command=eliminar).pack(pady=10)
+              command=eliminar).grid(row=3, column=0, columnspan=3, pady=10)

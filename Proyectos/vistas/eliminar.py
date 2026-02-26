@@ -3,7 +3,7 @@ from tkinter import ttk, messagebox
 from contacto import Contacto
 
 
-def vista_eliminar(frame):
+def vista_eliminar(frame, contacto):
 
     for widget in frame.winfo_children():
         widget.destroy()
@@ -11,42 +11,50 @@ def vista_eliminar(frame):
     form = tk.Frame(frame)
     form.grid(row=0, column=0)
 
-    frame.grid_rowconfigure(0, weight=1)
-    frame.grid_columnconfigure(0, weight=1)
+    form.grid_columnconfigure(0, weight=1)
+    form.grid_columnconfigure(1, weight=1)
 
     # 🟢 TITULO
     tk.Label(form, text="Eliminar Contacto",
              font=("Arial", 20)).grid(row=0, column=0, columnspan=3, pady=10)
+    
+    #FRAME BUSCADOR
+    frame_buscar = tk.Frame(form)
+    frame_buscar.grid(row=1, column=0, columnspan=3, pady=10)
 
     # 🔎 BUSCADOR
-    tk.Label(form, text="Buscar por apellido:").grid(row=1, column=0, padx=5)
-    buscar_apellido = tk.Entry(form)
+    tk.Label(frame_buscar, text="Buscar por apellido:").grid(row=1, column=0, padx=5)
+    buscar_apellido = tk.Entry(frame_buscar)
     buscar_apellido.grid(row=1, column=1, padx=5)
 
-    # BOTON BUSCAR
-    tk.Button(form, text="Buscar").grid(row=1, column=2, padx=5)
+    # 🧾 FRAME TREEVIEW + SCROLL
+    frame_tree = ttk.Frame(form)
+    frame_tree.grid(row=2, column=0, columnspan=2, sticky="nsew", pady=10)
+
+    frame_tree.grid_columnconfigure(0, weight=1)
+    frame_tree.grid_rowconfigure(0, weight=1)
 
     # 🧾 TREEVIEW
     tree = ttk.Treeview(
-        form,
+        frame_tree,   # ✅ AHORA SI
         columns=("ID", "Nombre", "Telefono"),
         show="headings",
-        height=6
+        height=8
     )
 
     tree.heading("ID", text="ID")
     tree.heading("Nombre", text="Nombre")
     tree.heading("Telefono", text="Telefono")
 
-    tree.column("ID", width=50, anchor="center")
-    tree.column("Nombre", width=150)
-    tree.column("Telefono", width=120)
+    tree.column("ID", width=80, anchor="center")
+    tree.column("Nombre", width=300, anchor="center")
+    tree.column("Telefono", width=250, anchor="center")
 
-    tree.grid(row=2, column=0, columnspan=2, sticky="ew", pady=10)
+    tree.grid(row=0, column=0, sticky="nsew")
 
-    # 📜 SCROLL
-    scroll = ttk.Scrollbar(form, orient="vertical", command=tree.yview)
-    scroll.grid(row=2, column=2, sticky="ns")
+    # 📜 SCROLLBAR
+    scroll = ttk.Scrollbar(frame_tree, orient="vertical", command=tree.yview)
+    scroll.grid(row=0, column=1, sticky="ns")
 
     tree.configure(yscrollcommand=scroll.set)
 
@@ -58,14 +66,15 @@ def vista_eliminar(frame):
         for item in tree.get_children():
             tree.delete(item)
 
-        c = Contacto()
-        resultados = c.buscar_por_apellido(buscar_apellido.get())
+        
+        resultados = contacto.buscar_por_apellido(buscar_apellido.get())
 
         for fila in resultados:
             tree.insert("", tk.END, values=fila)
 
-    # asignar comando ahora
-    tk.Button(form, text="Buscar", command=buscar).grid(row=1, column=2)
+    
+    # BOTON BUSCAR
+    tk.Button(frame_buscar, text="Buscar", command=buscar).grid(row=1, column=3, padx=5)
 
     # 📌 SELECCIONAR
     def seleccionar(event):
@@ -88,10 +97,8 @@ def vista_eliminar(frame):
             "¿Está seguro que desea eliminar el contacto?"
         )
 
-        if confirmar:
-
-            c = Contacto()
-            c.eliminar(selected_id.get())
+        if confirmar:   
+            contacto.eliminar(selected_id.get())
 
             messagebox.showinfo("Eliminado",
                                 "Contacto eliminado correctamente")

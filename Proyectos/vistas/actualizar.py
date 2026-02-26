@@ -3,7 +3,7 @@ from tkinter import ttk, messagebox
 from contacto import Contacto
 
 
-def vista_actualizar(frame):
+def vista_actualizar(frame, contacto):
 
     for widget in frame.winfo_children():
         widget.destroy()
@@ -34,8 +34,7 @@ def vista_actualizar(frame):
         for item in tree.get_children():
             tree.delete(item)
 
-        c = Contacto()
-        resultados = c.buscar_por_apellido(buscar_apellido.get())
+        resultados = contacto.buscar_por_apellido(buscar_apellido.get())
 
         for fila in resultados:
             tree.insert("", tk.END, values=fila)
@@ -75,8 +74,7 @@ def vista_actualizar(frame):
             messagebox.showwarning("Error", "Seleccione un contacto")
             return
 
-        c = Contacto()
-        c.actualizar(selected_id.get(),
+        contacto.actualizar(selected_id.get(),
                      entry_nombre.get(),
                      entry_telefono.get())
 

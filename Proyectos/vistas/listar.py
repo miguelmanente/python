@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from contacto import Contacto
 
-def vista_listar(frame):
+def vista_listar(frame, contacto):
 
     # Limpia el contenido anterior
     for widget in frame.winfo_children():
@@ -20,8 +20,7 @@ def vista_listar(frame):
     tabla.pack(fill="both", expand=True)
 
     # OBTENER DATOS
-    c = Contacto()
-    datos = c.leer()
+    datos = contacto.leer()
 
     # INSERTAR EN TABLA
     for fila in datos:

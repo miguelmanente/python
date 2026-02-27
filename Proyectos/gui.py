@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from contacto import Contacto
+from tkinter import messagebox 
 from vistas.agregar import vista_agregar
 from vistas.listar import vista_listar
 from vistas.actualizar import vista_actualizar
@@ -11,6 +12,15 @@ from vistas.buscar import vista_buscar
 contacto = Contacto()
 
 ventana = tk.Tk()
+
+#desconectacta la BD y cierra la aplicación
+def al_cerrar():
+    if messagebox.askokcancel("Salir", "¿Desea salir del sistema?"):
+        contacto.cerrar_conexion()
+        ventana.destroy()
+
+ventana.protocol("WM_DELETE_WINDOW", al_cerrar)
+
 ventana.title("AGENDA DE CONTACTOS")
 menu_lateral = tk.Frame(ventana)
 contenido = tk.Frame(ventana)
@@ -43,11 +53,11 @@ ventana.config(menu=menu)
 
 
 def mostrar_agregar():
-    vista_agregar(contenido)
+    vista_agregar(contenido, contacto)
 
 
 def mostrar_listar():
-    vista_listar(contenido)
+    vista_listar(contenido, contacto)
 
 def mostrar_actualizar():
     vista_actualizar(contenido, contacto)
@@ -56,7 +66,7 @@ def mostrar_eliminar():
     vista_eliminar(contenido, contacto)
 
 def mostrar_buscar():
-    vista_buscar(contenido)
+    vista_buscar(contenido, contacto)
 
 barra_menu = tk.Menu(ventana)
 
@@ -66,9 +76,12 @@ menu_contactos.add_command(label="Agregar", command=mostrar_agregar)
 menu_contactos.add_command(label="Listar", command=mostrar_listar)
 
 menu_contactos.add_command(label="Actualizar", command=mostrar_actualizar)
-#menu_contactos.add_command(label="Actualizar",command=lambda: vista_actualizar(frame, conexion))
 
 menu_contactos.add_command(label="Eliminar", command=mostrar_eliminar)
+
+menu_contactos.add_command(label="Buscar", command=mostrar_buscar)
+
+menu_contactos.add_command(label="Salir", command=al_cerrar)
 
 barra_menu.add_cascade(label="Contactos", menu=menu_contactos)
 

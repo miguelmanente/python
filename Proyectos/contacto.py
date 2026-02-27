@@ -14,12 +14,17 @@ class Contacto:
         self.db.ejecutar(sql, valores)
         self.db.guardar()
 
+    # def leer(self):
+
+    #     sql = "SELECT * FROM personas"
+    #     cursor = self.db.ejecutar(sql)
+    #     return self.db.cursor.fetchall()
+
     def leer(self):
-
-        sql = "SELECT * FROM personas"
-        cursor = self.db.ejecutar(sql)
+        sql = "SELECT * FROM personas ORDER BY nombre ASC"
+        self.db.cursor.execute(sql)
         return self.db.cursor.fetchall()
-
+  
     # def leer_por_id(self, id):
     #     sql = f"SELECT * FROM personas WHERE id = %s"
     #     cursor = self.db.ejecutar(sql, (id,))
@@ -53,3 +58,5 @@ class Contacto:
        self.db.conexion.commit()
 
 
+    def cerrar_conexion(self):
+        self.db.cerrar()

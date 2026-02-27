@@ -1,4 +1,6 @@
 import mysql.connector
+import tkinter as tk
+from tkinter import messagebox 
 
 class ConexionDB:
 
@@ -23,6 +25,9 @@ class ConexionDB:
         self.conexion.commit()
 
     def cerrar(self):
-
-        self.conexion.close()
+        if self.cursor:
+            self.cursor.close()
+        if self.conexion:
+            self.conexion.close()
+            messagebox.showinfo("Conexión a la base de datos", "Conexión cerrada correctamente")
 

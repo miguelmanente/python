@@ -1,0 +1,18 @@
+Automóvil
+Agua Mineral
+Ahorros Mensuales
+Articulos de Belleza
+Supermercado
+Carnicería
+Verdulería
+Panadería
+Ferretería
+Nafta
+Farmacia
+Pollería
+Compra de ropa
+Compra por Mercado libre
+Médico
+Estacionamiento
+Peluquería
+

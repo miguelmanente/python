@@ -1,23 +1,25 @@
 import tkinter as tk
 from tkinter import ttk
-from tkinter import messagebox 
+from tkinter import messagebox
 from contacto import Contacto
 from vistas.agregar import vista_agregar
-# from vistas.listar import vista_listar
-# from vistas.actualizar import vista_actualizar
-# from vistas.eliminar import vista_eliminar
-# from vistas.buscar import vista_buscar
+from vistas.listar import vista_listar
+from vistas.actualizar import vista_actualizar
+from vistas.eliminar import vista_eliminar
+from vistas.buscar import vista_buscar
 
 
 contacto = Contacto()
 
 ventana = tk.Tk()
 
-#desconectacta la BD y cierra la aplicación
+
+# desconectacta la BD y cierra la aplicación
 def al_cerrar():
     if messagebox.askokcancel("Salir", "¿Desea salir del sistema?"):
         contacto.cerrar_conexion()
         ventana.destroy()
+
 
 ventana.protocol("WM_DELETE_WINDOW", al_cerrar)
 
@@ -59,14 +61,18 @@ def mostrar_agregar():
 def mostrar_listar():
     vista_listar(contenido, contacto)
 
+
 def mostrar_actualizar():
     vista_actualizar(contenido, contacto)
+
 
 def mostrar_eliminar():
     vista_eliminar(contenido, contacto)
 
+
 def mostrar_buscar():
     vista_buscar(contenido, contacto)
+
 
 barra_menu = tk.Menu(ventana)
 

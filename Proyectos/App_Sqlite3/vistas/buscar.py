@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from Proyectos.App_Sqlite3.contacto import Contacto
+from contacto import Contacto
 
 
 def vista_buscar(frame, contacto):

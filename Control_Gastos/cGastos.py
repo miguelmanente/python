@@ -3,6 +3,23 @@ from tkinter import ttk
 import sqlite3
 from datetime import datetime
 
+def formatear_moneda(valor):
+    return "{:,.2f}".format(valor).replace(",", "X").replace(".", ",").replace("X", ".")
+
+def formatear_entry(entry):
+    try:
+        valor = float(entry.get().replace(".", "").replace(",", "."))
+        entry.delete(0, tk.END)
+        entry.insert(0, formatear_moneda(valor))
+    except:
+        pass
+
+def obtener_valor(entry):
+    try:
+        return float(entry.get().replace(".", "").replace(",", "."))
+    except:
+        return 0
+
 # =========================
 # CREAR BASE DE DATOS
 # =========================
@@ -18,6 +35,79 @@ def crear_bd():
             monto REAL
         )
     """)
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS configuracion_mensual (
+            mes INTEGER,
+            anio INTEGER,
+            ingreso REAL,
+            gastos_fijos REAL,
+            PRIMARY KEY (mes, anio)
+        )
+    """)
+    
+    cargar_configuracion_mes()
+    conexion.commit()
+    conexion.close()
+
+#==============================
+# Cargar configuración mensual
+#==============================
+def cargar_configuracion_mes():
+    mes = datetime.now().month
+    anio = datetime.now().year
+
+    conexion = sqlite3.connect("gastos.db")
+    cursor = conexion.cursor()
+
+    cursor.execute("""
+        SELECT ingreso, gastos_fijos 
+        FROM configuracion_mensual 
+        WHERE mes=? AND anio=?
+    """, (mes, anio))
+
+    datos = cursor.fetchone()
+    conexion.close()
+
+    if datos:
+        ingreso, gastos_fijos = datos
+
+        entry_ingreso.delete(0, tk.END)
+        entry_ingreso.insert(0, formatear_moneda(ingreso))
+
+        entry_gastos_fijos.delete(0, tk.END)
+        entry_gastos_fijos.insert(0, formatear_moneda(gastos_fijos))
+
+        calcular_gasto_total()
+        calcular_saldo()
+
+#==============================
+# Guardar configuración mensual
+#==============================
+def guardar_configuracion_mes():
+    mes = datetime.now().month
+    anio = datetime.now().year
+
+    # try:
+    #     ingreso = float(entry_ingreso.get())
+    # except ValueError:
+    #     ingreso = 0
+
+    # try:
+    #     gastos_fijos = float(entry_gastos_fijos.get())
+    # except ValueError:
+    #     gastos_fijos = 0
+    ingreso = obtener_valor(entry_ingreso)
+    gastos_fijos = obtener_valor(entry_gastos_fijos)
+    
+    conexion = sqlite3.connect("gastos.db")
+    cursor = conexion.cursor()
+
+    cursor.execute("""
+        INSERT OR REPLACE INTO configuracion_mensual
+        (mes, anio, ingreso, gastos_fijos)
+        VALUES (?, ?, ?, ?)
+    """, (mes, anio, ingreso, gastos_fijos))
 
     conexion.commit()
     conexion.close()
@@ -49,7 +139,9 @@ def mostrar_gastos():
     datos = cursor.fetchall()
 
     for fila in datos:
-        tree.insert("", tk.END, values=fila)
+        fecha, categoria, monto = fila
+        monto_formateado = formatear_moneda(monto)
+        tree.insert("", tk.END, values=(fecha, categoria, monto_formateado))
 
     conexion.close()
 
@@ -72,7 +164,8 @@ def calcular_total_dia():
 
     entry_total_dia.config(state="normal")
     entry_total_dia.delete(0, tk.END)
-    entry_total_dia.insert(0, f"{total:.2f}")
+    #entry_total_dia.insert(0, f"{total:.2f}")
+    entry_total_dia.insert(0, formatear_moneda(total))
     entry_total_dia.config(state="readonly")
     calcular_gasto_total()
 
@@ -81,7 +174,8 @@ def calcular_total_dia():
 # =========================
 def calcular_gasto_total():
     try:
-        gastos_fijos = float(entry_gastos_fijos.get())
+        #gastos_fijos = float(entry_gastos_fijos.get())
+        gastos_fijos = obtener_valor(entry_gastos_fijos)
     except ValueError:
         gastos_fijos = 0
 
@@ -94,19 +188,25 @@ def calcular_gasto_total():
 
     entry_gasto_total.config(state="normal")
     entry_gasto_total.delete(0, tk.END)
-    entry_gasto_total.insert(0, f"{total:.2f}")
+    #entry_gasto_total.insert(0, f"{total:.2f}")
+    entry_gasto_total.insert(0, formatear_moneda(total))
     entry_gasto_total.config(state="readonly")
     calcular_saldo()
 
-
+# =========================
+# CALCULAR SALDO DISPONIBLE
+# =========================
 def calcular_saldo():
     try:
-        ingreso = float(entry_ingreso.get())
+        #ingreso = float(entry_ingreso.get())
+        ingreso = obtener_valor(entry_ingreso)
+
     except ValueError:
         ingreso = 0
 
     try:
-        gasto_total = float(entry_gasto_total.get())
+        #gasto_total = float(entry_gasto_total.get())
+        gasto_total = obtener_valor(entry_gasto_total)
     except ValueError:
         gasto_total = 0
 
@@ -114,7 +214,8 @@ def calcular_saldo():
 
     entry_saldo.config(state="normal")
     entry_saldo.delete(0, tk.END)
-    entry_saldo.insert(0, f"{saldo:.2f}")
+    #entry_saldo.insert(0, f"{saldo:.2f}")
+    entry_saldo.insert(0, formatear_moneda(saldo))
     entry_saldo.config(state="readonly")
 
 # =========================
@@ -147,7 +248,10 @@ def guardar_gasto():
     mostrar_gastos()
     calcular_total_dia()
 
+
   
+
+
 # =========================
 # VENTANA
 # =========================
@@ -204,7 +308,13 @@ lbl_gastos_fijos.grid(row=4, column=0, padx=10, pady=10, sticky="e")
 
 entry_gastos_fijos = tk.Entry(frame, width=32)
 entry_gastos_fijos.grid(row=4, column=1, padx=10, pady=10, sticky="w")
-entry_gastos_fijos.bind("<KeyRelease>", lambda e: calcular_gasto_total())
+#entry_gastos_fijos.bind("<KeyRelease>", lambda e: calcular_gasto_total())
+entry_gastos_fijos.bind(
+    "<KeyRelease>", 
+    lambda e: (guardar_configuracion_mes(), calcular_gasto_total())
+)
+
+entry_gastos_fijos.bind("<FocusOut>", lambda e: formatear_entry(entry_gastos_fijos))
 
 
 # =========================
@@ -224,7 +334,11 @@ lbl_ingreso.grid(row=6, column=0, padx=10, pady=10, sticky="e")
 
 entry_ingreso = tk.Entry(frame, width=32)
 entry_ingreso.grid(row=6, column=1, padx=10, pady=10, sticky="w")
-entry_ingreso.bind("<KeyRelease>", lambda e: calcular_saldo())
+#entry_ingreso.bind("<KeyRelease>", lambda e: calcular_saldo())
+entry_ingreso.bind(
+    "<KeyRelease>", 
+    lambda e: (guardar_configuracion_mes(), calcular_saldo()))
+entry_ingreso.bind("<FocusOut>", lambda e: formatear_entry(entry_ingreso))
 
 # =========================
 # SALDO DISPONIBLE
@@ -250,6 +364,9 @@ tree.grid(row=0, column=0, sticky="nsew")
 tree.heading("Fecha", text="Fecha")
 tree.heading("Categoria", text="Categoría")
 tree.heading("Monto", text="Monto")
+tree.column("Fecha", anchor="center", width=100)
+tree.column("Categoria", anchor="w", width=200)
+tree.column("Monto", anchor="e", width=120)
 
 scroll = ttk.Scrollbar(frame_tabla, orient="vertical", command=tree.yview)
 scroll.grid(row=0, column=1, sticky="ns")

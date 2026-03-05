@@ -4,6 +4,9 @@ from database import crear_tablas, obtener_categorias
 from categorias import abrir_ventana_categorias
 from gastos import agregar_gasto, obtener_gastos, calcular_total_gastos
 
+def formatear_monto(valor):
+    return f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
 crear_tablas()
 
 ventana = tk.Tk()
@@ -20,7 +23,7 @@ menu_bar.add_cascade(label="Configuración", menu=menu_config)
 
 menu_config.add_command(
     label="Administrar Categorías",
-    command=lambda: abrir_ventana_categorias(ventana, refrescar_combobox)
+    command=lambda: abrir_ventana_categorias(ventana, combo_categoria)
 )
 
 # ----------- FORMULARIO GASTOS -----------
@@ -37,19 +40,38 @@ frame_principal.rowconfigure(0, weight=1)
 frame_form = tk.Frame(frame_principal)
 frame_form.grid(row=0, column=0, sticky="nsew", padx=10)
 
+# Configurar expansión treeview a la derecha
+frame_tabla = tk.Frame(frame_principal)
+frame_tabla.grid(row=0, column=1, sticky="nsew", padx=10)
+
+frame_tabla.rowconfigure(0, weight=1)
+frame_tabla.columnconfigure(0, weight=1)
+
+#Treeview para mostrar gastos
+tree = ttk.Treeview(
+    frame_tabla,
+    columns=("fecha", "descripcion", "categoria", "monto"),
+    show="headings"
+)
+
+tree.heading("fecha", text="Fecha")
+tree.heading("descripcion", text="Descripción")
+tree.heading("categoria", text="Categoría")
+tree.heading("monto", text="Monto")
+
+tree.column("fecha", width=80)
+tree.column("descripcion", width=150)
+tree.column("categoria", width=100)
+tree.column("monto", width=80, anchor="e")  # alineado derecha
+
+#Scrollbar para el treeview
+scrollbar = ttk.Scrollbar(frame_tabla, orient="vertical", command=tree.yview)
+tree.configure(yscrollcommand=scrollbar.set)
+
+scrollbar.grid(row=0, column=1, sticky="ns")
+
+tree.grid(row=0, column=0, sticky="nsew")
 frame_form.columnconfigure(1, weight=1)
-
-
-# Combobox de categorías
-combo_categoria = ttk.Combobox(frame_form)
-combo_categoria.grid(row=0, column=1, sticky="ew", pady=8)
-#frame_form.columnconfigure(0, weight=1)
-#frame_form.rowconfigure(0, weight=1)
-
-def refrescar_combobox():
-    combo_categoria["values"] = obtener_categorias()
-
-refrescar_combobox()
 
 tk.Label(frame_form, text="Fecha").grid(row=1, column=0, sticky="w", pady=8)
 entry_fecha = tk.Entry(frame_form)
@@ -97,6 +119,8 @@ def agregar():
 
         agregar_gasto(fecha, descripcion, categoria, monto)
 
+        cargar_treeview()
+
         print("Total actual:", calcular_total_gastos())
 
         entry_descripcion.delete(0, tk.END)
@@ -107,6 +131,24 @@ def agregar():
 
 tk.Button(frame_form, text="Agregar Gasto", command=agregar)\
     .grid(row=5, column=0, columnspan=2, pady=20)
+
+
+from gastos import obtener_gastos
+
+def cargar_treeview():
+    for fila in tree.get_children():
+        tree.delete(fila)
+
+    for gasto in obtener_gastos():
+        fecha, descripcion, categoria, monto = gasto[1:]
+        monto_formateado = formatear_monto(monto)
+
+        tree.insert(
+            "",
+            "end",
+            values=(fecha, descripcion, categoria, monto_formateado)
+    )
+
 
 
 ventana.mainloop()

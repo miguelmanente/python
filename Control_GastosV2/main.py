@@ -1,11 +1,19 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
 from database import crear_tablas, obtener_categorias
 from categorias import abrir_ventana_categorias
 from gastos import agregar_gasto, obtener_gastos, calcular_total_gastos
+from ingresos import ventana_ingresos
+from ingresos import total_ingresos, total_gastos
 
 def formatear_monto(valor):
     return f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+
+def salir():
+    if messagebox.askyesno("Salir", "¿Desea cerrar la aplicación?"):
+        ventana.destroy()
 
 crear_tablas()
 
@@ -18,6 +26,14 @@ ventana.minsize(700, 500)
 menu_bar = tk.Menu(ventana)
 ventana.config(menu=menu_bar)
 
+
+menu_archivo = tk.Menu(menu_bar, tearoff=0)
+menu_bar.add_cascade(label="Archivo", menu=menu_archivo)
+
+menu_archivo.add_command(label="Salir", command=salir)
+ventana.config(menu=menu_bar)
+
+
 menu_config = tk.Menu(menu_bar, tearoff=0)
 menu_bar.add_cascade(label="Configuración", menu=menu_config)
 
@@ -25,6 +41,15 @@ menu_config.add_command(
     label="Administrar Categorías",
     command=lambda: abrir_ventana_categorias(ventana, combo_categoria)
 )
+
+menu_movimientos = tk.Menu(menu_bar, tearoff=0)
+menu_bar.add_cascade(label="Movimientos", menu=menu_movimientos)
+
+menu_movimientos.add_command(
+    label="Ingresos",
+    command=ventana_ingresos
+)
+
 
 # ----------- FORMULARIO GASTOS -----------
 ventana.columnconfigure(0, weight=1)
@@ -46,6 +71,24 @@ frame_tabla.grid(row=0, column=1, sticky="nsew", padx=10)
 
 frame_tabla.rowconfigure(0, weight=1)
 frame_tabla.columnconfigure(0, weight=1)
+
+frame_resumen = tk.LabelFrame(frame_tabla, text="Resumen financiero")
+frame_resumen.grid(row=1, column=0, sticky="ew", pady=10)
+
+tk.Label(frame_resumen, text="Ingresos del mes").grid(row=0, column=0, sticky="w")
+#lbl_ingresos = tk.Label(frame_resumen, text="$ 0", font=("Arial", 11, "bold"))
+lbl_ingresos = tk.Label(frame_resumen, text="$ 0", font=("Arial", 11, "bold"), anchor="e")
+lbl_ingresos.grid(row=0, column=1, sticky="e")
+
+tk.Label(frame_resumen, text="Gastos del mes").grid(row=1, column=0, sticky="w")
+#lbl_gastos = tk.Label(frame_resumen, text="$ 0", font=("Arial", 11, "bold"))
+lbl_gastos = tk.Label(frame_resumen, text="$ 0", font=("Arial", 11, "bold"), anchor="e")
+lbl_gastos.grid(row=1, column=1, sticky="e")
+
+tk.Label(frame_resumen, text="Saldo disponible").grid(row=2, column=0, sticky="w")
+#lbl_saldo = tk.Label(frame_resumen, text="$ 0", font=("Arial", 13, "bold"))
+lbl_saldo = tk.Label(frame_resumen, text="$ 0", font=("Arial", 13, "bold"), anchor="e")
+lbl_saldo.grid(row=2, column=1, sticky="e")
 
 #Treeview para mostrar gastos
 tree = ttk.Treeview(
@@ -103,28 +146,21 @@ from gastos import agregar_gasto, calcular_total_gastos
 def agregar():
     try:
         fecha = entry_fecha.get()
-        descripcion = entry_descripcion.get().strip()
+        descripcion = entry_descripcion.get()
         categoria = combo_categoria.get()
-        monto_texto = entry_monto.get().strip()
-
-        if monto_texto == "":
-            print("Debe ingresar un monto")
-            return
-
-        monto_texto = monto_texto.replace(",", ".")
-        monto = float(monto_texto)
-
-        if descripcion == "":
-            descripcion = categoria
+        monto = float(entry_monto.get())
 
         agregar_gasto(fecha, descripcion, categoria, monto)
 
         cargar_treeview()
 
-        print("Total actual:", calcular_total_gastos())
+        actualizar_resumen()
 
         entry_descripcion.delete(0, tk.END)
         entry_monto.delete(0, tk.END)
+
+    except ValueError:
+        print("Monto inválido")
 
     except ValueError:
         print("Monto inválido")
@@ -148,6 +184,27 @@ def cargar_treeview():
             "end",
             values=(fecha, descripcion, categoria, monto_formateado)
     )
+
+def actualizar_resumen():
+
+    ingresos = total_ingresos()
+    gastos = total_gastos()
+
+    saldo = ingresos - gastos
+
+    lbl_ingresos.config(text=f"$ {formatear_monto(ingresos)}")
+    lbl_gastos.config(text=f"$ {formatear_monto(gastos)}")
+    lbl_saldo.config(text=f"$ {formatear_monto(saldo)}")
+
+      # Colores automáticos del saldo
+    if saldo > 0:
+        lbl_saldo.config(fg="green")
+    elif saldo < 0:
+        lbl_saldo.config(fg="red")
+    else:
+        lbl_saldo.config(fg="black")
+
+actualizar_resumen()
 
 
 

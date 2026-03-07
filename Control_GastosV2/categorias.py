@@ -1,4 +1,5 @@
 import tkinter as tk
+import sqlite3
 from tkinter import messagebox
 from database import cursor, conn, obtener_categorias
 
@@ -7,7 +8,7 @@ def abrir_ventana_categorias(ventana_principal, refrescar_combobox):
 
     ventana_cat = tk.Toplevel(ventana_principal)
     ventana_cat.title("Administrar Categorías")
-    ventana_cat.geometry("350x400")
+    ventana_cat.geometry("350x500")
 
     listbox = tk.Listbox(ventana_cat)
     listbox.pack(pady=10, fill="both", expand=True)
@@ -22,18 +23,23 @@ def abrir_ventana_categorias(ventana_principal, refrescar_combobox):
 
     def agregar():
         nombre = entry.get().strip()
-        if nombre:
-            try:
-                cursor.execute(
-                    "INSERT INTO categorias (nombre) VALUES (?)",
-                    (nombre,)
-                )
-                conn.commit()
-                cargar()
-                refrescar_combobox()
-                entry.delete(0, tk.END)
-            except:
-                messagebox.showerror("Error", "Categoría ya existe")
+
+        if nombre == "":
+            return
+
+        try:
+            cursor.execute(
+                "INSERT INTO categorias (nombre) VALUES (?)",
+                (nombre,)
+            )
+            conn.commit()
+
+            cargar()
+            refrescar_combobox["values"] = obtener_categorias()
+            entry.delete(0, tk.END)
+
+        except sqlite3.IntegrityError:
+            messagebox.showerror("Error", "La categoría ya existe")
 
     def eliminar():
         seleccion = listbox.curselection()
@@ -63,9 +69,14 @@ def abrir_ventana_categorias(ventana_principal, refrescar_combobox):
                 entry.delete(0, tk.END)
             except:
                 messagebox.showerror("Error", "Categoría ya existe")
+    def salir():
+        if messagebox.askyesno("Salir", "¿Desea la ventana Categorias?"):
+            ventana_cat.destroy()
+
 
     tk.Button(ventana_cat, text="Agregar", command=agregar).pack(pady=3)
     tk.Button(ventana_cat, text="Modificar", command=modificar).pack(pady=3)
     tk.Button(ventana_cat, text="Eliminar", command=eliminar).pack(pady=3)
+    tk.Button(ventana_cat, text="Salir", command=salir).pack(pady=3)
 
     cargar()

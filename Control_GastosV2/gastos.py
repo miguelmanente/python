@@ -1,5 +1,8 @@
 from database import cursor, conn
 
+from database import conn
+
+
 
 def agregar_gasto(fecha, descripcion, categoria, monto):
     cursor.execute(
@@ -18,3 +21,30 @@ def calcular_total_gastos():
     cursor.execute("SELECT SUM(monto) FROM gastos")
     resultado = cursor.fetchone()[0]
     return resultado if resultado else 0
+
+def eliminar_gasto(id_gasto):
+
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "DELETE FROM gastos WHERE id=?",
+        (id_gasto,)
+    )
+
+    conn.commit()
+
+
+def actualizar_gasto(id_gasto, fecha, descripcion, categoria, monto):
+
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        UPDATE gastos
+        SET fecha=?, descripcion=?, categoria=?, monto=?
+        WHERE id=?
+        """,
+        (fecha, descripcion, categoria, monto, id_gasto)
+    )
+
+    conn.commit()

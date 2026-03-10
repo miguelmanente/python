@@ -3,9 +3,12 @@ from tkinter import ttk
 from tkinter import messagebox
 from database import crear_tablas, obtener_categorias
 from categorias import abrir_ventana_categorias
-from gastos import agregar_gasto, obtener_gastos, calcular_total_gastos
+from gastos import agregar_gasto, obtener_gastos, calcular_total_gastos, eliminar_gasto
+from gastos import actualizar_gasto
+#from gastos import agregar_gasto, obtener_gastos, calcular_total_gastos
 from ingresos import ventana_ingresos
 from ingresos import total_ingresos, total_gastos
+
 
 def formatear_monto(valor):
     return f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
@@ -93,7 +96,7 @@ lbl_saldo.grid(row=2, column=1, sticky="e")
 #Treeview para mostrar gastos
 tree = ttk.Treeview(
     frame_tabla,
-    columns=("fecha", "descripcion", "categoria", "monto"),
+    columns=("id","fecha", "descripcion", "categoria", "monto"),
     show="headings"
 )
 
@@ -106,6 +109,7 @@ tree.column("fecha", width=80)
 tree.column("descripcion", width=150)
 tree.column("categoria", width=100)
 tree.column("monto", width=80, anchor="e")  # alineado derecha
+tree.column("id", width=0, stretch=False)
 
 #Scrollbar para el treeview
 scrollbar = ttk.Scrollbar(frame_tabla, orient="vertical", command=tree.yview)
@@ -115,6 +119,8 @@ scrollbar.grid(row=0, column=1, sticky="ns")
 
 tree.grid(row=0, column=0, sticky="nsew")
 frame_form.columnconfigure(1, weight=1)
+
+
 
 tk.Label(frame_form, text="Fecha").grid(row=1, column=0, sticky="w", pady=8)
 entry_fecha = tk.Entry(frame_form)
@@ -140,6 +146,21 @@ entry_monto = tk.Entry(frame_form)
 entry_monto.grid(row=4, column=1, sticky="ew", pady=8)
 
 #print("Total gastos:", calcular_total_gastos())
+
+def cargar_treeview():
+
+    for fila in tree.get_children():
+        tree.delete(fila)
+
+    for gasto in obtener_gastos():
+
+        id_gasto, fecha, descripcion, categoria, monto = gasto
+
+        tree.insert(
+            "",
+            "end",
+            values=(id_gasto, fecha, descripcion, categoria, formatear_monto(monto))
+        )
 
 from gastos import agregar_gasto, calcular_total_gastos
 
@@ -168,22 +189,36 @@ def agregar():
 tk.Button(frame_form, text="Agregar Gasto", command=agregar)\
     .grid(row=5, column=0, columnspan=2, pady=20)
 
+def seleccionar_gasto(event):
+
+    global id_gasto_seleccionado
+
+    item = tree.selection()
+
+    if not item:
+        return
+
+    valores = tree.item(item[0], "values")
+
+    id_gasto_seleccionado = valores[0]
+
+    entry_fecha.delete(0, tk.END)
+    entry_fecha.insert(0, valores[1])
+
+    entry_descripcion.delete(0, tk.END)
+    entry_descripcion.insert(0, valores[2])
+
+    combo_categoria.set(valores[3])
+
+    entry_monto.delete(0, tk.END)
+    entry_monto.insert(0, valores[4].replace(".", "").replace(",", "."))
+
+tree.bind("<<TreeviewSelect>>", seleccionar_gasto)
+
+
 
 from gastos import obtener_gastos
 
-def cargar_treeview():
-    for fila in tree.get_children():
-        tree.delete(fila)
-
-    for gasto in obtener_gastos():
-        fecha, descripcion, categoria, monto = gasto[1:]
-        monto_formateado = formatear_monto(monto)
-
-        tree.insert(
-            "",
-            "end",
-            values=(fecha, descripcion, categoria, monto_formateado)
-    )
 
 def actualizar_resumen():
 
@@ -206,6 +241,72 @@ def actualizar_resumen():
 
 actualizar_resumen()
 
+def eliminar():
 
+    seleccion = tree.selection()
+
+    if not seleccion:
+        messagebox.showwarning("Aviso", "Seleccione un gasto")
+        return
+
+    item = seleccion[0]
+
+    valores = tree.item(item, "values")
+
+    id_gasto = valores[0]
+
+    respuesta = messagebox.askyesno(
+        "Eliminar",
+        "¿Desea eliminar el gasto seleccionado?"
+    )
+
+    if respuesta:
+
+        eliminar_gasto(id_gasto)
+
+        cargar_treeview()
+
+        actualizar_resumen()
+
+tk.Button(frame_form, text="Eliminar", command=eliminar).grid(row=6, column=0, columnspan=2, pady=5)
+
+def actualizar():
+
+    global id_gasto_seleccionado
+
+    if id_gasto_seleccionado is None:
+        messagebox.showwarning("Aviso", "Seleccione un gasto")
+        return
+
+    try:
+
+        fecha = entry_fecha.get()
+        descripcion = entry_descripcion.get()
+        categoria = combo_categoria.get()
+        monto = float(entry_monto.get())
+
+        actualizar_gasto(
+            id_gasto_seleccionado,
+            fecha,
+            descripcion,
+            categoria,
+            monto
+        )
+
+        cargar_treeview()
+        actualizar_resumen()
+
+        entry_descripcion.delete(0, tk.END)
+        entry_monto.delete(0, tk.END)
+
+        id_gasto_seleccionado = None
+
+    except ValueError:
+        messagebox.showerror("Error", "Monto inválido")
+
+tk.Button(frame_form, text="Actualizar", command=actualizar).grid(row=7, column=0, columnspan=2, pady=5)
+
+cargar_treeview()
+actualizar_resumen()
 
 ventana.mainloop()

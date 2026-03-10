@@ -6,7 +6,8 @@ conn = sqlite3.connect(DB_NAME)
 cursor = conn.cursor()
 
 def crear_tablas():
-
+    
+    id_gasto_seleccionado = None
 
     # Tabla categorias
     cursor.execute("""
@@ -103,3 +104,4 @@ def total_ingresos():
         return 0
 
     return total
+

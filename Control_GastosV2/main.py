@@ -5,7 +5,7 @@ from database import crear_tablas, obtener_categorias
 from categorias import abrir_ventana_categorias
 from gastos import agregar_gasto, obtener_gastos, calcular_total_gastos, eliminar_gasto
 from gastos import actualizar_gasto
-#from gastos import agregar_gasto, obtener_gastos, calcular_total_gastos
+from gastos import agregar_gasto, obtener_gastos, calcular_total_gastos
 from ingresos import ventana_ingresos
 from ingresos import total_ingresos, total_gastos
 
@@ -65,6 +65,8 @@ frame_principal.columnconfigure(0, weight=1)
 frame_principal.columnconfigure(1, weight=2)
 frame_principal.rowconfigure(0, weight=1)
 
+
+# sigue el formulario y el treeview debajo del selector de mes
 frame_form = tk.Frame(frame_principal)
 frame_form.grid(row=0, column=0, sticky="nsew", padx=10)
 
@@ -78,20 +80,20 @@ frame_tabla.columnconfigure(0, weight=1)
 frame_resumen = tk.LabelFrame(frame_tabla, text="Resumen financiero")
 frame_resumen.grid(row=1, column=0, sticky="ew", pady=10)
 
-tk.Label(frame_resumen, text="Ingresos del mes").grid(row=0, column=0, sticky="w")
+tk.Label(frame_resumen, text="Ingresos del mes").grid(row=1, column=0, sticky="w")
 #lbl_ingresos = tk.Label(frame_resumen, text="$ 0", font=("Arial", 11, "bold"))
 lbl_ingresos = tk.Label(frame_resumen, text="$ 0", font=("Arial", 11, "bold"), anchor="e")
-lbl_ingresos.grid(row=0, column=1, sticky="e")
+lbl_ingresos.grid(row=1, column=1, sticky="e")
 
-tk.Label(frame_resumen, text="Gastos del mes").grid(row=1, column=0, sticky="w")
+tk.Label(frame_resumen, text="Gastos del mes").grid(row=2, column=0, sticky="w")
 #lbl_gastos = tk.Label(frame_resumen, text="$ 0", font=("Arial", 11, "bold"))
 lbl_gastos = tk.Label(frame_resumen, text="$ 0", font=("Arial", 11, "bold"), anchor="e")
-lbl_gastos.grid(row=1, column=1, sticky="e")
+lbl_gastos.grid(row=2, column=1, sticky="e")
 
-tk.Label(frame_resumen, text="Saldo disponible").grid(row=2, column=0, sticky="w")
+tk.Label(frame_resumen, text="Saldo disponible").grid(row=3, column=0, sticky="w")
 #lbl_saldo = tk.Label(frame_resumen, text="$ 0", font=("Arial", 13, "bold"))
 lbl_saldo = tk.Label(frame_resumen, text="$ 0", font=("Arial", 13, "bold"), anchor="e")
-lbl_saldo.grid(row=2, column=1, sticky="e")
+lbl_saldo.grid(row=3, column=1, sticky="e")
 
 #Treeview para mostrar gastos
 tree = ttk.Treeview(
@@ -120,34 +122,65 @@ scrollbar.grid(row=0, column=1, sticky="ns")
 tree.grid(row=0, column=0, sticky="nsew")
 frame_form.columnconfigure(1, weight=1)
 
+# Selector de mes y año
+from datetime import datetime
+import calendar
+
+tk.Label(frame_form, text="Mes:").grid(row=0, column=0, padx=5, sticky="e")
+
+mes_var = tk.StringVar()
+
+combo_mes = ttk.Combobox(frame_form, textvariable=mes_var, state="readonly")
+
+anio_actual = datetime.now().year
+mes_actual = datetime.now().month
+
+meses = [f"{calendar.month_name[i]} {anio_actual}" for i in range(1, 13)]
+
+combo_mes["values"] = meses
+combo_mes.current(mes_actual - 1)
+
+combo_mes.grid(row=0, column=1, padx=5, sticky="w")
+
+# Función para cargar gastos al cambiar el mes
+def cambiar_mes(event):
+
+    seleccion = combo_mes.get()
+
+    nombre_mes = seleccion.split()[0]
+
+    numero_mes = list(calendar.month_name).index(nombre_mes)
+
+    cargar_treeview(numero_mes, anio_actual)
 
 
-tk.Label(frame_form, text="Fecha").grid(row=1, column=0, sticky="w", pady=8)
+# Campos del formulario
+tk.Label(frame_form, text="Fecha").grid(row=4, column=0, sticky="w", pady=8)
 entry_fecha = tk.Entry(frame_form)
-entry_fecha.grid(row=1, column=1, sticky="ew", pady=8)
+entry_fecha.grid(row=4, column=1, sticky="ew", pady=8)
 
-tk.Label(frame_form, text="Descripción").grid(row=2, column=0, sticky="w", pady=8)
+tk.Label(frame_form, text="Descripción").grid(row=5, column=0, sticky="w", pady=8)
 entry_descripcion = tk.Entry(frame_form)
-entry_descripcion.grid(row=2, column=1, sticky="ew", pady=8)
+entry_descripcion.grid(row=5, column=1, sticky="ew", pady=8)
 
 # Configurar expansión
 frame_form.columnconfigure(1, weight=1)
 
 # Categoría
-tk.Label(frame_form, text="Categoría").grid(row=3, column=0, sticky="w", pady=8)
+tk.Label(frame_form, text="Categoría").grid(row=6, column=0, sticky="w", pady=8)
 
 combo_categoria = ttk.Combobox(frame_form, state="readonly")
-combo_categoria.grid(row=3, column=1, sticky="ew", pady=8)
+combo_categoria.grid(row=6, column=1, sticky="ew", pady=8)
 
 combo_categoria["values"] = obtener_categorias()
 
-tk.Label(frame_form, text="Monto").grid(row=4, column=0, sticky="w", pady=8)
+tk.Label(frame_form, text="Monto").grid(row=7, column=0, sticky="w", pady=8)
 entry_monto = tk.Entry(frame_form)
-entry_monto.grid(row=4, column=1, sticky="ew", pady=8)
+entry_monto.grid(row=7, column=1, sticky="ew", pady=8)
 
 #print("Total gastos:", calcular_total_gastos())
 
-def cargar_treeview():
+def cargar_treeview(mes, anio):
 
     for fila in tree.get_children():
         tree.delete(fila)
@@ -187,7 +220,7 @@ def agregar():
         print("Monto inválido")
 
 tk.Button(frame_form, text="Agregar Gasto", command=agregar)\
-    .grid(row=5, column=0, columnspan=2, pady=20)
+    .grid(row=8, column=0, columnspan=2, pady=20)
 
 def seleccionar_gasto(event):
 
@@ -216,8 +249,6 @@ def seleccionar_gasto(event):
 tree.bind("<<TreeviewSelect>>", seleccionar_gasto)
 
 
-
-from gastos import obtener_gastos
 
 
 def actualizar_resumen():
@@ -268,7 +299,7 @@ def eliminar():
 
         actualizar_resumen()
 
-tk.Button(frame_form, text="Eliminar", command=eliminar).grid(row=6, column=0, columnspan=2, pady=5)
+tk.Button(frame_form, text="Eliminar", command=eliminar).grid(row=9, column=0, columnspan=2, pady=5)
 
 def actualizar():
 
@@ -304,9 +335,9 @@ def actualizar():
     except ValueError:
         messagebox.showerror("Error", "Monto inválido")
 
-tk.Button(frame_form, text="Actualizar", command=actualizar).grid(row=7, column=0, columnspan=2, pady=5)
+tk.Button(frame_form, text="Actualizar", command=actualizar).grid(row=10, column=0, columnspan=2, pady=5)
 
-cargar_treeview()
+cargar_treeview(mes_actual, anio_actual)
 actualizar_resumen()
 
 ventana.mainloop()

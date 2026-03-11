@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 from database import cursor, conn
-from database import insertar_ingreso, obtener_ingresos
+from database import insertar_ingreso
 from database import total_gastos, total_ingresos
 
 
@@ -10,13 +10,16 @@ def ventana_ingresos():
 
     id_ingreso_seleccionado = None
 
+    # Crear ventana de ingresos
     ventana = tk.Toplevel()
     ventana.title("Gestión de Ingresos")
     ventana.geometry("900x600")
 
+    # Crear frames para organizar la ventana
     frame_principal = tk.Frame(ventana)
     frame_principal.pack(fill="both", expand=True, padx=10, pady=10)
 
+    # frames para el formulario y la tabla
     frame_form = tk.Frame(frame_principal)
     frame_form.grid(row=0, column=0, sticky="nsew", padx=10)
 
@@ -26,6 +29,8 @@ def ventana_ingresos():
     frame_principal.columnconfigure(0, weight=1)
     frame_principal.columnconfigure(1, weight=2)
 
+    
+    # formulario para agregar o actualizar ingresos
     tk.Label(frame_form, text="Fecha").grid(row=0, column=0, sticky="w")
     entry_fecha = tk.Entry(frame_form)
     entry_fecha.grid(row=0, column=1, sticky="ew")
@@ -38,6 +43,8 @@ def ventana_ingresos():
     entry_monto = tk.Entry(frame_form)
     entry_monto.grid(row=2, column=1, sticky="ew")
 
+  
+    # treeview para mostrar los ingresos
     tree = ttk.Treeview(
     frame_tabla,
     columns=("id","fecha","descripcion","monto"),
@@ -59,9 +66,13 @@ def ventana_ingresos():
     tree.configure(yscrollcommand=scroll.set)
     scroll.grid(row=0, column=1, sticky="ns")
 
+
+    # función para formatear el monto con separadores de miles y decimales
     def formatear_monto(valor):
         return f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
     
+   
+    #función para cargar los ingresos en el Treeview   
     def cargar_treeview_ingresos():
 
         for fila in tree.get_children():
@@ -91,7 +102,9 @@ def ventana_ingresos():
                     f"{monto:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
                 )
             )
+    
 
+    # función para calcular el total de ingresos mostrada abajo del Treeview
     def seleccionar_ingreso(event):
 
         global id_ingreso_seleccionado
@@ -116,14 +129,20 @@ def ventana_ingresos():
 
     tree.bind("<<TreeviewSelect>>", seleccionar_ingreso)
 
-    # def cargar_ingresos():
+    # marco para mostrar el total de ingresos
+    frame_total = tk.Frame(frame_tabla)
+    frame_total.grid(row=1, column=0, sticky="ew", pady=10)
 
-    #     for fila in tree.get_children():
-    #         tree.delete(fila)
+    tk.Label(frame_total, text="Total ingresos del mes:").pack(side="left")
 
-    #     for ingreso in obtener_ingresos():
-    #         tree.insert("", "end", values=ingreso[1:])
+    lbl_total_ingresos = tk.Label(
+        frame_total,
+        text="$ 0",
+        font=("Arial", 11, "bold")
+    )
+    lbl_total_ingresos.pack(side="right")
     
+    # función para agregar un ingreso a la base de datos y refrescar el Treeview con los nuevos datos
     def agregar():
 
         fecha = entry_fecha.get()
@@ -134,13 +153,13 @@ def ventana_ingresos():
 
         cargar_treeview_ingresos()   # ← refresca la tabla
 
+        entry_fecha.delete(0, tk.END)
         entry_desc.delete(0, tk.END)
         entry_monto.delete(0, tk.END)
             
-
         cargar_treeview_ingresos()
 
-    
+    # función para eliminar un ingreso seleccionado en el Treeview  
     def eliminar():
 
         global id_ingreso_seleccionado
@@ -159,10 +178,11 @@ def ventana_ingresos():
             eliminar_ingreso(id_ingreso_seleccionado)
 
             cargar_treeview_ingresos()
+            actualizar_total()
 
             id_ingreso_seleccionado = None
 
-    
+    # función para eliminar un ingreso de la base de datos y refrescar el Treeview con los nuevos datos
     def eliminar_ingreso(id_ingreso):
 
         cursor = conn.cursor()
@@ -176,7 +196,7 @@ def ventana_ingresos():
     
         cargar_treeview_ingresos()
 
-
+    # función para actualizar un ingreso en la base de datos y refrescar el Treeview con los nuevos datos
     def actualizar_ingreso(id_ingreso, fecha, descripcion, monto):
 
         cursor = conn.cursor()
@@ -197,6 +217,8 @@ def ventana_ingresos():
 
         conn.commit()
 
+
+    # función para actualizar un ingreso seleccionado en el Treeview
     def actualizar():
 
         global id_ingreso_seleccionado
@@ -229,13 +251,48 @@ def ventana_ingresos():
         except ValueError:
             messagebox.showerror("Error", "Monto inválido")
     
-            
         cargar_treeview_ingresos()
-            
+        actualizar_total()
+        
+
+    # función para calcular el total de ingresos mostrada abajo del Treeview
+    def calcular_total_ingresos():
+
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT SUM(monto)
+            FROM ingresos
+        """)
+
+        total = cursor.fetchone()[0]
+
+        if total is None:
+            total = 0
+
+        return total
+    
+    cargar_treeview_ingresos()
+    
+    # función para actualizar el total de ingresos cada vez que se agrega, elimina o actualiza un ingreso
+    def actualizar_total():
+
+        total = calcular_total_ingresos()
+
+        total_formateado = formatear_monto(total)
+
+        lbl_total_ingresos.config(text=f"$ {total_formateado}")
+
+        cargar_treeview_ingresos()
+
+
+
+    # función para cerrar la ventana de ingresos
     def salir():
             if messagebox.askyesno("Salir", "¿Desea la ventana Ingresos?"):
                 ventana.destroy()
 
+    # botones para agregar, actualizar, eliminar y salir
     tk.Button(frame_form, text="Agregar ingreso", command=agregar).grid(row=3, column=0, columnspan=2, pady=10)
     tk.Button(frame_form, text="Actualizar", command=actualizar).grid(row=4,column=0, columnspan=2,pady=5)
     tk.Button(frame_form, text="Eliminar", command=eliminar).grid(row=5,column=0, columnspan=2,pady=5)
@@ -244,6 +301,7 @@ def ventana_ingresos():
     
 
     cargar_treeview_ingresos()
+    actualizar_total()
  
 
     

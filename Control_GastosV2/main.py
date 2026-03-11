@@ -8,6 +8,7 @@ from gastos import actualizar_gasto
 from gastos import agregar_gasto, obtener_gastos, calcular_total_gastos
 from ingresos import ventana_ingresos
 from ingresos import total_ingresos, total_gastos
+from estadisticas import abrir_estadisticas
 
 
 def formatear_monto(valor):
@@ -51,6 +52,15 @@ menu_bar.add_cascade(label="Movimientos", menu=menu_movimientos)
 menu_movimientos.add_command(
     label="Ingresos",
     command=ventana_ingresos
+)
+
+menu_analisis = tk.Menu(menu_bar, tearoff=0)
+
+menu_bar.add_cascade(label="Análisis", menu=menu_analisis)
+
+menu_analisis.add_command(
+    label="Estadísticas",
+    command=lambda: abrir_estadisticas(mes_actual, anio_actual)
 )
 
 
@@ -180,7 +190,7 @@ entry_monto.grid(row=7, column=1, sticky="ew", pady=8)
 
 #print("Total gastos:", calcular_total_gastos())
 
-def cargar_treeview(mes, anio):
+def cargar_treeview(mes_actual, anio_actual):
 
     for fila in tree.get_children():
         tree.delete(fila)
@@ -206,7 +216,7 @@ def agregar():
 
         agregar_gasto(fecha, descripcion, categoria, monto)
 
-        cargar_treeview()
+        cargar_treeview(mes_actual, anio_actual)
 
         actualizar_resumen()
 
@@ -295,7 +305,7 @@ def eliminar():
 
         eliminar_gasto(id_gasto)
 
-        cargar_treeview()
+        cargar_treeview(mes_actual, anio_actual)
 
         actualizar_resumen()
 
@@ -324,7 +334,7 @@ def actualizar():
             monto
         )
 
-        cargar_treeview()
+        cargar_treeview(mes_actual, anio_actual)
         actualizar_resumen()
 
         entry_descripcion.delete(0, tk.END)

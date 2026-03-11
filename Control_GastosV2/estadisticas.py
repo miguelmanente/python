@@ -16,7 +16,7 @@ def abrir_estadisticas(mes, anio):
     """, (f"{mes:02}", str(anio)))
 
     datos = cursor.fetchall()
-
+   
     categorias = []
     montos = []
 

@@ -347,6 +347,15 @@ def actualizar():
 
 tk.Button(frame_form, text="Actualizar", command=actualizar).grid(row=10, column=0, columnspan=2, pady=5)
 
+footer = tk.Label(
+    ventana,
+    text="© 2026 Miguel Manente",
+    font=("Arial",11),
+    fg="gray"
+)
+
+footer.place(x=10, rely=1.0, anchor="sw")
+
 cargar_treeview(mes_actual, anio_actual)
 actualizar_resumen()
 

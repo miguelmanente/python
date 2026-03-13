@@ -158,6 +158,7 @@ def ventana_ingresos():
         entry_monto.delete(0, tk.END)
             
         cargar_treeview_ingresos()
+        actualizar_total()
 
     # función para eliminar un ingreso seleccionado en el Treeview  
     def eliminar():
@@ -273,7 +274,7 @@ def ventana_ingresos():
         return total
     
     cargar_treeview_ingresos()
-    
+     
     # función para actualizar el total de ingresos cada vez que se agrega, elimina o actualiza un ingreso
     def actualizar_total():
 
@@ -286,6 +287,8 @@ def ventana_ingresos():
         cargar_treeview_ingresos()
 
 
+    cargar_treeview_ingresos()
+    actualizar_total()
 
     # función para cerrar la ventana de ingresos
     def salir():
@@ -300,8 +303,7 @@ def ventana_ingresos():
 
     
 
-    cargar_treeview_ingresos()
-    actualizar_total()
+   
+  
  
 
-    

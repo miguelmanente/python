@@ -224,10 +224,10 @@ def agregar():
         entry_monto.delete(0, tk.END)
 
     except ValueError:
-        print("Monto inválido")
+        messagebox.showerror("Error", "Monto inválido")
 
     except ValueError:
-        print("Monto inválido")
+        messagebox.showerror("Error", "Monto inválido")
 
 tk.Button(frame_form, text="Agregar Gasto", command=agregar)\
     .grid(row=8, column=0, columnspan=2, pady=20)
@@ -259,8 +259,6 @@ def seleccionar_gasto(event):
 tree.bind("<<TreeviewSelect>>", seleccionar_gasto)
 
 
-
-
 def actualizar_resumen():
 
     ingresos = total_ingresos()
@@ -280,7 +278,7 @@ def actualizar_resumen():
     else:
         lbl_saldo.config(fg="black")
 
-actualizar_resumen()
+    cargar_treeview(mes_actual, anio_actual)
 
 def eliminar():
 
@@ -349,7 +347,7 @@ tk.Button(frame_form, text="Actualizar", command=actualizar).grid(row=10, column
 
 footer = tk.Label(
     ventana,
-    text="© 2026 Miguel Manente",
+    text="© 2026 Desarrollo Software - MAM",
     font=("Arial",11),
     fg="gray"
 )

@@ -40,7 +40,7 @@ def abrir_estadisticas(mes, anio):
     if categorias:
         ax1.bar(categorias, montos)
         ax1.set_title("Gastos por categoría")
-        ax1.tick_params(axis="x", rotation=45)
+        ax1.tick_params(axis="x", rotation=90)
 
     # -------------------------
     # INGRESOS VS GASTOS

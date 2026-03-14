@@ -112,26 +112,3 @@ def abrir_estadisticas(mes, anio):
     canvas = FigureCanvasTkAgg(fig, master=frame)
     canvas.draw()
     canvas.get_tk_widget().pack(fill="both", expand=True)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

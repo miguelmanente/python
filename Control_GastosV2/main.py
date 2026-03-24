@@ -198,6 +198,19 @@ def al_cerrar():
     ventana.protocol("WM_DELETE_WINDOW", al_cerrar)
 
 
+from tkinter import messagebox
+# Función para mostrar información sobre la aplicación
+def acerca_de():
+    messagebox.showinfo(
+        "Acerca de",
+        "Control de Gastos\n\n"
+        "Versión 1.0\n"
+        "Desarrollado por Miguel Manente\n"
+        "Año 2026"
+    )
+
+
+
 #Ventana principal de la aplicación
 ventana = tk.Tk()
 ventana.title("Control de Gastos")
@@ -255,6 +268,9 @@ menu_bar.add_cascade(label="Herramientas", menu=menu_herramientas)
 
 menu_herramientas.add_command(label="Crear backup", command=hacer_backup)
 
+menu_ayuda = tk.Menu(menu_bar, tearoff=0)
+menu_bar.add_cascade(label="Ayuda", menu=menu_ayuda)
+menu_ayuda.add_command(label="Acerca de...", command=acerca_de)
 
 # ----------- FORMULARIO GASTOS -----------
 ventana.rowconfigure(0, weight=1)

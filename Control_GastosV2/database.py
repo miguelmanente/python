@@ -1,10 +1,27 @@
 import sqlite3
+import os
+import sys
 
 DB_NAME = "gastos.db"
 
 conn = sqlite3.connect(DB_NAME)
 cursor = conn.cursor()
 
+#Conexion a la base de datos y creación de tablas si no existen
+def conectar():
+    if getattr(sys, 'frozen', False):
+        # Si es ejecutable
+        base_dir = os.path.dirname(sys.executable)
+    else:
+        # Si es script normal
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+
+    db_path = os.path.join(base_dir, "gastos.db")
+    conn = sqlite3.connect(db_path)
+    return conn
+
+
+#Se crea la base de datos y las tablas necesarias para la aplicación
 def crear_tablas():
     
     id_gasto_seleccionado = None
@@ -50,12 +67,15 @@ def crear_tablas():
 
     conn.commit()
 
+# Función para insertar una nueva categoría
 def obtener_categorias():
     conn = sqlite3.connect("gastos.db")
     cursor = conn.cursor()
     cursor.execute("SELECT nombre FROM categorias ORDER BY nombre")
     return [fila[0] for fila in cursor.fetchall()]
 
+
+# Función para insertar una nueva categoría
 def insertar_ingreso(fecha, descripcion, monto):
     conn = sqlite3.connect("gastos.db")
     cursor = conn.cursor()
@@ -68,7 +88,7 @@ def insertar_ingreso(fecha, descripcion, monto):
     conn.commit()
     conn.close()
 
-
+# Función para obtener los ingresos registrados
 def obtener_ingresos():
     conn = sqlite3.connect("gastos.db")
     cursor = conn.cursor()
@@ -79,6 +99,7 @@ def obtener_ingresos():
     conn.close()
     return datos
 
+# Función para insertar un nuevo gasto
 def total_gastos():
     conn = sqlite3.connect("gastos.db")
     cursor = conn.cursor()
@@ -93,6 +114,7 @@ def total_gastos():
 
     return total
 
+# Función para obtener el total de ingresos registrados
 def total_ingresos():
     conn = sqlite3.connect("gastos.db")
     cursor = conn.cursor()

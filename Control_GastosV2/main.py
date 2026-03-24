@@ -12,6 +12,7 @@ from gastos import agregar_gasto, obtener_gastos, calcular_total_gastos
 from ingresos import ventana_ingresos
 from ingresos import total_ingresos, total_gastos
 from estadisticas import abrir_estadisticas
+from backup import hacer_backup
 
 # Da formato a las cifras numéricas con separadores de miles y decimales
 def formatear_monto(valor):
@@ -110,11 +111,30 @@ def generar_reporte():
     canvas.draw()
     canvas.get_tk_widget().pack(pady=10)
 
+# Función para exportar el reporte mensual a Excel
+import pandas as pd
+from tkinter import filedialog
+from database import conectar
+import os
+from datetime import datetime
+import sys
 
 def exportar_excel_pro(mes, anio):
-   
+    conn = conectar()
+
     mes = str(mes).zfill(2)
     anio = str(anio)
+
+    # -------- RUTA BASE (sirve para exe también) --------
+    if getattr(sys, 'frozen', False):
+        base_dir = os.path.dirname(sys.executable)
+    else:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+
+    carpeta_reportes = os.path.join(base_dir, "reportes")
+
+    if not os.path.exists(carpeta_reportes):
+        os.makedirs(carpeta_reportes)
 
     # -------- GASTOS --------
     query_gastos = """
@@ -156,21 +176,26 @@ def exportar_excel_pro(mes, anio):
 
     conn.close()
 
+    # -------- NOMBRE AUTOMATICO --------
+    fecha_archivo = datetime.now().strftime("%Y-%m-%d")
+    archivo = os.path.join(carpeta_reportes, f"Reporte_{anio}_{mes}_{fecha_archivo}.xlsx")
+
     # -------- GUARDAR EXCEL --------
-    archivo = filedialog.asksaveasfilename(
-        defaultextension=".xlsx",
-        filetypes=[("Archivo Excel", "*.xlsx")],
-        title="Guardar reporte"
-    )
+    with pd.ExcelWriter(archivo, engine="openpyxl") as writer:
+        df_gastos.to_excel(writer, sheet_name="Gastos", index=False)
+        df_ingresos.to_excel(writer, sheet_name="Ingresos", index=False)
+        df_resumen.to_excel(writer, sheet_name="Resumen", index=False)
+        df_cat.to_excel(writer, sheet_name="Gastos por Categoria", index=False)
 
-    if archivo:
-        with pd.ExcelWriter(archivo, engine="openpyxl") as writer:
-            df_gastos.to_excel(writer, sheet_name="Gastos", index=False)
-            df_ingresos.to_excel(writer, sheet_name="Ingresos", index=False)
-            df_resumen.to_excel(writer, sheet_name="Resumen", index=False)
-            df_cat.to_excel(writer, sheet_name="Gastos por Categoria", index=False)
+    from tkinter import messagebox
+    messagebox.showinfo("Reporte", f"Reporte guardado en:\n{archivo}")
 
+# Función para hacer backup al cerrar la aplicación
+def al_cerrar():
+    hacer_backup()
+    ventana.destroy()
 
+    ventana.protocol("WM_DELETE_WINDOW", al_cerrar)
 
 
 #Ventana principal de la aplicación
@@ -224,6 +249,11 @@ menu_reportes.add_command(
     label="Exportar reporte a Excel",
     command=lambda: exportar_excel_pro(mes_actual, anio_actual)
 )
+
+menu_herramientas = tk.Menu(menu_bar, tearoff=0)
+menu_bar.add_cascade(label="Herramientas", menu=menu_herramientas)
+
+menu_herramientas.add_command(label="Crear backup", command=hacer_backup)
 
 
 # ----------- FORMULARIO GASTOS -----------

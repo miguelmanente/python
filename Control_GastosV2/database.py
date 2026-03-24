@@ -51,6 +51,8 @@ def crear_tablas():
     conn.commit()
 
 def obtener_categorias():
+    conn = sqlite3.connect("gastos.db")
+    cursor = conn.cursor()
     cursor.execute("SELECT nombre FROM categorias ORDER BY nombre")
     return [fila[0] for fila in cursor.fetchall()]
 

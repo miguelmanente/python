@@ -51,7 +51,7 @@ def abrir_ventana_categorias(ventana_principal, refrescar_combobox):
             )
             conn.commit()
             cargar()
-            refrescar_combobox()
+            refrescar_combobox["values"] = obtener_categorias()
 
     def modificar():
         seleccion = listbox.curselection()
@@ -65,7 +65,7 @@ def abrir_ventana_categorias(ventana_principal, refrescar_combobox):
                 )
                 conn.commit()
                 cargar()
-                refrescar_combobox()
+                refrescar_combobox["values"] = obtener_categorias()
                 entry.delete(0, tk.END)
             except:
                 messagebox.showerror("Error", "Categoría ya existe")

@@ -1,6 +1,9 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
+from database import conn
+import pandas as pd
+from tkinter import filedialog
 from database import crear_tablas, obtener_categorias
 from categorias import abrir_ventana_categorias
 from gastos import agregar_gasto, obtener_gastos, calcular_total_gastos, eliminar_gasto
@@ -10,17 +13,167 @@ from ingresos import ventana_ingresos
 from ingresos import total_ingresos, total_gastos
 from estadisticas import abrir_estadisticas
 
-
+# Da formato a las cifras numéricas con separadores de miles y decimales
 def formatear_monto(valor):
     return f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
-
+#  Salir de la aplicación
 def salir():
     if messagebox.askyesno("Salir", "¿Desea cerrar la aplicación?"):
         ventana.destroy()
 
-crear_tablas()
+#Función que permite obtener el ingreso total mensual
+def obtener_total_ingresos():
+    cursor = conn.cursor()
+    cursor.execute("SELECT SUM(monto) FROM ingresos ")
+    resultado = cursor.fetchone()[0]
+    return resultado if resultado else 0
 
+# Función que permite obtener el gasto total mensual
+def obtener_total_gastos():
+    cursor = conn.cursor()
+    cursor.execute("SELECT SUM(monto) FROM gastos ")
+    resultado = cursor.fetchone()[0]
+    return resultado if resultado else 0
+
+
+# Función selecciona los gastos por categorias 
+def gastos_por_categoria():
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT categoria, SUM(monto)
+        FROM gastos
+        GROUP BY categoria
+        ORDER BY SUM(monto) DESC
+    """)
+    datos = cursor.fetchall()
+    conn.close()
+
+    # Agrupar categorías chicas
+    resultado = []
+    otros = 0
+
+    for cat, monto in datos:
+        if monto < 5000:   # podés cambiar este número
+            otros += monto
+        else:
+            resultado.append((cat, monto))
+
+    if otros > 0:
+        resultado.append(("Otros", otros))
+
+    return resultado
+
+# Función que permite genera el reporte mensual con ingresos, gastos y balance
+def generar_reporte():
+    from matplotlib.figure import Figure
+    from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+    
+    reporte = tk.Toplevel()
+    reporte.title("Reporte mensual")
+    reporte.geometry("800x700")
+
+    total_ingresos = obtener_total_ingresos()
+    total_gastos = obtener_total_gastos()
+    balance = total_ingresos - total_gastos
+
+    tk.Label(reporte, text="REPORTE MENSUAL", font=("Arial", 14, "bold")).pack(pady=10)
+    tk.Label(reporte, text=f"Ingresos: $ {total_ingresos:,.2f}").pack()
+    tk.Label(reporte, text=f"Gastos: $ {total_gastos:,.2f}").pack()
+    tk.Label(reporte, text=f"Balance: $ {balance:,.2f}").pack(pady=10)
+
+    # ---- GRAFICO TORTA ----
+    datos = gastos_por_categoria()
+    categorias = [fila[0] for fila in datos]
+    montos = [fila[1] for fila in datos]
+
+    fig = Figure(figsize=(10, 10))
+    ax = fig.add_subplot(111)
+
+    ax.pie(
+    montos,
+    labels=categorias,
+    autopct='%1.1f%%',
+    startangle=90
+    )
+    ax.pie(
+    montos,
+    labels=categorias,
+    autopct='%1.1f%%',
+    startangle=90
+)
+
+    ax.axis('equal')  # hace el círculo perfecto
+    ax.set_title("Gastos por categoría")
+
+    canvas = FigureCanvasTkAgg(fig, master=reporte)
+    canvas.draw()
+    canvas.get_tk_widget().pack(pady=10)
+
+
+def exportar_excel_pro(mes, anio):
+   
+    mes = str(mes).zfill(2)
+    anio = str(anio)
+
+    # -------- GASTOS --------
+    query_gastos = """
+        SELECT fecha, descripcion, categoria, monto
+        FROM gastos
+        WHERE substr(fecha, 6, 2) = ?
+        AND substr(fecha, 1, 4) = ?
+    """
+    df_gastos = pd.read_sql_query(query_gastos, conn, params=(mes, anio))
+
+    # -------- INGRESOS --------
+    query_ingresos = """
+        SELECT fecha, descripcion, monto
+        FROM ingresos
+        WHERE substr(fecha, 6, 2) = ?
+        AND substr(fecha, 1, 4) = ?
+    """
+    df_ingresos = pd.read_sql_query(query_ingresos, conn, params=(mes, anio))
+
+    # -------- RESUMEN --------
+    total_gastos = df_gastos["monto"].sum()
+    total_ingresos = df_ingresos["monto"].sum()
+    balance = total_ingresos - total_gastos
+
+    df_resumen = pd.DataFrame({
+        "Concepto": ["Total Ingresos", "Total Gastos", "Balance"],
+        "Monto": [total_ingresos, total_gastos, balance]
+    })
+
+    # -------- GASTOS POR CATEGORIA --------
+    query_cat = """
+        SELECT categoria, SUM(monto) as total
+        FROM gastos
+        WHERE substr(fecha, 6, 2) = ?
+        AND substr(fecha, 1, 4) = ?
+        GROUP BY categoria
+    """
+    df_cat = pd.read_sql_query(query_cat, conn, params=(mes, anio))
+
+    conn.close()
+
+    # -------- GUARDAR EXCEL --------
+    archivo = filedialog.asksaveasfilename(
+        defaultextension=".xlsx",
+        filetypes=[("Archivo Excel", "*.xlsx")],
+        title="Guardar reporte"
+    )
+
+    if archivo:
+        with pd.ExcelWriter(archivo, engine="openpyxl") as writer:
+            df_gastos.to_excel(writer, sheet_name="Gastos", index=False)
+            df_ingresos.to_excel(writer, sheet_name="Ingresos", index=False)
+            df_resumen.to_excel(writer, sheet_name="Resumen", index=False)
+            df_cat.to_excel(writer, sheet_name="Gastos por Categoria", index=False)
+
+
+
+
+#Ventana principal de la aplicación
 ventana = tk.Tk()
 ventana.title("Control de Gastos")
 ventana.geometry("800x600")
@@ -63,10 +216,21 @@ menu_analisis.add_command(
     command=lambda: abrir_estadisticas(mes_actual, anio_actual)
 )
 
+menu_reportes = tk.Menu(menu_bar, tearoff=0)
+menu_bar.add_cascade(label="Reportes", menu=menu_reportes)
+
+menu_reportes.add_command(label="Reporte mensual", command=generar_reporte)
+menu_reportes.add_command(
+    label="Exportar reporte a Excel",
+    command=lambda: exportar_excel_pro(mes_actual, anio_actual)
+)
+
 
 # ----------- FORMULARIO GASTOS -----------
-ventana.columnconfigure(0, weight=1)
 ventana.rowconfigure(0, weight=1)
+#ventana.rowconfigure(1, weight=0)
+ventana.columnconfigure(0, weight=1)
+
 
 frame_principal = tk.Frame(ventana)
 frame_principal.grid(row=0, column=0, sticky="nsew", padx=20, pady=20)
@@ -345,15 +509,30 @@ def actualizar():
 
 tk.Button(frame_form, text="Actualizar", command=actualizar).grid(row=10, column=0, columnspan=2, pady=5)
 
-footer = tk.Label(
-    ventana,
-    text="© 2026 Desarrollo Software - MAM",
-    font=("Arial",11),
+
+# Footer con logo y texto
+logo = tk.PhotoImage(file="logo_mam.png")
+
+# achicar el logo (2 = mitad, 3 = un tercio, etc.)
+logo = logo.subsample(2, 2)
+
+frame_footer = tk.Frame(ventana)
+frame_footer.grid(row=1, column=0, sticky="sw", padx=10, pady=5)
+
+lbl_logo = tk.Label(frame_footer, image=logo)
+lbl_logo.pack(anchor="w")
+
+lbl_texto = tk.Label(
+    frame_footer,
+    text="© 2026 Miguel Manente",
+    font=("Arial", 8),
     fg="gray"
 )
+lbl_texto.pack(anchor="w")
 
-footer.place(x=10, rely=1.0, anchor="sw")
+lbl_logo.image = logo
 
+# Cargar gastos al iniciar la aplicación
 cargar_treeview(mes_actual, anio_actual)
 actualizar_resumen()
 

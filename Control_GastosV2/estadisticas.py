@@ -3,6 +3,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from database import conn
 
+cursor = conn.cursor()
 
 def abrir_estadisticas(mes, anio):
 
@@ -19,7 +20,7 @@ def abrir_estadisticas(mes, anio):
     ax2 = fig.add_subplot(222)
     ax3 = fig.add_subplot(212)
 
-    cursor = conn.cursor()
+    
 
     # -------------------------
     # GASTOS POR CATEGORÍA

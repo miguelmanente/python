@@ -69,11 +69,14 @@ def crear_tablas():
 
 # Función para insertar una nueva categoría
 def obtener_categorias():
-    conn = sqlite3.connect("gastos.db")
+    conn = conectar()
     cursor = conn.cursor()
-    cursor.execute("SELECT nombre FROM categorias ORDER BY nombre")
-    return [fila[0] for fila in cursor.fetchall()]
 
+    cursor.execute("SELECT nombre FROM categorias ORDER BY nombre")
+    categorias = [fila[0] for fila in cursor.fetchall()]
+
+    conn.close()
+    return categorias
 
 # Función para insertar una nueva categoría
 def insertar_ingreso(fecha, descripcion, monto):

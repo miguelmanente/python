@@ -4,19 +4,26 @@ from tkinter import messagebox
 from database import conn
 import pandas as pd
 from tkinter import filedialog
+from database import obtener_categorias
 from database import crear_tablas, obtener_categorias
 from categorias import abrir_ventana_categorias
-from gastos import agregar_gasto, obtener_gastos, calcular_total_gastos, eliminar_gasto
+from gastos import agregar_gasto, obtener_gastos, eliminar_gasto
 from gastos import actualizar_gasto
-from gastos import agregar_gasto, obtener_gastos, calcular_total_gastos
+from gastos import agregar_gasto, obtener_gastos
 from ingresos import ventana_ingresos
 from ingresos import total_ingresos, total_gastos
 from estadisticas import abrir_estadisticas
 from backup import hacer_backup
 
+id_gasto_seleccionado = None
+
 # Da formato a las cifras numéricas con separadores de miles y decimales
 def formatear_monto(valor):
-    return f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    try:
+        valor = float(valor)
+        return f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    except:
+        return valor
 
 #  Salir de la aplicación
 def salir():
@@ -198,6 +205,59 @@ def al_cerrar():
     ventana.protocol("WM_DELETE_WINDOW", al_cerrar)
 
 
+def cargar_categorias_filtro():
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT nombre FROM categorias ORDER BY nombre")
+    categorias = cursor.fetchall()
+    conn.close()
+
+    lista = ["Todas"]
+    for cat in categorias:
+        lista.append(cat[0])
+
+    combo_categoria["values"] = lista
+    combo_categoria.set("Todas")
+
+
+
+def filtrar_por_categoria(event=None):
+    categoria = combo_categoria.get()
+
+    conn = conectar()
+    cursor = conn.cursor()
+
+    if categoria == "Todas":
+        cursor.execute("""
+            SELECT id, fecha, descripcion, categoria, monto
+            FROM gastos
+            ORDER BY fecha DESC
+        """)
+    else:
+        cursor.execute("""
+            SELECT id, fecha, descripcion, categoria, monto
+            FROM gastos
+            WHERE categoria = ?
+            ORDER BY fecha DESC
+        """, (categoria,))
+
+    resultados = cursor.fetchall()
+    conn.close()
+
+    # Limpiar tabla
+    for row in tree.get_children():
+        tree.delete(row)
+
+    # Cargar datos
+    for fila in resultados:
+        tree.insert("", "end", values=fila)
+
+    combo_categoria.bind("<<ComboboxSelected>>", filtrar_por_categoria)
+    #lbl_registros.config(text=f"Registros: {len(resultados)}")
+
+
+
 from tkinter import messagebox
 # Función para mostrar información sobre la aplicación
 def acerca_de():
@@ -281,8 +341,8 @@ ventana.columnconfigure(0, weight=1)
 frame_principal = tk.Frame(ventana)
 frame_principal.grid(row=0, column=0, sticky="nsew", padx=20, pady=20)
 
-frame_principal.columnconfigure(0, weight=1)
-frame_principal.columnconfigure(1, weight=2)
+frame_principal.columnconfigure(1, weight=1)
+#frame_principal.columnconfigure(1, weight=2)
 frame_principal.rowconfigure(0, weight=1)
 
 
@@ -294,26 +354,42 @@ frame_form.grid(row=0, column=0, sticky="nsew", padx=10)
 frame_tabla = tk.Frame(frame_principal)
 frame_tabla.grid(row=0, column=1, sticky="nsew", padx=10)
 
-frame_tabla.rowconfigure(0, weight=1)
+frame_tabla.rowconfigure(1, weight=1)
 frame_tabla.columnconfigure(0, weight=1)
 
-frame_resumen = tk.LabelFrame(frame_tabla, text="Resumen financiero")
-frame_resumen.grid(row=1, column=0, sticky="ew", pady=10)
+frame_filtros = tk.Frame(frame_tabla)
+frame_filtros.grid(row=0, column=0, sticky="ew")
+frame_tabla.grid_columnconfigure(0, weight=1)
 
-tk.Label(frame_resumen, text="Ingresos del mes").grid(row=1, column=0, sticky="w")
+lbl_filtro = tk.Label(frame_filtros, text="Categoría:")
+lbl_filtro.grid(row=0, column=0, padx=5, pady=5, sticky="w")
+
+btn_ver_todo = tk.Button(frame_filtros, text="Ver todo", command=filtrar_por_categoria)
+btn_ver_todo.grid(row=0, column=2, padx=5, pady=5, sticky="w")
+
+combo_categoria = ttk.Combobox(frame_filtros, state="readonly", width=20)
+combo_categoria.grid(row=0, column=1, padx=5, pady=5, sticky="w")
+
+lbl_registros = tk.Label(frame_filtros, text="Registros: 0")
+lbl_registros.grid(row=0, column=3, padx=10)
+
+frame_resumen = tk.LabelFrame(frame_tabla, text="Resumen financiero")
+frame_resumen.grid(row=2, column=0, sticky="ew", pady=10)
+
+tk.Label(frame_resumen, text="Ingresos del mes").grid(row=6, column=0, sticky="w")
 #lbl_ingresos = tk.Label(frame_resumen, text="$ 0", font=("Arial", 11, "bold"))
 lbl_ingresos = tk.Label(frame_resumen, text="$ 0", font=("Arial", 11, "bold"), anchor="e")
-lbl_ingresos.grid(row=1, column=1, sticky="e")
+lbl_ingresos.grid(row=6, column=1, sticky="e")
 
-tk.Label(frame_resumen, text="Gastos del mes").grid(row=2, column=0, sticky="w")
+tk.Label(frame_resumen, text="Gastos del mes").grid(row=7, column=0, sticky="w")
 #lbl_gastos = tk.Label(frame_resumen, text="$ 0", font=("Arial", 11, "bold"))
 lbl_gastos = tk.Label(frame_resumen, text="$ 0", font=("Arial", 11, "bold"), anchor="e")
-lbl_gastos.grid(row=2, column=1, sticky="e")
+lbl_gastos.grid(row=7, column=1, sticky="e")
 
-tk.Label(frame_resumen, text="Saldo disponible").grid(row=3, column=0, sticky="w")
+tk.Label(frame_resumen, text="Saldo disponible").grid(row=8, column=0, sticky="w")
 #lbl_saldo = tk.Label(frame_resumen, text="$ 0", font=("Arial", 13, "bold"))
 lbl_saldo = tk.Label(frame_resumen, text="$ 0", font=("Arial", 13, "bold"), anchor="e")
-lbl_saldo.grid(row=3, column=1, sticky="e")
+lbl_saldo.grid(row=8, column=1, sticky="e")
 
 #Treeview para mostrar gastos
 tree = ttk.Treeview(
@@ -337,10 +413,13 @@ tree.column("id", width=0, stretch=False)
 scrollbar = ttk.Scrollbar(frame_tabla, orient="vertical", command=tree.yview)
 tree.configure(yscrollcommand=scrollbar.set)
 
-scrollbar.grid(row=0, column=1, sticky="ns")
+scrollbar.grid(row=1, column=1, sticky="ns")
 
-tree.grid(row=0, column=0, sticky="nsew")
-frame_form.columnconfigure(1, weight=1)
+tree.grid(row=1, column=0, sticky="nsew")
+frame_form.columnconfigure(0, weight=1)
+
+
+
 
 # Selector de mes y año
 from datetime import datetime
@@ -361,6 +440,25 @@ combo_mes["values"] = meses
 combo_mes.current(mes_actual - 1)
 
 combo_mes.grid(row=0, column=1, padx=5, sticky="w")
+
+
+def cargar_categorias_filtro():
+    categorias = obtener_categorias()
+    combo_categoria["values"] = ["Todas"] + categorias
+    combo_categoria.set("Todas")
+
+cargar_categorias_filtro()
+
+# btn_filtrar = tk.Button(frame_filtros, text="Filtrar", command=filtrar_por_categoria)
+# btn_filtrar.grid(row=0, column=3, padx=5)
+
+
+def reset_filtro():
+    combo_categoria.set("Todas")
+    filtrar_por_categoria()
+
+btn_reset = tk.Button(frame_filtros, text="Resetear Gastos", command=reset_filtro)
+btn_reset.grid(row=0, column=3, padx=5)
 
 # Función para cargar gastos al cambiar el mes
 def cambiar_mes(event):
@@ -442,18 +540,42 @@ def agregar():
 tk.Button(frame_form, text="Agregar Gasto", command=agregar)\
     .grid(row=8, column=0, columnspan=2, pady=20)
 
-def seleccionar_gasto(event):
+# def seleccionar_gasto(event):
 
+#     global id_gasto_seleccionado
+
+#     item = tree.selection()
+
+#     if not item:
+#         return
+
+#     valores = tree.item(item[0], "values")
+
+#     id_gasto_seleccionado = valores[0]
+
+#     entry_fecha.delete(0, tk.END)
+#     entry_fecha.insert(0, valores[0])
+
+#     entry_descripcion.delete(0, tk.END)
+#     entry_descripcion.insert(0, valores[1])
+
+#     combo_categoria.set(valores[2])
+
+#     entry_monto.delete(0, tk.END)
+#     entry_monto.insert(0, valores[3].replace(".", "").replace(",", "."))
+
+def seleccionar_gasto(event):
     global id_gasto_seleccionado
 
-    item = tree.selection()
-
+    item = tree.focus()
     if not item:
         return
 
-    valores = tree.item(item[0], "values")
+    valores = tree.item(item, "values")
+    if not valores:
+        return
 
-    id_gasto_seleccionado = valores[0]
+    id_gasto_seleccionado = valores[0]  # ← GUARDAMOS EL ID
 
     entry_fecha.delete(0, tk.END)
     entry_fecha.insert(0, valores[1])
@@ -464,7 +586,7 @@ def seleccionar_gasto(event):
     combo_categoria.set(valores[3])
 
     entry_monto.delete(0, tk.END)
-    entry_monto.insert(0, valores[4].replace(".", "").replace(",", "."))
+    entry_monto.insert(0, valores[4])
 
 tree.bind("<<TreeviewSelect>>", seleccionar_gasto)
 
@@ -519,39 +641,68 @@ def eliminar():
 
 tk.Button(frame_form, text="Eliminar", command=eliminar).grid(row=9, column=0, columnspan=2, pady=5)
 
-def actualizar():
+# def actualizar():
 
+#     global id_gasto_seleccionado
+
+#     if id_gasto_seleccionado is None:
+#         messagebox.showwarning("Aviso", "Seleccione un gasto")
+#         return
+
+#     try:
+
+#         fecha = entry_fecha.get()
+#         descripcion = entry_descripcion.get()
+#         categoria = combo_categoria.get()
+#         monto = float(entry_monto.get())
+
+#         actualizar_gasto(
+#             id_gasto_seleccionado,
+#             fecha,
+#             descripcion,
+#             categoria,
+#             monto
+#         )
+
+#         cargar_treeview(mes_actual, anio_actual)
+#         actualizar_resumen()
+
+#         entry_descripcion.delete(0, tk.END)
+#         entry_monto.delete(0, tk.END)
+
+#         id_gasto_seleccionado = None
+
+#     except ValueError:
+#         messagebox.showerror("Error", "Monto inválido")
+
+def actualizar():
     global id_gasto_seleccionado
 
     if id_gasto_seleccionado is None:
-        messagebox.showwarning("Aviso", "Seleccione un gasto")
+        messagebox.showwarning("Atención", "Seleccione un gasto")
         return
 
-    try:
+    fecha = entry_fecha.get()
+    descripcion = entry_descripcion.get()
+    categoria = combo_categoria.get()
+    monto = entry_monto.get()
 
-        fecha = entry_fecha.get()
-        descripcion = entry_descripcion.get()
-        categoria = combo_categoria.get()
-        monto = float(entry_monto.get())
+    conn = conectar()
+    cursor = conn.cursor()
 
-        actualizar_gasto(
-            id_gasto_seleccionado,
-            fecha,
-            descripcion,
-            categoria,
-            monto
-        )
+    cursor.execute("""
+        UPDATE gastos
+        SET fecha=?, descripcion=?, categoria=?, monto=?
+        WHERE id=?
+    """, (fecha, descripcion, categoria, monto, id_gasto_seleccionado))
 
-        cargar_treeview(mes_actual, anio_actual)
-        actualizar_resumen()
+    
+    conn.commit()
+    conn.close()
 
-        entry_descripcion.delete(0, tk.END)
-        entry_monto.delete(0, tk.END)
-
-        id_gasto_seleccionado = None
-
-    except ValueError:
-        messagebox.showerror("Error", "Monto inválido")
+    messagebox.showinfo("OK", "Gasto actualizado")
+cargar_treeview(mes_actual, anio_actual)
+actualizar_resumen()
 
 tk.Button(frame_form, text="Actualizar", command=actualizar).grid(row=10, column=0, columnspan=2, pady=5)
 
@@ -581,5 +732,6 @@ lbl_logo.image = logo
 # Cargar gastos al iniciar la aplicación
 cargar_treeview(mes_actual, anio_actual)
 actualizar_resumen()
+cargar_categorias_filtro()
 
 ventana.mainloop()

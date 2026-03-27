@@ -13,12 +13,74 @@
 
     <h2 class="text-center mb-4">💰 Control de Gastos</h2>
 
+    <form method="get" class="row mb-3">
+        <div class="col-5">
+            <input type="number" name="mes" value="{{ mes }}" class="form-control" placeholder="Mes (01-12)">
+        </div>
+        <div class="col-5">
+            <input type="number" name="anio" value="{{ anio }}" class="form-control" placeholder="Año">
+        </div>
+        <div class="col-2">
+            <button class="btn btn-primary w-100">Ver</button>
+        </div>
+    </form>
+
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">Agregar ingreso</div>
+        <div class="card-body">
+            <form action="/agregar_ingreso" method="post">
+                <div class="mb-2">
+                    <label>Fecha</label>
+                    <input type="date" name="fecha" class="form-control">
+                </div>
+
+                <div class="mb-2">
+                    <label>Descripción</label>
+                    <input type="text" name="descripcion" class="form-control" placeholder="Sueldo / Devolución / Extra">
+                </div>
+
+                <div class="mb-2">
+                    <label>Monto</label>
+                    <input type="number" step="0.01" name="monto" class="form-control">
+                </div>
+
+                <button type="submit" class="btn btn-success w-100">Guardar ingreso</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">Ingresos del mes</div>
+        <div class="card-body">
+            <table class="table">
+                <tr>
+                    <th>Fecha</th>
+                    <th>Descripción</th>
+                    <th>Monto</th>
+                    <th>Acciones</th>
+                </tr>
+
+                {% for ing in ingresos %}
+                <tr>
+                    <td>{{ ing[1] }}</td>
+                    <td>{{ ing[2] }}</td>
+                    <td>${{ "%.2f"|format(ing[3]) }}</td>
+                    <td>
+                        <a href="/editar_ingreso/{{ ing[0] }}" class="btn btn-warning btn-sm">Editar</a>
+                        <a href="/eliminar_ingreso/{{ ing[0] }}" class="btn btn-danger btn-sm">Eliminar</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+
     <div class="row text-center mb-4">
         <div class="col-4">
             <div class="card bg-success text-white">
                 <div class="card-body">
                     <h6>Ingresos</h6>
-                    <h4>${{ total_ingresos }}</h4>
+                    <h4>${{ "%.2f"|format(total_ingresos) }}</h4>
                 </div>
             </div>
         </div>
@@ -27,7 +89,7 @@
             <div class="card bg-danger text-white">
                 <div class="card-body">
                     <h6>Gastos</h6>
-                    <h4>${{ total_gastos }}</h4>
+                    <h4>${{ "%.2f"|format(total_gastos) }}</h4>
                 </div>
             </div>
         </div>
@@ -36,7 +98,7 @@
             <div class="card bg-primary text-white">
                 <div class="card-body">
                     <h6>Saldo</h6>
-                    <h4>${{ total_ingresos - total_gastos }}</h4>
+                    <h4>${{ "%.2f"|format(total_ingresos - total_gastos) }}</h4>
                 </div>
             </div>
         </div>
@@ -109,6 +171,7 @@
                         <td>{{ gasto[3] }}</td>
                         <td>${{ gasto[4] }}</td>
                         <td>
+                            <a href="/editar_gasto/{{ gasto[0] }}" class="btn btn-warning btn-sm">Editar</a>
                             <a href="/eliminar/{{ gasto[0] }}" class="btn btn-danger btn-sm">Eliminar</a>
                         </td>
                     </tr>

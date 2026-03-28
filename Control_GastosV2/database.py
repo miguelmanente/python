@@ -7,17 +7,20 @@ DB_NAME = "gastos.db"
 conn = sqlite3.connect(DB_NAME)
 cursor = conn.cursor()
 
-#Conexion a la base de datos y creación de tablas si no existen
-def conectar():
+def obtener_ruta_db():
     if getattr(sys, 'frozen', False):
-        # Si es ejecutable
-        base_dir = os.path.dirname(sys.executable)
+        # Si está compilado con PyInstaller
+        base_path = os.path.dirname(sys.executable)
     else:
-        # Si es script normal
-        base_dir = os.path.dirname(os.path.abspath(__file__))
+        # Si estás en modo desarrollo
+        base_path = os.path.dirname(__file__)
 
-    db_path = os.path.join(base_dir, "gastos.db")
-    conn = sqlite3.connect(db_path)
+    return os.path.join(base_path, "gastos.db")
+
+
+def conectar():
+    ruta_db = obtener_ruta_db()
+    conn = sqlite3.connect(ruta_db)
     return conn
 
 

@@ -1,19 +1,26 @@
 import shutil
 import os
-from datetime import datetime
-from tkinter import messagebox
+import sys
+from tkinter import filedialog, messagebox
+
+def obtener_ruta_db():
+    if getattr(sys, 'frozen', False):
+        base_path = os.path.dirname(sys.executable)
+    else:
+        base_path = os.path.dirname(__file__)
+
+    return os.path.join(base_path, "gastos.db")
+
 
 def hacer_backup():
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    origen = os.path.join(base_dir, "gastos.db")
-    carpeta_backup = os.path.join(base_dir, "backup")
+    origen = obtener_ruta_db()
 
-    if not os.path.exists(carpeta_backup):
-        os.makedirs(carpeta_backup)
+    destino = filedialog.asksaveasfilename(
+        defaultextension=".db",
+        filetypes=[("Base de datos", "*.db")],
+        title="Guardar backup"
+    )
 
-    fecha = datetime.now().strftime("%Y-%m-%d_%H-%M")
-    destino = os.path.join(carpeta_backup, f"gastos_backup_{fecha}.db")
-
-    shutil.copy2(origen, destino)
-
-    messagebox.showinfo("Backup", "Backup realizado correctamente")
+    if destino:
+        shutil.copy2(origen, destino)
+        messagebox.showinfo("Backup", "Backup realizado correctamente")

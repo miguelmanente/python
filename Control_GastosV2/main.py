@@ -10,10 +10,13 @@ from categorias import abrir_ventana_categorias
 from gastos import agregar_gasto, obtener_gastos, eliminar_gasto
 from gastos import actualizar_gasto
 from gastos import agregar_gasto, obtener_gastos
-from ingresos import ventana_ingresos
-from ingresos import total_ingresos, total_gastos
+from ingresos import ventana_ingresos, total_ingresos, total_gastos
 from estadisticas import abrir_estadisticas
 from backup import hacer_backup
+from database import total_ingresos_mes, total_gastos_mes
+from gastos import limpiar_gastos_mes
+from ingresos import ventana_ingresos, limpiar_ingresos_mes
+from database import obtener_total_gastos_mes
 
 id_gasto_seleccionado = None
 
@@ -29,6 +32,76 @@ def formatear_monto(valor):
 def salir():
     if messagebox.askyesno("Salir", "¿Desea cerrar la aplicación?"):
         ventana.destroy()
+
+   
+   
+def obtener_ingresos_mes(mes, anio):
+    conn = conectar()
+    cursor = conn.cursor()
+
+    mes = str(mes).zfill(2)
+    anio = str(anio)
+
+    cursor.execute("""
+        SELECT id, fecha, descripcion, monto
+        FROM ingresos
+        WHERE substr(fecha, 6, 2)=?
+        AND substr(fecha, 1, 4)=?
+        ORDER BY fecha DESC
+    """, (mes, anio))
+
+    datos = cursor.fetchall()
+
+    conn.close()
+    return datos
+
+
+def limpiar_mes_actual():
+    respuesta = messagebox.askyesno(
+        "Confirmar",
+        "Se borrarán los ingresos del mes actual.\n¿Continuar?"
+    )
+
+    if not respuesta:
+        return
+
+    limpiar_ingresos_mes(mes_actual, anio_actual)
+
+    cargar_ingresos_treeview(mes_actual, anio_actual)
+    actualizar_resumen()
+
+    messagebox.showinfo("OK", "Ingresos del mes eliminados")
+
+def cargar_ingresos_treeview(mes_actual, anio_actual):
+
+        for fila in tree.get_children():
+            tree.delete(fila)
+
+        ingresos = obtener_ingresos_mes(mes_actual, anio_actual)
+
+        for ing in ingresos:
+            tree.insert("", "end", values=ing)
+
+def nuevo_mes_limpio():
+    global mes_actual, anio_actual
+
+    # Cambiar de mes
+    if mes_actual == 12:
+        mes_actual = 1
+        anio_actual += 1
+    else:
+        mes_actual += 1
+
+    # Limpiar datos del mes nuevo
+    limpiar_ingresos_mes(mes_actual, anio_actual)
+    limpiar_gastos_mes(mes_actual, anio_actual)
+
+    # Recargar pantalla
+    cargar_treeview(mes_actual, anio_actual)
+    cargar_ingresos_treeview(mes_actual, anio_actual)
+    actualizar_resumen()
+
+    messagebox.showinfo("OK", "Ingresos del mes eliminados")
 
 #Función que permite obtener el ingreso total mensual
 def obtener_total_ingresos():
@@ -72,17 +145,68 @@ def gastos_por_categoria():
 
     return resultado
 
+
+def gastos_por_categoria_mes(mes, anio):
+    conn = conectar()
+    cursor = conn.cursor()
+
+    fecha_inicio = f"{anio}-{str(mes).zfill(2)}-01"
+
+    if mes == 12:
+        fecha_fin = f"{anio+1}-01-01"
+    else:
+        fecha_fin = f"{anio}-{str(mes+1).zfill(2)}-01"
+
+    cursor.execute("""
+        SELECT categoria, SUM(monto)
+        FROM gastos
+        WHERE fecha >= ? AND fecha < ?
+        GROUP BY categoria
+    """, (fecha_inicio, fecha_fin))
+
+    datos = cursor.fetchall()
+    conn.close()
+
+    return datos
+
+
+
+def obtener_total_ingresos_mes(mes, anio):
+    conn = conectar()
+    cursor = conn.cursor()
+
+    fecha_inicio = f"{anio}-{str(mes).zfill(2)}-01"
+
+    if mes == 12:
+        fecha_fin = f"{anio+1}-01-01"
+    else:
+        fecha_fin = f"{anio}-{str(mes+1).zfill(2)}-01"
+
+    cursor.execute("""
+        SELECT SUM(monto)
+        FROM ingresos
+        WHERE fecha >= ? AND fecha < ?
+    """, (fecha_inicio, fecha_fin))
+
+    total = cursor.fetchone()[0]
+    conn.close()
+
+    return total if total else 0
+
+
+
 # Función que permite genera el reporte mensual con ingresos, gastos y balance
-def generar_reporte():
+def generar_reporte(mes, anio):
     from matplotlib.figure import Figure
     from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-    
+    import tkinter as tk
+
     reporte = tk.Toplevel()
     reporte.title("Reporte mensual")
-    reporte.geometry("800x700")
+    reporte.geometry("1000x700")
 
-    total_ingresos = obtener_total_ingresos()
-    total_gastos = obtener_total_gastos()
+    total_ingresos = obtener_total_ingresos_mes(mes, anio)
+    total_gastos = obtener_total_gastos_mes(mes, anio)
     balance = total_ingresos - total_gastos
 
     tk.Label(reporte, text="REPORTE MENSUAL", font=("Arial", 14, "bold")).pack(pady=10)
@@ -91,32 +215,28 @@ def generar_reporte():
     tk.Label(reporte, text=f"Balance: $ {balance:,.2f}").pack(pady=10)
 
     # ---- GRAFICO TORTA ----
-    datos = gastos_por_categoria()
+    datos = gastos_por_categoria_mes(mes, anio)
+
     categorias = [fila[0] for fila in datos]
     montos = [fila[1] for fila in datos]
 
-    fig = Figure(figsize=(10, 10))
+    fig = Figure(figsize=(9, 6))
     ax = fig.add_subplot(111)
 
     ax.pie(
-    montos,
-    labels=categorias,
-    autopct='%1.1f%%',
-    startangle=90
+        montos,
+        labels=categorias,
+        autopct='%1.1f%%',
+        startangle=90
     )
-    ax.pie(
-    montos,
-    labels=categorias,
-    autopct='%1.1f%%',
-    startangle=90
-)
 
-    ax.axis('equal')  # hace el círculo perfecto
-    ax.set_title("Gastos por categoría")
+    ax.axis('equal')
+    ax.set_title(f"Gastos por categoría {mes}/{anio}")
 
     canvas = FigureCanvasTkAgg(fig, master=reporte)
     canvas.draw()
     canvas.get_tk_widget().pack(pady=10)
+
 
 # Función para exportar el reporte mensual a Excel
 import pandas as pd
@@ -302,7 +422,7 @@ menu_bar.add_cascade(label="Movimientos", menu=menu_movimientos)
 
 menu_movimientos.add_command(
     label="Ingresos",
-    command=ventana_ingresos
+    command=lambda: ventana_ingresos(mes_actual, anio_actual)
 )
 
 menu_analisis = tk.Menu(menu_bar, tearoff=0)
@@ -317,16 +437,28 @@ menu_analisis.add_command(
 menu_reportes = tk.Menu(menu_bar, tearoff=0)
 menu_bar.add_cascade(label="Reportes", menu=menu_reportes)
 
-menu_reportes.add_command(label="Reporte mensual", command=generar_reporte)
+#menu_reportes.add_command(label="Reporte mensual", command=generar_reporte)
+menu_reportes.add_command(
+    label="Reporte mensual",
+    command=lambda: generar_reporte(mes_actual, anio_actual)
+)
+
 menu_reportes.add_command(
     label="Exportar reporte a Excel",
     command=lambda: exportar_excel_pro(mes_actual, anio_actual)
 )
 
+
+menu_archivo.add_command(label="Cambiar a mes siguiente", command=nuevo_mes_limpio)
+menu_archivo.add_command(label="Limpiar ingresos del mes", command=limpiar_mes_actual)
+
 menu_herramientas = tk.Menu(menu_bar, tearoff=0)
 menu_bar.add_cascade(label="Herramientas", menu=menu_herramientas)
 
+
+
 menu_herramientas.add_command(label="Crear backup", command=hacer_backup)
+
 
 menu_ayuda = tk.Menu(menu_bar, tearoff=0)
 menu_bar.add_cascade(label="Ayuda", menu=menu_ayuda)
@@ -498,20 +630,48 @@ entry_monto.grid(row=7, column=1, sticky="ew", pady=8)
 
 #print("Total gastos:", calcular_total_gastos())
 
-def cargar_treeview(mes_actual, anio_actual):
+# def cargar_treeview(mes_actual, anio_actual):
+
+#     for fila in tree.get_children():
+#         tree.delete(fila)
+
+#     for gasto in obtener_gastos():
+
+#         id_gasto, fecha, descripcion, categoria, monto = gasto
+
+#         tree.insert(
+#             "",
+#             "end",
+#             values=(id_gasto, fecha, descripcion, categoria, formatear_monto(monto))
+ #       )
+
+def cargar_treeview(mes, anio):
 
     for fila in tree.get_children():
         tree.delete(fila)
 
-    for gasto in obtener_gastos():
+    conn = conectar()
+    cursor = conn.cursor()
 
-        id_gasto, fecha, descripcion, categoria, monto = gasto
+    mes = str(mes).zfill(2)
+    anio = str(anio)
 
-        tree.insert(
-            "",
-            "end",
-            values=(id_gasto, fecha, descripcion, categoria, formatear_monto(monto))
-        )
+    cursor.execute("""
+        SELECT id, fecha, descripcion, categoria, monto
+        FROM gastos
+        WHERE substr(fecha, 6, 2) = ?
+        AND substr(fecha, 1, 4) = ?
+        ORDER BY fecha DESC
+    """, (mes, anio))
+
+    resultados = cursor.fetchall()
+    conn.close()
+
+    for fila in resultados:
+        tree.insert("", "end", values=fila)
+
+
+
 
 from gastos import agregar_gasto, calcular_total_gastos
 
@@ -593,9 +753,8 @@ tree.bind("<<TreeviewSelect>>", seleccionar_gasto)
 
 def actualizar_resumen():
 
-    ingresos = total_ingresos()
-    gastos = total_gastos()
-
+    ingresos = total_ingresos_mes(mes_actual, anio_actual)
+    gastos = total_gastos_mes(mes_actual, anio_actual)
     saldo = ingresos - gastos
 
     lbl_ingresos.config(text=f"$ {formatear_monto(ingresos)}")
@@ -611,6 +770,7 @@ def actualizar_resumen():
         lbl_saldo.config(fg="black")
 
     cargar_treeview(mes_actual, anio_actual)
+
 
 def eliminar():
 

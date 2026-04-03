@@ -135,3 +135,65 @@ def total_ingresos():
 
     return total
 
+
+def total_gastos_mes(mes, anio):
+    conn = conectar()
+    cursor = conn.cursor()
+
+    mes = str(mes).zfill(2)
+    anio = str(anio)
+
+    cursor.execute("""
+        SELECT SUM(monto) FROM gastos
+        WHERE substr(fecha, 6, 2)=?
+        AND substr(fecha, 1, 4)=?
+    """, (mes, anio))
+
+    total = cursor.fetchone()[0]
+    conn.close()
+
+    return total if total else 0
+
+
+def total_ingresos_mes(mes, anio):
+    conn = conectar()
+    cursor = conn.cursor()
+
+    fecha_inicio = f"{anio}-{str(mes).zfill(2)}-01"
+
+    if mes == 12:
+        fecha_fin = f"{anio+1}-01-01"
+    else:
+        fecha_fin = f"{anio}-{str(mes+1).zfill(2)}-01"
+
+    cursor.execute("""
+        SELECT SUM(monto) FROM ingresos
+        WHERE fecha >= ? AND fecha < ?
+    """, (fecha_inicio, fecha_fin))
+
+    total = cursor.fetchone()[0]
+    conn.close()
+
+    return total if total else 0
+
+def obtener_total_gastos_mes(mes, anio):
+    conn = conectar()
+    cursor = conn.cursor()
+
+    fecha_inicio = f"{anio}-{str(mes).zfill(2)}-01"
+
+    if mes == 12:
+        fecha_fin = f"{anio+1}-01-01"
+    else:
+        fecha_fin = f"{anio}-{str(mes+1).zfill(2)}-01"
+
+    cursor.execute("""
+        SELECT SUM(monto)
+        FROM gastos
+        WHERE fecha >= ? AND fecha < ?
+    """, (fecha_inicio, fecha_fin))
+
+    total = cursor.fetchone()[0]
+    conn.close()
+
+    return total if total else 0

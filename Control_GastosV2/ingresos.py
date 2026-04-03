@@ -1,12 +1,29 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
-from database import cursor, conn
+from database import conectar, conn
 from database import insertar_ingreso
 from database import total_gastos, total_ingresos
 
 
-def ventana_ingresos():
+def limpiar_ingresos_mes(mes, anio):
+            conn = conectar()
+            cursor = conn.cursor()
+
+            mes = str(mes).zfill(2)
+            anio = str(anio)
+
+            cursor.execute("""
+                DELETE FROM ingresos
+                WHERE substr(fecha, 6, 2)=?
+                AND substr(fecha, 1, 4)=?
+            """, (mes, anio))
+
+            conn.commit()
+            conn.close()
+
+
+def ventana_ingresos(mes, anio):
 
     id_ingreso_seleccionado = None
 
@@ -71,25 +88,38 @@ def ventana_ingresos():
     def formatear_monto(valor):
         return f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
     
-   
+    def obtener_ingresos_mes(mes, anio):
+        conn = conectar()
+        cursor = conn.cursor()
+
+        mes = str(mes).zfill(2)
+        anio = str(anio)
+
+        cursor.execute("""
+            SELECT id, fecha, descripcion, monto
+            FROM ingresos
+            WHERE substr(fecha, 6, 2)=?
+            AND substr(fecha, 1, 4)=?
+            ORDER BY fecha DESC
+        """, (mes, anio))
+
+        datos = cursor.fetchall()
+
+        conn.close()
+        return datos
+
+
+
+
     #función para cargar los ingresos en el Treeview   
     def cargar_treeview_ingresos():
 
         for fila in tree.get_children():
             tree.delete(fila)
 
-        cursor = conn.cursor()
+        datos = obtener_ingresos_mes(mes, anio)
 
-        cursor.execute("""
-            SELECT id, fecha, descripcion, monto
-            FROM ingresos
-            ORDER BY fecha DESC
-        """)
-
-        filas = cursor.fetchall()
-
-        for ingreso in filas:
-
+        for ingreso in datos:
             id_ingreso, fecha, descripcion, monto = ingreso
 
             tree.insert(
@@ -103,7 +133,7 @@ def ventana_ingresos():
                 )
             )
     
-
+   
     # función para calcular el total de ingresos mostrada abajo del Treeview
     def seleccionar_ingreso(event):
 
@@ -143,20 +173,32 @@ def ventana_ingresos():
     lbl_total_ingresos.pack(side="right")
     
     # función para agregar un ingreso a la base de datos y refrescar el Treeview con los nuevos datos
-    def agregar():
+    # def agregar():
 
-        fecha = entry_fecha.get()
+    #     fecha = entry_fecha.get()
+    #     descripcion = entry_desc.get()
+    #     monto = float(entry_monto.get())
+
+    #     insertar_ingreso(fecha, descripcion, monto)
+
+    #     cargar_treeview_ingresos()   # ← refresca la tabla
+
+    #     entry_fecha.delete(0, tk.END)
+    #     entry_desc.delete(0, tk.END)
+    #     entry_monto.delete(0, tk.END)
+            
+    #     cargar_treeview_ingresos()
+    #     actualizar_total()
+
+    from datetime import datetime
+
+    def agregar():
+        fecha = datetime.now().strftime("%Y-%m-%d")  # 🔥 clave
         descripcion = entry_desc.get()
         monto = float(entry_monto.get())
 
         insertar_ingreso(fecha, descripcion, monto)
 
-        cargar_treeview_ingresos()   # ← refresca la tabla
-
-        entry_fecha.delete(0, tk.END)
-        entry_desc.delete(0, tk.END)
-        entry_monto.delete(0, tk.END)
-            
         cargar_treeview_ingresos()
         actualizar_total()
 
@@ -257,14 +299,22 @@ def ventana_ingresos():
         
 
     # función para calcular el total de ingresos mostrada abajo del Treeview
-    def calcular_total_ingresos():
+    def calcular_total_ingresos(mes, anio):
 
         cursor = conn.cursor()
+
+        fecha_inicio = f"{anio}-{str(mes).zfill(2)}-01"
+
+        if mes == 12:
+            fecha_fin = f"{anio+1}-01-01"
+        else:
+            fecha_fin = f"{anio}-{str(mes+1).zfill(2)}-01"
 
         cursor.execute("""
             SELECT SUM(monto)
             FROM ingresos
-        """)
+            WHERE fecha >= ? AND fecha < ?
+        """, (fecha_inicio, fecha_fin))
 
         total = cursor.fetchone()[0]
 
@@ -272,13 +322,10 @@ def ventana_ingresos():
             total = 0
 
         return total
-    
-    cargar_treeview_ingresos()
      
     # función para actualizar el total de ingresos cada vez que se agrega, elimina o actualiza un ingreso
     def actualizar_total():
-
-        total = calcular_total_ingresos()
+        total = calcular_total_ingresos(mes, anio)
 
         total_formateado = formatear_monto(total)
 
@@ -290,16 +337,37 @@ def ventana_ingresos():
     cargar_treeview_ingresos()
     actualizar_total()
 
+
+
+
+    # def limpiar_mes_actual():
+    #     messagebox.askyesno(
+    #         "Confirmar",
+    #         "Se borrarán TODOS los datos del mes actual.\n¿Continuar?"
+    #     )
+
+    #      # Limpiar tabla
+    #     for row in tree.get_children():
+    #         tree.delete(row)
+
+            
+    #     messagebox.showinfo("OK", "Mes limpio")
+
+
     # función para cerrar la ventana de ingresos
     def salir():
             if messagebox.askyesno("Salir", "¿Desea la ventana Ingresos?"):
                 ventana.destroy()
 
+
+
     # botones para agregar, actualizar, eliminar y salir
     tk.Button(frame_form, text="Agregar ingreso", command=agregar).grid(row=3, column=0, columnspan=2, pady=10)
     tk.Button(frame_form, text="Actualizar", command=actualizar).grid(row=4,column=0, columnspan=2,pady=5)
     tk.Button(frame_form, text="Eliminar", command=eliminar).grid(row=5,column=0, columnspan=2,pady=5)
-    tk.Button(frame_form, text="Salir", command=salir).grid(row=6, column=0, columnspan=2, pady=20)
+    # tk.Button(frame_form, text="Nuevo Mes", command=nuevo_mes_limpio).grid(row=6,column=0, columnspan=2,pady=5)
+    # tk.Button(frame_form, text="Limpiar Ingresos", command=limpiar_mes_actual).grid(row=7,column=0, columnspan=2,pady=5)
+    tk.Button(frame_form, text="Salir", command=salir).grid(row=8, column=0, columnspan=2, pady=20)
 
     
 

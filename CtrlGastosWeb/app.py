@@ -1,7 +1,11 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 import sqlite3
+import shutil
+import os
+from datetime import datetime
 
 app = Flask(__name__)
+app.secret_key = "clave_secreta"
 
 def conectar():
     conn = sqlite3.connect("gastos.db", timeout=10)
@@ -210,6 +214,32 @@ def eliminar(id):
     conn.close()
 
     return redirect("/")
+
+
+@app.route("/cambiar_mes", methods=["POST"])
+def cambiar_mes():
+    mes = request.form.get("mes")
+    anio = request.form.get("anio")
+
+    # Backup (esto sí está perfecto)
+    archivo = hacer_backup()
+
+    # Redirigir pasando mes y año por URL
+    return redirect(url_for("index", mes=mes, anio=anio))
+
+def hacer_backup():
+    fecha = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+    carpeta = "backups"
+    os.makedirs(carpeta, exist_ok=True)
+
+    origen = "gastos.db"
+    destino = f"{carpeta}/gastos_{fecha}.db"
+
+    shutil.copy2(origen, destino)
+
+    return destino
+
 
 if __name__ == "__main__":
     #app.run(debug=True)

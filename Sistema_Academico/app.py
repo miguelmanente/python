@@ -1,16 +1,15 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
-from PIL import Image, ImageTk  # Necesitas instalar Pillow
+from PIL import Image, ImageTk  # Necesitas instalar Pillow para el logo pag ppal
 from database import crear_tablas
 from registrar import ventana_registro
 from loguear import ventana_login
 from centraVent import centrar_ventana
 
 
-
 #Código - Zona de funciones
-
+#Crea la tablas de la BD si no están creadas
 crear_tablas()
 
 
@@ -33,13 +32,17 @@ ventana.geometry("1100x700")
 barramenu = tk.Menu(ventana)
 ventana.config(menu=barramenu)
 
-#Menú Archivo opción Salir
+#Menú Archivo
 mArchivo = tk.Menu(barramenu, tearoff=0)
 barramenu.add_cascade(label="Archivo", menu=mArchivo)
 mArchivo.add_command(label="Registrarse", command=ventana_registro)
 mArchivo.add_command(label="Loguearse", command=ventana_login)
 mArchivo.add_separator()
 mArchivo.add_command(label="Salir", command=salir)
+
+#Menú Profesor
+mProfesor =tk.Menu(barramenu, tearoff=0)
+barramenu.add_cascade(label="Profesor", menu=mProfesor)
 
 #---------------------------------- LOGO PAGINA PRINCIPAL -------------------------------------
 # Crear un Frame para centrar el contenido
@@ -71,7 +74,6 @@ label_text = tk.Label(
 label_text.pack(pady=(0,10))
 #-------------------------------------------------------------------------------------------
 
-
-
 centrar_ventana(ventana)
+
 ventana.mainloop()

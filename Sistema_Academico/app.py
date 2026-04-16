@@ -6,6 +6,7 @@ from database import crear_tablas
 from registrar import ventana_registro
 from loguear import ventana_login
 from centraVent import centrar_ventana
+from datos_personales import info_profesor
 
 
 #Código - Zona de funciones
@@ -43,6 +44,7 @@ mArchivo.add_command(label="Salir", command=salir)
 #Menú Profesor
 mProfesor =tk.Menu(barramenu, tearoff=0)
 barramenu.add_cascade(label="Profesor", menu=mProfesor)
+mProfesor.add_command(label="Datos Personales", command=info_profesor)
 
 #---------------------------------- LOGO PAGINA PRINCIPAL -------------------------------------
 # Crear un Frame para centrar el contenido

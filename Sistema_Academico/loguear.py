@@ -32,7 +32,7 @@ def ventana_login():
 
         if resultado:
             usuario_logueado = usuario
-            messagebox.showinfo("Bienvenido", f"Hola {usuario}")
+            messagebox.showinfo("Bienvenido", f"Se ha logueado al sistema  {usuario}")
             login.destroy()
         else:
             messagebox.showerror("Error", "Usuario o contraseña incorrectos")
@@ -40,7 +40,7 @@ def ventana_login():
 
     #-------------------------------  Salir de la aplicación -------------------------------------
     def salir():
-        if messagebox.askyesno("Salir", "¿Desea salir de registración?"):
+        if messagebox.askyesno("Salir", "¿Desea salir después de loguease?"):
             login.destroy()
     #----------------------------------------------------------------------------------------------
 

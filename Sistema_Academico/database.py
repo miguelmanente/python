@@ -2,26 +2,28 @@ import sqlite3
 import hashlib
 import os
 
-# Ruta dinámica de la base de datos
+# ---------------- Ruta dinámica de la base de datos profesores --------------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATABASE = os.path.join(BASE_DIR, "profesores.db")
 
-#función que permite conectarse a la Base de datos
+#--------- función que permite conectarse a la BD profesores -----------------------
 def conectar():
     """
     Establece la conexión con la base de datos SQLite
     y habilita las claves foráneas.
     """
     conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row
+    #conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON;")
     return conn
+# ----------------------------------------------------------------------------------
 
-# Encriptar contraseña de usuarios
+# -------------------- Encriptar contraseña de usuarios ----------------------------
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
+#-----------------------------------------------------------------------------------
 
-# Registrar usuario que luego permite loguearse
+# ----------- Registrar usuario que luego permite loguearse ------------------------
 def registrar_usuario(username, password):
     try:
         conn = conectar()
@@ -35,8 +37,10 @@ def registrar_usuario(username, password):
         return True
     except sqlite3.IntegrityError:
         return False  # Usuario ya existe
+# --------------------------- Fin función Registrar Usuario -------------------------
 
-# Validar login para loguearse
+
+# ---------------------- Validar login del usuario para loguearse -------------------
 def validar_usuario(username, password):
     conn = conectar()
     cursor = conn.cursor()
@@ -47,6 +51,7 @@ def validar_usuario(username, password):
     usuario = cursor.fetchone()
     conn.close()
     return usuario
+# ---------------------------- Fin función validación---------------------------------------------------
 
 #---------------------  CREAR Y VERIFICAR SI ESTÁN CREADAS LAS TABLAS ----------------
 def crear_tablas():
@@ -110,3 +115,5 @@ def crear_tablas():
 
     conn.commit()
     conn.close()
+
+    # --------------------------------------- fin función crear tabla -----------------------

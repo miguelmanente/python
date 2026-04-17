@@ -1,10 +1,12 @@
 # ---------------------  Área de declaración de librerías --------------------------------
 import tkinter as tk
 from tkinter import ttk, messagebox
+import re
 from database import conectar
 
 # ----------- Función que maneja toda la ventana datos personales del profesor ------------
 def info_profesor():
+
     ventana = tk.Toplevel()
     ventana.title("Datos personales del profesor")
     ventana.geometry("900x500")
@@ -35,9 +37,15 @@ def info_profesor():
     # Labels y Entrys distribuidos en dos columnas
     ttk.Label(frame_superior, text="Apellido y Nombres:").grid(row=0, column=0, sticky="e", padx=5, pady=5)
     ttk.Entry(frame_superior, textvariable=apellido_nombre).grid(row=0, column=1, sticky="ew", padx=5, pady=5)
-
+ 
+    #Verificación e ingreso de número en DNI
     ttk.Label(frame_superior, text="DNI:").grid(row=0, column=2, sticky="e", padx=5, pady=5)
-    ttk.Entry(frame_superior, textvariable=dni).grid(row=0, column=3, sticky="ew", padx=5, pady=5)
+    #ttk.Entry(frame_superior, textvariable=dni).grid(row=0, column=3, sticky="ew", padx=5, pady=5)
+    def solo_numeros(P):
+        return P.isdigit() or P == ""
+    vcmd = (ventana.register(solo_numeros), '%P')
+    
+    ttk.Entry(frame_superior, textvariable=dni, validate="key", validatecommand=vcmd).grid(row=0, column=3, sticky="ew", padx=5, pady=5)
 
     ttk.Label(frame_superior, text="Teléfono:").grid(row=1, column=0, sticky="e", padx=5, pady=5)
     ttk.Entry(frame_superior, textvariable=telefono).grid(row=1, column=1, sticky="ew", padx=5, pady=5)
@@ -104,7 +112,19 @@ def info_profesor():
     # ================================================================================
     #    FUNCIONES Agregar, modificar, eliminar. limpiar campos y salir de la ventana 
     # ================================================================================
+  
+    #--------------- Validación de dni ---------------------------------------------
+    def validar_dni(dni):
+        return dni.isdigit() and len(dni) in (7, 8)
+    #-------------------------------------------------------------------------------
+    
+    # ----------------------- Validación de correo electrónico ------------------------
+    def validar_email(email):
+        patron = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+        return re.match(patron, email) is not None
+    # --------------------------------------------------------------------------------
 
+    
     # ---  Función que permite selecccionar un registro en el treview ------------------
     id_seleccionado = None
 
@@ -156,6 +176,16 @@ def info_profesor():
                 "Campos obligatorios",
                 "Apellido y Nombres y DNI son obligatorios."
             )
+            return
+
+        # ✅ VALIDAR DNI
+        if not validar_dni(dni.get()):
+            messagebox.showerror("Error", "DNI inválido (solo números, 7 u 8 dígitos)")
+            return
+
+        # ✅ VALIDAR EMAIL (solo si hay algo cargado)
+        if email.get() and not validar_email(email.get()):
+            messagebox.showerror("Error", "Email inválido")
             return
 
         try:

@@ -2,6 +2,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 import re
+from datetime import datetime
 from database import conectar
 
 # ----------- Función que maneja toda la ventana datos personales del profesor ------------
@@ -38,26 +39,48 @@ def info_profesor():
     ttk.Label(frame_superior, text="Apellido y Nombres:").grid(row=0, column=0, sticky="e", padx=5, pady=5)
     ttk.Entry(frame_superior, textvariable=apellido_nombre).grid(row=0, column=1, sticky="ew", padx=5, pady=5)
  
+    style = ttk.Style()
+
+    style.configure("Valido.TEntry", foreground="black")
+    style.configure("Error.TEntry", foreground="black")
+    style.map("Error.TEntry",
+            fieldbackground=[("!disabled", "#ffcccc")])  # rojo claro
+    
     #Verificación e ingreso de número en DNI
     ttk.Label(frame_superior, text="DNI:").grid(row=0, column=2, sticky="e", padx=5, pady=5)
     #ttk.Entry(frame_superior, textvariable=dni).grid(row=0, column=3, sticky="ew", padx=5, pady=5)
+    
     def solo_numeros(P):
         return P.isdigit() or P == ""
+
     vcmd = (ventana.register(solo_numeros), '%P')
-    
-    ttk.Entry(frame_superior, textvariable=dni, validate="key", validatecommand=vcmd).grid(row=0, column=3, sticky="ew", padx=5, pady=5)
+
+    entry_dni = ttk.Entry(
+    frame_superior,
+    textvariable=dni,
+    validate="key",
+    validatecommand=vcmd,
+    style="Valido.TEntry"
+)
+
+    entry_dni.grid(row=0, column=3, sticky="ew", padx=5, pady=5)
 
     ttk.Label(frame_superior, text="Teléfono:").grid(row=1, column=0, sticky="e", padx=5, pady=5)
     ttk.Entry(frame_superior, textvariable=telefono).grid(row=1, column=1, sticky="ew", padx=5, pady=5)
 
     ttk.Label(frame_superior, text="Email:").grid(row=1, column=2, sticky="e", padx=5, pady=5)
-    ttk.Entry(frame_superior, textvariable=email).grid(row=1, column=3, sticky="ew", padx=5, pady=5)
+    #ttk.Entry(frame_superior, textvariable=email).grid(row=1, column=3, sticky="ew", padx=5, pady=5)
+    entry_email = ttk.Entry(frame_superior, textvariable=email, style="Valido.TEntry")
+    entry_email.grid(row=1, column=3, sticky="ew", padx=5, pady=5)
 
     ttk.Label(frame_superior, text="Situación de Revista:").grid(row=2, column=0, sticky="e", padx=5, pady=5)
     ttk.Entry(frame_superior, textvariable=situacion_revista).grid(row=2, column=1, sticky="ew", padx=5, pady=5)
 
     ttk.Label(frame_superior, text="Fecha Toma de Posesión:").grid(row=2, column=2, sticky="e", padx=5, pady=5)
-    ttk.Entry(frame_superior, textvariable=fecha_toma).grid(row=2, column=3, sticky="ew", padx=5, pady=5)
+    #ttk.Entry(frame_superior, textvariable=fecha_toma).grid(row=2, column=3, sticky="ew", padx=5, pady=5)
+
+    entry_fecha = ttk.Entry(frame_superior, textvariable=fecha_toma)
+    entry_fecha.grid(row=2, column=3, sticky="ew", padx=5, pady=5)
 
     # =========================
     # BOTONES
@@ -108,23 +131,53 @@ def info_profesor():
     scrollbar_y.grid(row=0, column=1, sticky="ns")
     scrollbar_x.grid(row=1, column=0, sticky="ew")
 
-   
+    
     # ================================================================================
     #    FUNCIONES Agregar, modificar, eliminar. limpiar campos y salir de la ventana 
     # ================================================================================
   
+    #----------------------  Funciones que chequean DNI y Email ----------------------
+    def marcar_error(entry):
+        entry.config(style="Error.TEntry")
+
+    def marcar_valido(entry):
+        entry.config(style="Valido.TEntry")
+    # --------------------------------------------------------------------------------
+    
     #--------------- Validación de dni ---------------------------------------------
     def validar_dni(dni):
-        return dni.isdigit() and len(dni) in (7, 8)
+         return dni.isdigit() and len(dni) in (7, 8)
+   
+    # Coloca en rojo la caja hasta que haya error en la escriyura del dni
+    def validar_dni_evento(event):
+        valor = dni.get()
+        if valor.isdigit() and len(valor) in (7, 8):
+            marcar_valido(entry_dni)
+        else:
+            marcar_error(entry_dni)
+
+    entry_dni.bind("<KeyRelease>", validar_dni_evento)
     #-------------------------------------------------------------------------------
     
     # ----------------------- Validación de correo electrónico ------------------------
-    def validar_email(email):
+    def validar_email(valor):
         patron = r'^[\w\.-]+@[\w\.-]+\.\w+$'
-        return re.match(patron, email) is not None
-    # --------------------------------------------------------------------------------
-
+        return re.match(patron, valor) is not None
     
+    # Coloca en rojo la caja hasta que haya error en la escritura del correo
+    def validar_email_evento(event):
+        valor = email.get()
+        patron = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+
+        if re.match(patron, valor) or valor == "":
+            marcar_valido(entry_email)
+        else:
+            marcar_error(entry_email)
+
+    entry_email.bind("<KeyRelease>", validar_email_evento)
+
+    # --------------------------------------------------------------------------------
+   
     # ---  Función que permite selecccionar un registro en el treview ------------------
     id_seleccionado = None
 
@@ -187,7 +240,7 @@ def info_profesor():
         if email.get() and not validar_email(email.get()):
             messagebox.showerror("Error", "Email inválido")
             return
-
+        
         try:
             conn = conectar()
             cursor = conn.cursor()
@@ -268,6 +321,54 @@ def info_profesor():
         cargar_datos_treeview()
         limpiar_campos()
     #---------------------------------------------------------------------------------------
+    
+    # -------------------- BÚSQUEDA POR LETRA INICIAL EN LA TABLA  -------------------------
+    texto_busqueda = ""
+
+    texto_busqueda = ""
+    ultimo_tiempo = 0
+
+    def buscar_treeview(event):
+        nonlocal texto_busqueda, ultimo_tiempo
+
+        import time
+        ahora = time.time()
+
+        # Si pasa más de 1 segundo → reinicia búsqueda
+        if ahora - ultimo_tiempo > 1:
+            texto_busqueda = ""
+
+        ultimo_tiempo = ahora
+
+        if not event.char.isalpha():
+            return
+
+        texto_busqueda += event.char.lower()
+
+        items = tree.get_children()
+
+        # desde dónde empezar (posición actual)
+        seleccion = tree.selection()
+        start_index = 0
+
+        if seleccion:
+            start_index = items.index(seleccion[0]) + 1
+
+        # recorrer desde la posición actual hacia abajo
+        for i in range(len(items)):
+            idx = (start_index + i) % len(items)  # 🔥 ciclo
+
+            item = items[idx]
+            valores = tree.item(item, "values")
+            apellido = valores[1].lower()
+
+            if apellido.startswith(texto_busqueda):
+                tree.selection_set(item)
+                tree.focus(item)
+                tree.see(item)
+                break
+    tree.bind("<Key>", buscar_treeview)
+    # ---------------------------------------------------------------------------------------
 
     # -------------- Limpia los Entrys de datos ingresados y/o seleccionados ----------------
     def limpiar_campos():
@@ -280,9 +381,7 @@ def info_profesor():
         fecha_toma.set("")
     #------------------------------------------------------------------------------------------
     
-    
     cargar_datos_treeview()
-    
     # --------------------------- Botones que permiten agregar, modificar etc. ---------------------------
     ttk.Button(frame_botones, text="Agregar", command=agregar_datos).grid(row=0, column=0, padx=5)
     ttk.Button(frame_botones, text="Modificar", command=modificar_registro).grid(row=0, column=1, padx=5)

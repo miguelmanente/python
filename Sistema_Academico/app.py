@@ -7,6 +7,7 @@ from registrar import ventana_registro
 from loguear import ventana_login
 from centraVent import centrar_ventana
 from datos_personales import info_profesor
+from altaMaterias import info_materias
 
 
 #Código - Zona de funciones
@@ -45,6 +46,11 @@ mArchivo.add_command(label="Salir", command=salir)
 mProfesor =tk.Menu(barramenu, tearoff=0)
 barramenu.add_cascade(label="Profesor", menu=mProfesor)
 mProfesor.add_command(label="Datos Personales", command=info_profesor)
+
+#Menú Materias
+mMaterias = tk.Menu(barramenu, tearoff=0)
+barramenu.add_cascade(label="Materias", menu=mMaterias)
+mMaterias.add_command(label="Agregar Materias", command=info_materias)
 
 #---------------------------------- LOGO PAGINA PRINCIPAL -------------------------------------
 # Crear un Frame para centrar el contenido

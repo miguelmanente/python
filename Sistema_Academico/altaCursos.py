@@ -1,0 +1,108 @@
+# ---------------------  Área de declaración de librerías --------------------------------
+import tkinter as tk
+from tkinter import ttk, messagebox
+from database import conectar
+from centraVent import centrar_ventana
+
+def info_cursos():
+
+    ventana = tk.Toplevel()
+    ventana.title("Información de los Cursos")
+    ventana.geometry("900x500")
+
+    # Configuración del grid de la ventana principal
+    ventana.rowconfigure(0, weight=1)  # Parte superior
+    ventana.rowconfigure(1, weight=2)  # Parte inferior
+    ventana.columnconfigure(0, weight=1)
+
+
+    # =========================
+    # FRAME SUPERIOR (ENTRYS)
+    # =========================
+    frame_superior = ttk.LabelFrame(ventana, text="Ingreso de Cursos Secundaria y Polimodal", padding=10)
+    frame_superior.grid(row=0, column=0, sticky="nsew", padx=10, pady=5)
+
+    # Configurar columnas del frame superior
+    frame_superior.columnconfigure(1, weight=1)
+    frame_superior.columnconfigure(3, weight=1)
+
+    # -------------------------- Variables ----------------------------------------------------------------------------
+    nombre = tk.StringVar()
+    descripcion = tk.StringVar()
+    # -----------------------------------------------------------------------------------------------------------------
+
+    # -----------------------------  Labels y Entrys distribuidos en dos columnas  ------------------------------------
+    # Labels y entry que permite ingregar elnombre de la materia
+    ttk.Label(frame_superior, text="Nombre completo del Curso :").grid(row=0, column=0, sticky="e", padx=5, pady=5)
+    ttk.Entry(frame_superior, textvariable=nombre).grid(row=0, column=1, sticky="ew", padx=5, pady=5)
+
+    # Labels y entry para describir la materia
+    ttk.Label(frame_superior, text="Turno del Curso:").grid(row=1, column=0, sticky="e", padx=5, pady=5)
+    ttk.Entry(frame_superior, textvariable=descripcion).grid(row=1, column=1, sticky="ew", padx=5, pady=5)
+ 
+    # =========================
+    # BOTONES
+    # =========================
+    frame_botones = ttk.Frame(frame_superior)
+    frame_botones.grid(row=3, column=0, columnspan=4, pady=10)
+
+    # =========================
+    # FRAME INFERIOR (TREEVIEW)
+    # =========================
+    frame_inferior = ttk.LabelFrame(ventana, text="Listado de Cursos", padding=10)
+    frame_inferior.grid(row=1, column=0, sticky="nsew", padx=10, pady=(0, 10))
+
+    # Configuración del grid del frame inferior
+    frame_inferior.rowconfigure(0, weight=1)
+    frame_inferior.columnconfigure(0, weight=1)
+
+    #Columnas del Treeview
+    columnas = ("id_curso","nombre", "turno")
+
+    tree = ttk.Treeview(frame_inferior, columns=columnas, show="headings")
+    tree.grid(row=0, column=0, sticky="nsew")
+
+    # Encabezados
+    tree.heading("id_curso", text="ID")
+    tree.heading("nombre", text="Nombre del Curso")
+    tree.heading("turno", text="Turno del Curso")
+
+    
+    tree.column("id_curso", width=0, stretch=False)
+    tree.column("nombre", width=200, anchor="w")
+    tree.column("turno", width=100, anchor="center")
+ 
+
+    # Scrollbars
+    scrollbar_y = ttk.Scrollbar(frame_inferior, orient="vertical", command=tree.yview)
+    scrollbar_x = ttk.Scrollbar(frame_inferior, orient="horizontal", command=tree.xview)
+    tree.configure(yscrollcommand=scrollbar_y.set, xscrollcommand=scrollbar_x.set)
+
+    # Ubicación en el grid
+    tree.grid(row=0, column=0, sticky="nsew")
+    scrollbar_y.grid(row=0, column=1, sticky="ns")
+    scrollbar_x.grid(row=1, column=0, sticky="ew")
+
+    #========================================================================================
+    #                                  MÉTODOS O FUNCIONES
+    #========================================================================================
+    
+    # Variable global ha usar en las distintas funciones 
+    id_seleccionado = None
+
+
+     # -------------- Limpia los Entrys de datos ingresados y/o seleccionados ------------------------------
+    def limpiar_campos():
+        nonlocal id_seleccionado
+        nombre.set("")
+        descripcion.set("")
+    #-----------------------------------------------------------------------------------------------------
+
+
+    # --------------------------- Botones que permiten agregar, modificar etc. ---------------------------
+    ttk.Button(frame_botones, text="Agregar", command="agregar_cursos").grid(row=0, column=0, padx=5)
+    ttk.Button(frame_botones, text="Modificar", command="modificar_cursos").grid(row=0, column=1, padx=5)
+    ttk.Button(frame_botones, text="Eliminar", command="eliminar_cursos").grid(row=0, column=2, padx=5)
+    ttk.Button(frame_botones, text="Limpiar", command=limpiar_campos).grid(row=0, column=3, padx=5)
+    ttk.Button(frame_botones, text="Cerrar", command=ventana.destroy).grid(row=0, column=4, padx=5)
+    # ----------------------------------------------------------------------------------------------------

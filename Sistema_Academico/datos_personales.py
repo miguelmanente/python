@@ -4,6 +4,7 @@ from tkinter import ttk, messagebox
 import re
 from datetime import datetime
 from database import conectar
+from centraVent import centrar_ventana
 
 # ----------- Función que maneja toda la ventana datos personales del profesor ------------
 def info_profesor():
@@ -381,6 +382,7 @@ def info_profesor():
         fecha_toma.set("")
     #------------------------------------------------------------------------------------------
     
+    centrar_ventana(ventana)
     cargar_datos_treeview()
     # --------------------------- Botones que permiten agregar, modificar etc. ---------------------------
     ttk.Button(frame_botones, text="Agregar", command=agregar_datos).grid(row=0, column=0, padx=5)

@@ -2,6 +2,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from database import conectar
+from centraVent import centrar_ventana
 
 def info_materias():
 
@@ -88,7 +89,7 @@ def info_materias():
     #                                  MÉTODOS O FUNCIONES
     #========================================================================================
     
-    #Variable global ha usar en las distintas funciones 
+    # Variable global ha usar en las distintas funciones 
     id_seleccionado = None
 
     # ----------------- Carga y muestra los registros cargados en la BD Materias -------------
@@ -144,6 +145,126 @@ def info_materias():
             messagebox.showerror("Error", f"No se pudieron guardar los datos:\n{e}")
     # ----------------------------------------------------------------------------------
 
+
+    # ---  Función que permite selecccionar un registro en el treview ------------------
+  
+    def seleccionar_registro(event):
+        nonlocal id_seleccionado
+
+        item = tree.selection()
+        if not item:
+            return
+
+        valores = tree.item(item[0], "values")
+
+        id_seleccionado = valores[0]  # 👈 ESTE ES EL CLAVE
+
+        nombre.set(valores[1])
+        descripcion.set(valores[2])
+    
+
+    tree.bind("<<TreeviewSelect>>", seleccionar_registro) 
+    # ---------------------------------------------------------------------------------
+
+
+    # ----------------  Modifica registro de profesores --------------------------------
+    def modificar_materia():
+        if not id_seleccionado:
+            messagebox.showwarning("Atención", "Seleccione un registro")
+            return
+
+        conn = conectar()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            UPDATE materias
+            SET nombre = ?, descripcion = ?
+            WHERE id_materia = ?
+        """, (
+            nombre.get(),
+            descripcion.get(),
+            id_seleccionado
+        ))
+
+        conn.commit()
+        conn.close()
+
+        cargar_datos_treeview()
+        limpiar_campos()
+        messagebox.showinfo("Éxito", "Registro actualizado")
+    # -------------------------------------------------------------------------------------
+
+    # ----------------  Elimina registros de profesores ----------------------------------
+    def eliminar_materia():
+        if not id_seleccionado:
+            messagebox.showwarning("Atención", "Seleccione un registro")
+            return
+
+        confirmar = messagebox.askyesno("Confirmar", "¿Eliminar registro?")
+        if not confirmar:
+            return
+
+        conn = conectar()
+        cursor = conn.cursor()
+
+        cursor.execute("DELETE FROM materias WHERE id_materia = ?", (id_seleccionado,))
+
+        conn.commit()
+        conn.close()
+
+        cargar_datos_treeview()
+        limpiar_campos()
+    #---------------------------------------------------------------------------------------
+
+
+    # -------------------- BÚSQUEDA POR LETRA INICIAL EN LA TABLA  -------------------------
+    texto_busqueda = ""
+
+    texto_busqueda = ""
+    ultimo_tiempo = 0
+
+    def buscar_treeview(event):
+        nonlocal texto_busqueda, ultimo_tiempo
+
+        import time
+        ahora = time.time()
+
+        # Si pasa más de 1 segundo → reinicia búsqueda
+        if ahora - ultimo_tiempo > 1:
+            texto_busqueda = ""
+
+        ultimo_tiempo = ahora
+
+        if not event.char.isalpha():
+            return
+
+        texto_busqueda += event.char.lower()
+
+        items = tree.get_children()
+
+        # desde dónde empezar (posición actual)
+        seleccion = tree.selection()
+        start_index = 0
+
+        if seleccion:
+            start_index = items.index(seleccion[0]) + 1
+
+        # recorrer desde la posición actual hacia abajo
+        for i in range(len(items)):
+            idx = (start_index + i) % len(items)  # 🔥 ciclo
+
+            item = items[idx]
+            valores = tree.item(item, "values")
+            apellido = valores[1].lower()
+
+            if apellido.startswith(texto_busqueda):
+                tree.selection_set(item)
+                tree.focus(item)
+                tree.see(item)
+                break
+    tree.bind("<Key>", buscar_treeview)
+    # ---------------------------------------------------------------------------------------
+
     # -------------- Limpia los Entrys de datos ingresados y/o seleccionados ------------------------------
     def limpiar_campos():
         nonlocal id_seleccionado
@@ -152,12 +273,14 @@ def info_materias():
     #-----------------------------------------------------------------------------------------------------
 
     # ----------------------  Muestra toda la información cargada en la BD -------------------------------
+    centrar_ventana(ventana)  #centra pantalla Materias
     cargar_datos_treeview()
     # ----------------------------------------------------------------------------------------------------
+
     # --------------------------- Botones que permiten agregar, modificar etc. ---------------------------
     ttk.Button(frame_botones, text="Agregar", command=agregar_materias).grid(row=0, column=0, padx=5)
-    ttk.Button(frame_botones, text="Modificar", command="").grid(row=0, column=1, padx=5)
-    ttk.Button(frame_botones, text="Eliminar", command="").grid(row=0, column=2, padx=5)
+    ttk.Button(frame_botones, text="Modificar", command=modificar_materia).grid(row=0, column=1, padx=5)
+    ttk.Button(frame_botones, text="Eliminar", command=eliminar_materia).grid(row=0, column=2, padx=5)
     ttk.Button(frame_botones, text="Limpiar", command=limpiar_campos).grid(row=0, column=3, padx=5)
     ttk.Button(frame_botones, text="Cerrar", command=ventana.destroy).grid(row=0, column=4, padx=5)
     # ----------------------------------------------------------------------------------------------------

@@ -28,6 +28,10 @@ ventana = tk.Tk()
 ventana.title("SISTEMA ACADÉMICO")
 ventana.geometry("1100x700")
 
+ventana.rowconfigure(0, weight=1)
+ventana.rowconfigure(1, weight=0)
+ventana.columnconfigure(0, weight=1)
+
 #-------------------------------------- BARRA DE NENÚ -----------------------------------------
 
 #Barra de menúes
@@ -82,6 +86,31 @@ label_text = tk.Label(
 label_text.pack(pady=(0,10))
 #-------------------------------------------------------------------------------------------
 
+# Footer con logo y texto
+
+img = Image.open("logotipo.png")
+img = img.resize((100, 100))  # tamaño exacto que quieras
+logo = ImageTk.PhotoImage(img)
+# logo = tk.PhotoImage(file="logotipo.png")
+# logo = logo.subsample(10, 10)
+
+# Frame footer (usar PACK porque la ventana usa pack)
+frame_footer = tk.Frame(ventana)
+frame_footer.pack(side="bottom", anchor="w", padx=10, pady=5)
+
+lbl_logo = tk.Label(frame_footer, image=logo)
+lbl_logo.pack(anchor="w")
+
+lbl_texto = tk.Label(
+    frame_footer,
+    text="© 2026 Miguel Manente",
+    font=("Arial", 12),
+    fg="gray"
+)
+lbl_texto.pack(anchor="w")
+
+lbl_logo.image = logo
+#--------------------------------------------------------------------------------------------
 centrar_ventana(ventana)
 
 ventana.mainloop()

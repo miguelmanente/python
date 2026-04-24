@@ -11,10 +11,20 @@ from altaMaterias import info_materias
 from altaCursos import info_cursos
 
 
+root = tk.Tk()
+root.title("Cierre este ventana para ingresar al Sistema Académico")
+root.geometry("320x100")
+root.withdraw()  # 🔒 ocultar sistema
+
+ventana_login(root)  # abrir login)
+
+root.mainloop()
+
+
+
 #Código - Zona de funciones
 #Crea la tablas de la BD si no están creadas
 crear_tablas()
-
 
 #-------------------------------  Salir de la aplicación -------------------------------------
 def salir():
@@ -22,7 +32,8 @@ def salir():
         ventana.destroy()
 #----------------------------------------------------------------------------------------------
 
-#------ TKINTER --------
+
+#------ TKINTER -------------------------------------------------------------------------------
 #-------------------------------------- VENTANA PRINCIPAL -------------------------------------
 #Ventana principal 
 ventana = tk.Tk()
@@ -117,6 +128,8 @@ lbl_texto.pack(anchor="w")
 
 lbl_logo.image = logo
 #--------------------------------------------------------------------------------------------
+
 centrar_ventana(ventana)
+
 
 ventana.mainloop()

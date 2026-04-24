@@ -7,10 +7,12 @@ from centraVent import cventana
 #----------------------------- Ventana para que el usuario se loguee ----------------------
 usuario_logueado = None  # Variable global
 
-def ventana_login():
+
+def ventana_login(root):
+
     global usuario_logueado
 
-    login = tk.Toplevel()
+    login = tk.Toplevel(root)
     login.title("Iniciar Sesión")
     login.geometry("400x300")
     login.grab_set()
@@ -25,6 +27,7 @@ def ventana_login():
 
     def iniciar_sesion():
         global usuario_logueado
+
         usuario = entry_usuario.get()
         password = entry_password.get()
 
@@ -32,30 +35,21 @@ def ventana_login():
 
         if resultado:
             usuario_logueado = usuario
-            messagebox.showinfo("Bienvenido", f"Se ha logueado al sistema  {usuario}")
+            messagebox.showinfo("Bienvenido", f"Se ha logueado al sistema {usuario}")
             login.destroy()
+            root.deiconify()  # 🔥 MOSTRAR APP
         else:
             messagebox.showerror("Error", "Usuario o contraseña incorrectos")
 
-
-    #-------------------------------  Salir de la aplicación -------------------------------------
     def salir():
-        if messagebox.askyesno("Salir", "¿Desea salir después de loguease?"):
-            login.destroy()
-    #----------------------------------------------------------------------------------------------
+        root.destroy()  # 🔥 cerrar toda la app
 
     tk.Button(login, text="Ingresar", command=iniciar_sesion).pack(pady=10)
     tk.Button(login, text="Salir", command=salir).pack(pady=10)
-#--------------------------------------------------------------------------------------------
-    cventana(login)
-# def verificar_login():
-#     global usuario_logueado
-#     if usuario_logueado is None:
-#         messagebox.showwarning(
-#             "Acceso restringido",
-#             "Debe iniciar sesión primero"
-#         )
-#         return False
-#     return True
 
-# Crear las tablas al iniciar la aplicación
+    # 🔥 si cierra la X → también cerrar todo
+    login.protocol("WM_DELETE_WINDOW", salir)
+#--------------------------------------------------------------------------------------------
+
+    cventana(login)
+

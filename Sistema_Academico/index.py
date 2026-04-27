@@ -146,7 +146,7 @@ root.config(menu=barramenu)
 
 #Menú Archivo
 mArchivo = tk.Menu(barramenu, tearoff=0)
-barramenu.add_cascade(label="Login - Registración", menu=mArchivo)
+barramenu.add_cascade(label="Salir Aplicación", menu=mArchivo)
 # mArchivo.add_command(label="Registrarse", command="ventana_registro")
 mArchivo.add_command(label="", command=ventana_login(root, barramenu))
 mArchivo.add_separator()

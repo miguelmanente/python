@@ -1,5 +1,5 @@
 #Centra la pantalla principal en el centro de la pantalla
-def centrar_ventana(ventana, ancho=1100, alto=700):
+def centrar_ventana(ventana, ancho=1300, alto=700):
     pantalla_ancho = ventana.winfo_screenwidth()
     pantalla_alto = ventana.winfo_screenheight()
     x = int((pantalla_ancho / 2) - (ancho / 2))

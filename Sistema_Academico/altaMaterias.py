@@ -207,7 +207,7 @@ def info_materias():
         conn = conectar()
         cursor = conn.cursor()
 
-        cursor.execute("DELETE FROM materias WHERE id_materia = ?", (id_seleccionado,))
+        cursor.execute("DELETE FROM materias WHERE id_materia = ?", (id_seleccionado))
 
         conn.commit()
         conn.close()

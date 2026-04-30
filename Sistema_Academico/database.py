@@ -84,7 +84,31 @@ def crear_tablas():
     CREATE TABLE IF NOT EXISTS cursos (
         id_curso INTEGER PRIMARY KEY AUTOINCREMENT,
         nombre TEXT NOT NULL,
-        nivel TEXT
+        turno TEXT
+    );
+                         
+    --Tabla Horarios
+    CREATE TABLE IF NOT EXISTS horarios (
+        id_horario INTEGER PRIMARY KEY AUTOINCREMENT,
+        id_curso INTEGER,
+        id_materia INTEGER,
+        dia TEXT,
+        hentrada TEXT,
+        hsalida TEX,
+
+        FOREIGN KEY (id_curso) REFERENCES cursos(id_curso),
+        FOREIGN KEY (id_materia) REFERENCES materias(id_materia)
+    );
+    
+    --Asignación Docente
+    CREATE TABLE IF NOT EXISTS asignacion_docente (
+        id_horario,
+        id_profesor,
+        sitrev,
+        activo BOOLEAN,
+
+        FOREIGN KEY (id_horario) REFERENCES horarios(id_horario),
+        FOREIGN KEY (id_profesor) REFERENCES profesores(id_profesor)
     );
 
     -- Relación Profesor - Materia (N:N)

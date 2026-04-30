@@ -28,11 +28,8 @@ def info_cursos():
 
     # -------------------------- Variables ----------------------------------------------------------------------------
     nombre = tk.StringVar()
-    hentrada =tk.StringVar()
-    hsalida = tk.StringVar()
-    dia = tk.StringVar()
     turno = tk.StringVar()
-    srprofesor = tk.StringVar()
+ 
 
     # -----------------------------------------------------------------------------------------------------------------
 
@@ -41,25 +38,10 @@ def info_cursos():
     ttk.Label(frame_superior, text="Nbre del Curso :").grid(row=0, column=0, sticky="e", padx=5, pady=5)
     ttk.Entry(frame_superior, textvariable=nombre).grid(row=0, column=1, sticky="ew", padx=5, pady=5)
 
-    # Labels y entry para ingresar la hora de entrada
-    ttk.Label(frame_superior, text="Hor.de Entrada:").grid(row=0, column=2, sticky="e", padx=5, pady=5)
-    ttk.Entry(frame_superior, textvariable=hentrada).grid(row=0, column=3, sticky="ew", padx=5, pady=5)
+      # Labels y entry para ingresar el turno del curso 
+    ttk.Label(frame_superior, text="Turno del Curso:").grid(row=0, column=2, sticky="e", padx=5, pady=5)
+    ttk.Entry(frame_superior, textvariable=turno).grid(row=0, column=3, sticky="ew", padx=5, pady=5)
 
-  # Labels y entry para ingresar la hora de entrada
-    ttk.Label(frame_superior, text="Hor.de Salida:").grid(row=1, column=0, sticky="e", padx=5, pady=5)
-    ttk.Entry(frame_superior, textvariable=hsalida).grid(row=1, column=1, sticky="ew", padx=5, pady=5)
-
-    # Labels y entry para ingresar el turno del curso 
-    ttk.Label(frame_superior, text="Día de la semana:").grid(row=1, column=2, sticky="e", padx=5, pady=5)
-    ttk.Entry(frame_superior, textvariable=dia).grid(row=1, column=3, sticky="ew", padx=5, pady=5)
-
-    # Labels y entry para ingresar el turno del curso 
-    ttk.Label(frame_superior, text="Turno del Curso:").grid(row=2, column=0, sticky="e", padx=5, pady=5)
-    ttk.Entry(frame_superior, textvariable=turno).grid(row=2, column=1, sticky="ew", padx=5, pady=5)
-
-    # Labels y entry para ingresar la Situación Revista del Docente
-    ttk.Label(frame_superior, text="S.R.del Profesor:").grid(row=2, column=2, sticky="e", padx=5, pady=5)
-    ttk.Entry(frame_superior, textvariable=srprofesor).grid(row=2, column=3, sticky="ew", padx=5, pady=5)
  
     # =========================
     # BOTONES
@@ -78,7 +60,7 @@ def info_cursos():
     frame_inferior.columnconfigure(0, weight=1)
 
     #Columnas del Treeview
-    columnas = ("id_curso","nombre", "hentrada", "hsalida", "dia", "turno", "srprofesor")
+    columnas = ("id_curso","nombre","turno")
 
     tree = ttk.Treeview(frame_inferior, columns=columnas, show="headings")
     tree.grid(row=0, column=0, sticky="nsew")
@@ -86,21 +68,13 @@ def info_cursos():
     # Encabezados
     tree.heading("id_curso", text="ID")
     tree.heading("nombre", text="Nbre del Curso")
-    tree.heading("hentrada", text="Hora de Entrada")
-    tree.heading("hsalida", text="Hora de Salida")
-    tree.heading("dia", text="Día de la Semana")
     tree.heading("turno", text="Turno del Curso")
-    tree.heading("srprofesor", text="S.R.del Profesor")
-
+   
     
     tree.column("id_curso", width=0, stretch=False)
     tree.column("nombre", width=200, anchor="center")
-    tree.column("hentrada", width=200, anchor="center")
-    tree.column("hsalida", width=200, anchor="center")
-    tree.column("dia", width=200, anchor="center")
     tree.column("turno", width=100, anchor="center")
-    tree.column("srprofesor", width=200, anchor="center")
- 
+  
 
     # Scrollbars
     scrollbar_y = ttk.Scrollbar(frame_inferior, orient="vertical", command=tree.yview)
@@ -128,7 +102,7 @@ def info_cursos():
         cursor = conn.cursor()
 
         cursor.execute("""
-            SELECT id_curso, nombre, hentrada, hsalida, dia, turno, srprofesor
+            SELECT id_curso, nombre, turno
             FROM cursos
             ORDER BY nombre
         """)
@@ -141,10 +115,10 @@ def info_cursos():
 
     # ------------------------ Añade registros nuevos a la BD materias ----------------------
     def agregar_cursos():
-        if not nombre.get() or not hentrada.get() or not hsalida.get() or not turno.get():
+        if not nombre.get() or not nombre.get() or not turno.get():
             messagebox.showwarning(
                 "Campos obligatorios",
-                "Nombres del curso, horario de entrada y horario de salida son obligatorios."
+                "Nombres del curso, y turno son obligatorios."
             )
             return
         
@@ -153,15 +127,12 @@ def info_cursos():
             cursor = conn.cursor()
 
             cursor.execute("""
-                INSERT INTO cursos (nombre, hentrada, hsalida, dia, turno, srprofesor)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO cursos (nombre, turno)
+                VALUES (?, ?)
             """, (
                 nombre.get(),
-                hentrada.get(),
-                hsalida.get(),
-                dia.get(),
                 turno.get(),
-                srprofesor.get(),
+   
             ))
 
             conn.commit()
@@ -176,24 +147,145 @@ def info_cursos():
             messagebox.showerror("Error", f"No se pudieron guardar los Cursos:\n{e}")
     # ----------------------------------------------------------------------------------
 
+    # ---  Función que permite selecccionar un registro en el treview ------------------
+  
+    def seleccionar_registro(event):
+        nonlocal id_seleccionado
+
+        item = tree.selection()
+        if not item:
+            return
+
+        valores = tree.item(item[0], "values")
+
+        id_seleccionado = valores[0]  # 👈 ESTE ES EL CLAVE
+
+        nombre.set(valores[1])
+        turno.set(valores[2])
+    
+
+    tree.bind("<<TreeviewSelect>>", seleccionar_registro) 
+    # ---------------------------------------------------------------------------------
+
+
+    # ----------------  Modifica registro de profesores --------------------------------
+    
+    def modificar_curso():
+        nonlocal id_seleccionado
+        if not id_seleccionado:
+            messagebox.showwarning("Atención", "Seleccione un registro")
+            return
+
+        conn = conectar()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            UPDATE cursos
+            SET nombre = ?, turno = ?
+            WHERE id_curso = ?
+        """, (
+            nombre.get(),
+            turno.get(),
+            id_seleccionado
+        ))
+
+        conn.commit()
+        conn.close()
+
+        cargar_datos_treeview()
+        limpiar_campos()
+        messagebox.showinfo("Éxito", "Curso actualizado")
+    # -------------------------------------------------------------------------------------
+
+    # ----------------  Elimina registros de profesores ----------------------------------
+    def eliminar_curso():
+        if not id_seleccionado:
+            messagebox.showwarning("Atención", "Seleccione un registro")
+            return
+
+        confirmar = messagebox.askyesno("Confirmar", "¿Eliminar registro?")
+        if not confirmar:
+            return
+
+        conn = conectar()
+        cursor = conn.cursor()
+
+        cursor.execute("DELETE FROM cursos WHERE id_curso = ?", (id_seleccionado,))
+
+        conn.commit()
+        conn.close()
+
+        cargar_datos_treeview()
+        limpiar_campos()
+    #---------------------------------------------------------------------------------------
+
+
+    # -------------------- BÚSQUEDA POR LETRA INICIAL EN LA TABLA  -------------------------
+    texto_busqueda = ""
+
+    texto_busqueda = ""
+    ultimo_tiempo = 0
+
+    def buscar_treeview(event):
+        nonlocal texto_busqueda, ultimo_tiempo
+
+        import time
+        ahora = time.time()
+
+        # Si pasa más de 1 segundo → reinicia búsqueda
+        if ahora - ultimo_tiempo > 1:
+            texto_busqueda = ""
+
+        ultimo_tiempo = ahora
+
+        if not event.char.isalpha():
+            return
+
+        texto_busqueda += event.char.lower()
+
+        items = tree.get_children()
+
+        # desde dónde empezar (posición actual)
+        seleccion = tree.selection()
+        start_index = 0
+
+        if seleccion:
+            start_index = items.index(seleccion[0]) + 1
+
+        # recorrer desde la posición actual hacia abajo
+        for i in range(len(items)):
+            idx = (start_index + i) % len(items)  # 🔥 ciclo
+
+            item = items[idx]
+            valores = tree.item(item, "values")
+            apellido = valores[1].lower()
+
+            if apellido.startswith(texto_busqueda):
+                tree.selection_set(item)
+                tree.focus(item)
+                tree.see(item)
+                break
+    tree.bind("<Key>", buscar_treeview)
+    # ---------------------------------------------------------------------------------------
+
+
+
      # -------------- Limpia los Entrys de datos ingresados y/o seleccionados ------------------------------
     def limpiar_campos():
         nonlocal id_seleccionado
         nombre.set("")
-        hentrada.set("")
-        hsalida.set("")
         turno.set("")
-        srprofesor.set("")
-
+      
     #-----------------------------------------------------------------------------------------------------
 
 
     # --------------------------- Botones que permiten agregar, modificar etc. ---------------------------
     ttk.Button(frame_botones, text="Agregar", command=agregar_cursos).grid(row=0, column=0, padx=5)
-    ttk.Button(frame_botones, text="Modificar", command="modificar_cursos").grid(row=0, column=1, padx=5)
-    ttk.Button(frame_botones, text="Eliminar", command="eliminar_cursos").grid(row=0, column=2, padx=5)
+    ttk.Button(frame_botones, text="Modificar", command=modificar_curso).grid(row=0, column=1, padx=5)
+    ttk.Button(frame_botones, text="Eliminar", command=eliminar_curso).grid(row=0, column=2, padx=5)
     ttk.Button(frame_botones, text="Limpiar", command=limpiar_campos).grid(row=0, column=3, padx=5)
     ttk.Button(frame_botones, text="Cerrar", command=ventana.destroy).grid(row=0, column=4, padx=5)
     # ----------------------------------------------------------------------------------------------------
 
     centrar_ventana(ventana)  #centra pantalla Cursos
+    cargar_datos_treeview()

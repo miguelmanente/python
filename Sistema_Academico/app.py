@@ -9,6 +9,8 @@ from centraVent import centrar_ventana
 from datos_personales import info_profesor
 from altaMaterias import info_materias
 from altaCursos import info_cursos
+from altaHorarios import info_horarios
+from altaAsignaciones import info_asignaciones
 
 
 #Código - Zona de funciones
@@ -19,7 +21,7 @@ def pPrincipal():
     crear_tablas()
     #-------------------------------  Salir de la aplicación -------------------------------------  
     def salir():
-        if messagebox.askyesno("Salir", "¿Desea cerrar Sistema de Gestión Educativo?"):
+        if messagebox.askyesno("Salir", "¿Desea cerrar Sistema de Gestión Educativo?", parent=ventana):
             ventana.destroy()
     #----------------------------------------------------------------------------------------------
     #------ TKINTER -------------------------------------------------------------------------------
@@ -58,6 +60,16 @@ def pPrincipal():
     mCursos = tk.Menu(barramenu, tearoff=0)
     barramenu.add_cascade(label="Cursos", menu=mCursos)
     mCursos.add_command(label="Agregar Cursos", command=info_cursos)
+
+    #Menú Horarios
+    mHorarios = tk.Menu(barramenu, tearoff=0)
+    barramenu.add_cascade(label="Horarios", menu=mHorarios)
+    mHorarios.add_command(label="Creación de Horarios", command=info_horarios)
+
+    #Menú Asignacopnes de Profesores
+    mAsignaciones = tk.Menu(barramenu, tearoff=0)
+    barramenu.add_cascade(label="Asignaciones", menu=mAsignaciones)
+    mAsignaciones.add_command(label="Asignaciones Profesores", command=info_asignaciones)
 
     #---------------------------------- LOGO PAGINA PRINCIPAL -------------------------------------
     # Crear un Frame para centrar el contenido

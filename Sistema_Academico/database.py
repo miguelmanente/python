@@ -55,89 +55,51 @@ def validar_usuario(username, password):
 
 #---------------------  CREAR Y VERIFICAR SI ESTÁN CREADAS LAS TABLAS ----------------
 def crear_tablas():
-    """
-    Crea todas las tablas necesarias para el sistema académico
-    si aún no existen.
-    """
     conn = conectar()
     cursor = conn.cursor()
 
     cursor.executescript("""
-    -- Tabla Profesores
     CREATE TABLE IF NOT EXISTS profesores (
         id_profesor INTEGER PRIMARY KEY AUTOINCREMENT,
-        apenom TEXT NOT NULL,
-        telefono TEXT NOT NULL,
-        email TEXT NOT NULL,
-        sitrev TEXT NOT NULL,
-        fechatp TEXT NOT NULL
+        apenom TEXT,
+        telefono TEXT,
+        email TEXT,
+        sitrev TEXT,
+        fechatp TEXT
     );
 
-    -- Tabla Materias
     CREATE TABLE IF NOT EXISTS materias (
         id_materia INTEGER PRIMARY KEY AUTOINCREMENT,
-        nombre TEXT NOT NULL,
+        nombre TEXT,
         descripcion TEXT
     );
 
-    -- Tabla Cursos
     CREATE TABLE IF NOT EXISTS cursos (
         id_curso INTEGER PRIMARY KEY AUTOINCREMENT,
-        nombre TEXT NOT NULL,
+        nombre TEXT,
         turno TEXT
     );
-                         
-    --Tabla Horarios
+
     CREATE TABLE IF NOT EXISTS horarios (
         id_horario INTEGER PRIMARY KEY AUTOINCREMENT,
         id_curso INTEGER,
         id_materia INTEGER,
         dia TEXT,
         hentrada TEXT,
-        hsalida TEX,
-
+        hsalida TEXT,
         FOREIGN KEY (id_curso) REFERENCES cursos(id_curso),
         FOREIGN KEY (id_materia) REFERENCES materias(id_materia)
     );
-    
-    --Asignación Docente
-    CREATE TABLE IF NOT EXISTS asignacion_docente (
-        id_horario,
-        id_profesor,
-        sitrev,
-        activo BOOLEAN,
 
-        FOREIGN KEY (id_horario) REFERENCES horarios(id_horario),
-        FOREIGN KEY (id_profesor) REFERENCES profesores(id_profesor)
-    );
-
-    -- Relación Profesor - Materia (N:N)
-    CREATE TABLE IF NOT EXISTS profesor_materia (
-        id_profesor INTEGER NOT NULL,
-        id_materia INTEGER NOT NULL,
-        PRIMARY KEY (id_profesor, id_materia),
-        FOREIGN KEY (id_profesor) REFERENCES profesores(id_profesor) ON DELETE CASCADE,
-        FOREIGN KEY (id_materia) REFERENCES materias(id_materia) ON DELETE CASCADE
-    );
-
-    -- Relación Materia - Curso (N:N)
-    CREATE TABLE IF NOT EXISTS materia_curso (
-        id_materia INTEGER NOT NULL,
-        id_curso INTEGER NOT NULL,
-        PRIMARY KEY (id_materia, id_curso),
-        FOREIGN KEY (id_materia) REFERENCES materias(id_materia) ON DELETE CASCADE,
-        FOREIGN KEY (id_curso) REFERENCES cursos(id_curso) ON DELETE CASCADE
-    );
-
-    -- (Opcional) Tabla de usuarios para login
-    CREATE TABLE IF NOT EXISTS usuarios (
-        id_usuario INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL
+    CREATE TABLE IF NOT EXISTS asignaciones_docentes (
+        id_asignacion INTEGER PRIMARY KEY AUTOINCREMENT,
+        id_profesor INTEGER,
+        id_horario INTEGER,
+        srprofesor TEXT,
+        FOREIGN KEY (id_profesor) REFERENCES profesores(id_profesor),
+        FOREIGN KEY (id_horario) REFERENCES horarios(id_horario)
     );
     """)
 
     conn.commit()
     conn.close()
-
-    # --------------------------------------- fin función crear tabla -----------------------

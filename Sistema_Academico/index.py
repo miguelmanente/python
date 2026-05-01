@@ -7,6 +7,7 @@ from centraVent import centrar_ventana, cventana
 from database import validar_usuario, registrar_usuario
 from app import pPrincipal
 
+
 # Variable Global
 usuario_logueado = None  # Variable global
 

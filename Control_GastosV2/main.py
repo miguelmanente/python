@@ -220,7 +220,7 @@ def generar_reporte(mes, anio):
     categorias = [fila[0] for fila in datos]
     montos = [fila[1] for fila in datos]
 
-    fig = Figure(figsize=(9, 6))
+    fig = Figure(figsize=(12, 8))
     ax = fig.add_subplot(111)
 
     ax.pie(

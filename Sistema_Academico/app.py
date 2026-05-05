@@ -11,6 +11,7 @@ from altaMaterias import info_materias
 from altaCursos import info_cursos
 from altaHorarios import info_horarios
 from altaAsignaciones import info_asignaciones
+from listados import ventana_listado
 
 
 #Código - Zona de funciones
@@ -70,6 +71,13 @@ def pPrincipal():
     mAsignaciones = tk.Menu(barramenu, tearoff=0)
     barramenu.add_cascade(label="Asignaciones", menu=mAsignaciones)
     mAsignaciones.add_command(label="Asignaciones Profesores", command=info_asignaciones)
+
+    #Menú Listados de profesores
+    mListados = tk.Menu(barramenu, tearoff=0)
+    barramenu.add_cascade(label="Listados", menu=mListados)
+    mListados.add_command(label="Profesores Titulares", command=lambda: ventana_listado("Titular"))
+    mListados.add_command(label="Profesores Provisorio", command=lambda: ventana_listado("Provisorio"))
+    mListados.add_command(label="Profesores Suplentes",command=lambda: ventana_listado("Suplente"))
 
     #---------------------------------- LOGO PAGINA PRINCIPAL -------------------------------------
     # Crear un Frame para centrar el contenido

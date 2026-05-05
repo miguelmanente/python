@@ -6,6 +6,12 @@ from openpyxl import Workbook
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from reportlab.lib import colors
 import os
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.enums import TA_CENTER
+from datetime import datetime
 
 def ventana_listado(tipo):
 
@@ -124,30 +130,44 @@ def ventana_listado(tipo):
     # =========================
     # EXPORTAR PDF
     # =========================
-    def exportar_pdf():
+  
+    def exportar_pdf(tipo):
+
         doc = SimpleDocTemplate("listado.pdf")
+
+        styles = getSampleStyleSheet()
+
+        titulo = Paragraph(f"<b>Listado de Profesores {tipo}</b>", styles["Title"])
+
+        # Espacio
+        espacio = Spacer(1, 20)
 
         data = [["Profesor", "Curso", "Materia", "Día", "Entrada", "Salida"]]
 
         for item in tree.get_children():
-            data.append(tree.item(item)["values"])
+             data.append(tree.item(item)["values"])
 
+        # Tabla
         tabla = Table(data)
 
         tabla.setStyle(TableStyle([
-            ("BACKGROUND", (0,0), (-1,0), colors.grey),
-            ("GRID", (0,0), (-1,-1), 1, colors.black)
+            ('BACKGROUND', (0,0), (-1,0), colors.grey),
+            ('TEXTCOLOR',(0,0),(-1,0),colors.white),
+            ('GRID', (0,0), (-1,-1), 1, colors.black)
         ]))
 
-        doc.build([tabla])
+        elementos = []
+        elementos.append(titulo)
+        elementos.append(espacio)
+        elementos.append(tabla)
 
-        messagebox.showinfo("OK", "PDF generado")
+        doc.build(elementos)
 
     # =========================
     # IMPRIMIR DIRECTO
     # =========================
     def imprimir():
-        exportar_pdf()
+        exportar_pdf(tipo)
         try:
             os.startfile("listado.pdf", "print")
         except:
@@ -160,9 +180,9 @@ def ventana_listado(tipo):
     frame_botones.grid(row=2, column=0, pady=10)
 
     ttk.Button(frame_botones, text="🖨 Imprimir", command=imprimir).grid(row=0, column=0, padx=5)
-    ttk.Button(frame_botones, text="Excel", command=exportar_excel).grid(row=0, column=1, padx=5)
-    ttk.Button(frame_botones, text="PDF", command=exportar_pdf).grid(row=0, column=2, padx=5)
-    ttk.Button(frame_botones, text="Cerrar", command=ventana.destroy).grid(row=0, column=3, padx=5)
+    ttk.Button(frame_botones, text="📊 Excel", command=exportar_excel).grid(row=0, column=1, padx=5)
+    ttk.Button(frame_botones, text="📄 PDF", command=exportar_pdf(tipo)).grid(row=0, column=2, padx=5)
+    ttk.Button(frame_botones, text="❌ Cerrar", command=ventana.destroy).grid(row=0, column=3, padx=5)
 
     cargar_cursos()
     cargar()

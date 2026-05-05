@@ -1,4 +1,4 @@
-#!/home/miguelangel/python/Sistema_Academico/venv/bin/python3
+#!/home/miguelangel/python/Sistema_Academico/venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys

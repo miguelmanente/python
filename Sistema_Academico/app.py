@@ -126,7 +126,7 @@ def pPrincipal():
 
     lbl_texto = tk.Label(
         frame_footer,
-        text="© 2026 Miguel Manente",
+        text="© 2026 Programas MAM",
         font=("Arial", 12),
         fg="gray"
     )

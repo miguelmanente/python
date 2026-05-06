@@ -25,6 +25,8 @@ def ventana_login(root):
     entry_password = tk.Entry(login, show="*")
     entry_password.pack()
 
+    
+
     def iniciar_sesion():
         global usuario_logueado, login_correcto
 
@@ -37,7 +39,7 @@ def ventana_login(root):
             usuario_logueado = usuario
             messagebox.showinfo("Bienvenido", f"Se ha logueado al sistema {usuario}")
           # 🔥 habilitar menú
-            root.config(menu=barramenu)
+            root.config(menu=login)
             #root.entryconfig("Sistema de Gestion", state="normal")
 
             login.destroy()

@@ -5,8 +5,8 @@ from database import registrar_usuario
 from centraVent import cventana
 
 #--------------------- Registros en la tabla ususarios la loguearse ----------------
-def ventana_registro(padre):
-    registro = tk.Toplevel(padre)
+def ventana_registro():
+    registro = tk.Toplevel()
     registro.title("Registro de Usuario")
     registro.geometry("400x300")
     registro.grab_set()

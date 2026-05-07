@@ -12,6 +12,8 @@ from altaCursos import info_cursos
 from altaHorarios import info_horarios
 from altaAsignaciones import info_asignaciones
 from listados import ventana_listado
+import sesion
+
 
 
 #Código - Zona de funciones
@@ -37,6 +39,19 @@ def pPrincipal():
     ventana.rowconfigure(0, weight=1)
     ventana.rowconfigure(1, weight=0)
     ventana.columnconfigure(0, weight=1)
+
+        # ---------------- TOP BAR ----------------
+    frame_top = tk.Frame(ventana, bg="#2c3e50", height=30)
+    frame_top.pack(fill="x")
+
+    lbl_usuario = tk.Label(
+        frame_top,
+        text=f"Usuario: {sesion.usuario_actual}",
+        bg="#2c3e50",
+        fg="white",
+        font=("Arial", 10, "bold")
+    )
+    lbl_usuario.pack(side="right", padx=10)
     
 
     #-------------------------------------- BARRA DE NENÚ -----------------------------------------
@@ -81,6 +96,7 @@ def pPrincipal():
     mListados.add_command(label="Profesores Titulares", command=lambda: ventana_listado("Titular"))
     mListados.add_command(label="Profesores Provisorio", command=lambda: ventana_listado("Provisorio"))
     mListados.add_command(label="Profesores Suplentes",command=lambda: ventana_listado("Suplente"))
+
 
   # ---------------------------------- LOGO PRINCIPAL -------------------------------------
     logoP = tk.Frame(ventana)

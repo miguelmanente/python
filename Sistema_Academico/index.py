@@ -1,5 +1,6 @@
 # -----------------------------------------  LIBRERÍAS ---------------------------------------------------
 import tkinter as tk
+from tkinter import ttk
 from tkinter import messagebox
 from PIL import Image, ImageTk
 from centraVent import centrar_ventana, cventana
@@ -7,6 +8,7 @@ from database import validar_usuario
 from app import pPrincipal
 from registrar import ventana_registro
 import sesion  # muestra la variable del usuario conectado al sistema
+from estilos import configurar_estilos
 
 
 # ------------------------------------------------ VARIABLE GLOBAL ----------------------------------------
@@ -17,16 +19,17 @@ usuario_logueado = None
 def ventana_login(root, barramenu, lbl_usuario):
     global usuario_logueado
 
-    login = tk.Toplevel(root, bg="#F2EDC2")
+    login = tk.Toplevel(root, bg="#ecf0f1", pady=30)
+    configurar_estilos()
     login.title("LOGIN DE USUARIOS")
     login.geometry("500x400")
     login.grab_set()  # 🔥 bloquea la ventana principal
 
-    tk.Label(login, text="Usuario", bg="#F2EDC2", font=("Arial", 12, "bold")).pack(pady=5)
+    tk.Label(login, text="Usuario", bg="#ecf0f1", font=("Arial", 12, "bold")).pack(pady=15)
     entry_usuario = tk.Entry(login)
     entry_usuario.pack()
 
-    tk.Label(login, text="Contraseña", bg="#F2EDC2", font=("Arial", 12, "bold")).pack(pady=5)
+    tk.Label(login, text="Contraseña", bg="#ecf0f1", font=("Arial", 12, "bold")).pack(pady=15)
     entry_password = tk.Entry(login, show="*")
     entry_password.pack()
 
@@ -45,7 +48,7 @@ def ventana_login(root, barramenu, lbl_usuario):
             for i in range(barramenu.index("end") + 1):
                 barramenu.entryconfig(i, state="normal")
 
-            messagebox.showinfo("Bienvenido", f"Bienvenido {usuario}", parent=login)
+            messagebox.showinfo("Bienvenido", f"Bienvenido {usuario}")
 
             login.destroy()
             root.deiconify()  # 🔥 mostrar sistema
@@ -67,8 +70,8 @@ def ventana_login(root, barramenu, lbl_usuario):
     # ----------------------------------------------------------------------------------------------------------------
 
     # ------------------------------------- BOTONES PARA INICIAR Y SALIR DEL LOGIN -----------------------------------
-    tk.Button(login, text="Ingresar", bg="#F3BE7A", font=("Arial", 12, "bold"), command=iniciar_sesion).pack(pady=10)
-    tk.Button(login, text="Salir", bg="#F3BE7A", font=("Arial", 12, "bold"), command=salir).pack(pady=10)
+    tk.Button(login, text="Ingresar", bg="#3498db", fg="white", font=("Arial", 12, "bold"), command=iniciar_sesion).pack(pady=15)
+    tk.Button(login, text="Salir", bg="#3498db", fg="white", font=("Arial", 12, "bold"), command=salir).pack(pady=15)
     # ----------------------------------------------------------------------------------------------------------------
     cventana(login)
 

@@ -2,14 +2,15 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 import re
-from datetime import datetime
 from database import conectar
 from centraVent import centrar_ventana
+from estilos import configurar_estilos
 
 # ----------- Función que maneja toda la ventana datos personales del profesor ------------
 def info_profesor():
 
     ventana = tk.Toplevel()
+    configurar_estilos()
     ventana.title("Datos personales del profesor")
     ventana.geometry("900x500")
 

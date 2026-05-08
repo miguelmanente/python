@@ -6,16 +6,16 @@ from centraVent import cventana
 
 #--------------------- Registros en la tabla ususarios la loguearse ----------------
 def ventana_registro():
-    registro = tk.Toplevel()
-    registro.title("Registro de Usuario")
+    registro = tk.Toplevel(bg="#F2EDC2")
+    registro.title("REGISTRO DE USUARIO")
     registro.geometry("400x300")
     registro.grab_set()
 
-    tk.Label(registro, text="Usuario").pack(pady=5)
+    tk.Label(registro, text="Usuario", bg="#F2EDC2", font=("Arial", 12, "bold")).pack(pady=5)
     entry_usuario = tk.Entry(registro)
     entry_usuario.pack()
 
-    tk.Label(registro, text="Contraseña").pack(pady=5)
+    tk.Label(registro, text="Contraseña", bg="#F2EDC2", font=("Arial", 12, "bold")).pack(pady=5)
     entry_password = tk.Entry(registro, show="*")
     entry_password.pack()
 
@@ -41,8 +41,8 @@ def ventana_registro():
     #----------------------------------------------------------------------------------------------
     
     #botenes de la vnetana de logueo
-    tk.Button(registro, text="Registrarse", command=registrar).pack(pady=10)
-    tk.Button(registro, text="Salir", command=salir).pack(pady=10)
+    tk.Button(registro, text="Registrarse", bg="#F3BE7A", font=("Arial", 12, "bold"), command=registrar).pack(pady=10)
+    tk.Button(registro, text="Salir", bg="#F3BE7A", font=("Arial", 12, "bold"), command=salir).pack(pady=10)
 #-----------------------------------------------------------------------------------
 
 

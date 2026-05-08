@@ -4,7 +4,6 @@ from tkinter import messagebox
 from PIL import Image, ImageTk  # Necesitas instalar Pillow para el logo pag ppal
 import os
 from database import crear_tablas
-from registrar import ventana_registro
 from centraVent import centrar_ventana
 from datos_personales import info_profesor
 from altaMaterias import info_materias
@@ -106,25 +105,26 @@ def pPrincipal():
         # img = Image.open("logo1.png")
         ruta = os.path.dirname(__file__)
         img = Image.open(os.path.join(ruta, "logos.png"))
-        img = img.resize((900, 500))
+        img = img.resize((900, 400))
         # logo_tk = ImageTk.PhotoImage(img)
         logo_tk = ImageTk.PhotoImage(img, master=ventana)
 
         label_logo = tk.Label(logoP, image=logo_tk)
         label_logo.image =logo_tk  # 🔥 importante
-        label_logo.pack(pady=(10, 5))
+        label_logo.pack(pady=(2, 2))
 
     except Exception as e:
         print(f"No se pudo cargar el logo: {e}")
         tk.Label(logoP, text="[Logo no disponible]").pack()
+        label_logo.pack(pady=(2,2))
 
     # Texto
-    label_text = tk.Label(
-        logoP,
-        text="Sistema Educativo - Gestión Escolar",
-        font=("Arial", 20, "bold")
-    )
-    label_text.pack(pady=(0, 10))
+    # label_text = tk.Label(
+    #     logoP,
+    #     text="",
+    #     font=("Arial", 2, "bold")
+    # )
+    # label_text.pack(pady=(0, 10))
     # ---------------------------------------------------------------------------------------
 
     # ---------------------------------- FOOTER -------------------------------------
@@ -133,8 +133,8 @@ def pPrincipal():
 
     try:
         # img_footer = Image.open("logotipo.png")
-        img_footer = Image.open(os.path.join(ruta, "logotipo.png"))
-        img_footer = img_footer.resize((80, 80))
+        img_footer = Image.open(os.path.join(ruta, "logo2.png"))
+        img_footer = img_footer.resize((140, 100))
       
         logo_footer = ImageTk.PhotoImage(img_footer, master=ventana)
 

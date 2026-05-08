@@ -1,31 +1,32 @@
+# -----------------------------------------  LIBRERÍAS ---------------------------------------------------
 import tkinter as tk
 from tkinter import messagebox
 from PIL import Image, ImageTk
 from centraVent import centrar_ventana, cventana
-from database import validar_usuario, registrar_usuario
+from database import validar_usuario
 from app import pPrincipal
 from registrar import ventana_registro
-import sesion
+import sesion  # muestra la variable del usuario conectado al sistema
 
 
-# ---------------- VARIABLE GLOBAL ----------------
+# ------------------------------------------------ VARIABLE GLOBAL ----------------------------------------
 usuario_logueado = None
+# ---------------------------------------------------------------------------------------------------------
 
-
-# ---------------- LOGIN ----------------
+# --------------------------------------------- LOGIN -----------------------------------------------------
 def ventana_login(root, barramenu, lbl_usuario):
     global usuario_logueado
 
-    login = tk.Toplevel(root)
-    login.title("Iniciar Sesión")
-    login.geometry("400x300")
+    login = tk.Toplevel(root, bg="#F2EDC2")
+    login.title("LOGIN DE USUARIOS")
+    login.geometry("500x400")
     login.grab_set()  # 🔥 bloquea la ventana principal
 
-    tk.Label(login, text="Usuario").pack(pady=5)
+    tk.Label(login, text="Usuario", bg="#F2EDC2", font=("Arial", 12, "bold")).pack(pady=5)
     entry_usuario = tk.Entry(login)
     entry_usuario.pack()
 
-    tk.Label(login, text="Contraseña").pack(pady=5)
+    tk.Label(login, text="Contraseña", bg="#F2EDC2", font=("Arial", 12, "bold")).pack(pady=5)
     entry_password = tk.Entry(login, show="*")
     entry_password.pack()
 
@@ -53,27 +54,35 @@ def ventana_login(root, barramenu, lbl_usuario):
             messagebox.showerror("Error!!!", "Usuario o contraseña incorrectos o no está registrado", parent=login)
 
             if not(validar_usuario(usuario, password)):
-                messagebox.askyesno("Registrar Usuarios", "Desea Registrarse (Si/No)?")
-                ventana_registro()
+                respuesta = messagebox.askyesno("Registrar Usuarios", "Desea Registrarse (Si/No)?")
+                if respuesta:
+                    ventana_registro()
+                else:
+                    ventana_login(root, barramenu, lbl_usuario)
+    # ----------------------------------------------------------------------------------------------------------------
 
+    # ------------------------------------------- SALIR DE LA APLICACIÓN ---------------------------------------------
     def salir():
         root.destroy()
+    # ----------------------------------------------------------------------------------------------------------------
 
-    tk.Button(login, text="Ingresar", command=iniciar_sesion).pack(pady=10)
-    tk.Button(login, text="Salir", command=salir).pack(pady=10)
-
+    # ------------------------------------- BOTONES PARA INICIAR Y SALIR DEL LOGIN -----------------------------------
+    tk.Button(login, text="Ingresar", bg="#F3BE7A", font=("Arial", 12, "bold"), command=iniciar_sesion).pack(pady=10)
+    tk.Button(login, text="Salir", bg="#F3BE7A", font=("Arial", 12, "bold"), command=salir).pack(pady=10)
+    # ----------------------------------------------------------------------------------------------------------------
     cventana(login)
 
 
-# ---------------- VENTANA PRINCIPAL ----------------
+# ------------------------------------------- VENTANA PRINCIPAL -----------------------------------------------------
 root = tk.Tk()
 root.title("SISTEMA ACADÉMICO")
 root.geometry("1100x700")
 
 # 🔥 OCULTAR HASTA LOGIN
 root.withdraw()
+# -------------------------------------------------------------------------------------------------------------------
 
-# ---------------- TOP BAR ----------------
+# ---------------- BARRA INDICADORA DE USUARIO LOGUEADO  ------------------------------------------------------------
 frame_top = tk.Frame(root, bg="#2c3e50", height=30)
 frame_top.pack(fill="x")
 
@@ -85,8 +94,9 @@ lbl_usuario = tk.Label(
     font=("Arial", 10, "bold")
 )
 lbl_usuario.pack(side="right", padx=10)
+# --------------------------------------------------------------------------------------------------------------------
 
-# ---------------- MENÚ ----------------
+# ------------------------------------------------------ BARRA DE MENÚES ---------------------------------------------
 barramenu = tk.Menu(root)
 root.config(menu=barramenu)
 
@@ -99,16 +109,16 @@ mArchivo.add_command(label="Salir", command=root.destroy)
 # 🔒 DESHABILITAR MENÚ
 for i in range(barramenu.index("end") + 1):
     barramenu.entryconfig(i, state="disabled")
+# --------------------------------------------------------------------------------------------------------------------
 
-
- # ---------------------------------- LOGO PRINCIPAL -------------------------------------
+ # ---------------------------------- LOGO PRINCIPAL -----------------------------------------------------------------
 logoP = tk.Frame(root)
 logoP.pack(expand=True)  # Centra el contenido en la ventana
 
 # Cargar el logo
 try:
     logo = Image.open("logo.png")  # Asegúrate de que el archivo esté en la misma carpeta
-    logo = logo.resize((600, 500))
+    logo = logo.resize((500, 400))
     logo_tk = ImageTk.PhotoImage(logo)
 
     # Mostrar el logo
@@ -128,12 +138,11 @@ label_text = tk.Label(
     font=("Arial", 20, "bold")
 )
 label_text.pack(pady=(0,10))
-#-------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------------------------
 
-# ----------------------------------------- FOOTER  ------------------------------------------
-
-img = Image.open("logotipo.png")
-img = img.resize((80, 80))  # tamaño exacto que quieras
+# ------------------------------------------------  FOOTER  -----------------------------------------------------------
+img = Image.open("logo2.png")
+img = img.resize((140, 100))  # tamaño exacto que quieras
 logo = ImageTk.PhotoImage(img)
 # logo = tk.PhotoImage(file="logotipo.png")
 # logo = logo.subsample(10, 10)
@@ -154,12 +163,13 @@ lbl_texto = tk.Label(
 lbl_texto.pack(anchor="w")
 
 lbl_logo.image = logo
-#--------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------------------------
 
-# ---------------- INICIAR LOGIN AUTOMÁTICO -------------------------------------------------
+# ---------------- INICIAR LOGIN AUTOMÁTICO ---------------------------------------------------------------------------
 ventana_login(root, barramenu, lbl_usuario)
 
 centrar_ventana(root)
+# ---------------------------------------------------------------------------------------------------------------------
 
 root.mainloop()
 

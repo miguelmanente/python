@@ -34,6 +34,7 @@ def pPrincipal():
     ventana.tk.call('tk', 'scaling', 1.0)  # (opcional)
     ventana.title("SISTEMA ACADÉMICO")
     ventana.geometry("1100x700")
+    
 
     ventana.rowconfigure(0, weight=1)
     ventana.rowconfigure(1, weight=0)
@@ -98,38 +99,77 @@ def pPrincipal():
 
 
   # ---------------------------------- LOGO PRINCIPAL -------------------------------------
-    logoP = tk.Frame(ventana)
-    logoP.pack(expand=True)
+    # logoP = tk.Frame(ventana)
+    # logoP.pack(expand=True)
 
-    try:
-        # img = Image.open("logo1.png")
-        ruta = os.path.dirname(__file__)
-        img = Image.open(os.path.join(ruta, "logos.png"))
-        img = img.resize((900, 400))
-        # logo_tk = ImageTk.PhotoImage(img)
-        logo_tk = ImageTk.PhotoImage(img, master=ventana)
+    # try:
+    #     # img = Image.open("logo1.png")
+    #     ruta = os.path.dirname(__file__)
+    #     img = Image.open(os.path.join(ruta, "logos.png"))
+    #     img = img.resize((900, 400))
+    #     # logo_tk = ImageTk.PhotoImage(img)
+    #     logo_tk = ImageTk.PhotoImage(img, master=ventana)
 
-        label_logo = tk.Label(logoP, image=logo_tk)
-        label_logo.image =logo_tk  # 🔥 importante
-        label_logo.pack(pady=(2, 2))
+    #     label_logo = tk.Label(logoP, image=logo_tk)
+    #     label_logo.image =logo_tk  # 🔥 importante
+    #     label_logo.pack(pady=(2, 2))
 
-    except Exception as e:
-        print(f"No se pudo cargar el logo: {e}")
-        tk.Label(logoP, text="[Logo no disponible]").pack()
-        label_logo.pack(pady=(2,2))
+    # except Exception as e:
+    #     print(f"No se pudo cargar el logo: {e}")
+    #     tk.Label(logoP, text="[Logo no disponible]").pack()
+    #     label_logo.pack(pady=(2,2))
 
-    # Texto
+    # # Texto
     # label_text = tk.Label(
     #     logoP,
     #     text="",
     #     font=("Arial", 2, "bold")
     # )
     # label_text.pack(pady=(0, 10))
+    # logoP = tk.Frame(ventana, bg="#dcdcdc")
+    # logoP.pack(expand=True)
+    # FRAME CENTRAL
+    frame_centro = tk.Frame(ventana, bg="#dcdcdc")
+    frame_centro.pack(fill="both", anchor="w" ) 
+
+    # FRAME LOGO
+    logoP = tk.Frame(frame_centro, bg="#dcdcdc")
+    logoP.pack(expand=True)
+    try:
+        ruta = os.path.dirname(__file__)
+
+        img = Image.open(os.path.join(ruta, "logos.png"))
+
+        # 🔥 MUCHÍSIMO MÁS GRANDE
+        ancho_deseado = 800
+
+        proporcion = img.height / img.width
+        alto_deseado = int(ancho_deseado * proporcion)
+
+        img = img.resize((ancho_deseado, alto_deseado))
+
+        logo_tk = ImageTk.PhotoImage(img, master=ventana)
+
+        label_logo = tk.Label(
+            logoP,
+            image=logo_tk,
+            bg="#dcdcdc",
+            bd=0
+        )
+
+        label_logo.image = logo_tk
+        label_logo.pack(anchor="w")
+
+    except Exception as e:
+        print(f"No se pudo cargar el logo: {e}")
     # ---------------------------------------------------------------------------------------
 
     # ---------------------------------- FOOTER -------------------------------------
-    frame_footer = tk.Frame(ventana)
-    frame_footer.pack(side="bottom", anchor="w", padx=10, pady=5)
+    # frame_footer = tk.Frame(ventana)
+    # frame_footer.pack(side="bottom", anchor="w", padx=10, pady=5)
+    # FOOTER
+    frame_footer = tk.Frame(ventana, bg="#dcdcdc")
+    frame_footer.pack(side="bottom", fill="x", padx=10, pady=5)
 
     try:
         # img_footer = Image.open("logotipo.png")
@@ -141,6 +181,7 @@ def pPrincipal():
         lbl_logo = tk.Label(frame_footer, image=logo_footer)
         lbl_logo.image = logo_footer  # 🔥 importante
         lbl_logo.pack(anchor="w")
+  
 
     except Exception as e:
         print(f"No se pudo cargar footer: {e}")
@@ -153,6 +194,7 @@ def pPrincipal():
         fg="gray"
     )
     lbl_texto.pack(anchor="w")
+    
     #-------------------------------------------------------------------------------------------
     centrar_ventana(ventana)
 

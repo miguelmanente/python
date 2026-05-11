@@ -8,7 +8,6 @@ from database import validar_usuario
 from app import pPrincipal
 from registrar import ventana_registro
 import sesion  # muestra la variable del usuario conectado al sistema
-from estilos import configurar_estilos
 
 
 # ------------------------------------------------ VARIABLE GLOBAL ----------------------------------------
@@ -20,7 +19,7 @@ def ventana_login(root, barramenu, lbl_usuario):
     global usuario_logueado
 
     login = tk.Toplevel(root, bg="#ecf0f1", pady=30)
-    configurar_estilos()
+
     login.title("LOGIN DE USUARIOS")
     login.geometry("500x400")
     login.grab_set()  # 🔥 bloquea la ventana principal

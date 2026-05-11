@@ -3,12 +3,11 @@ from tkinter import ttk
 from tkinter import messagebox
 from database import registrar_usuario
 from centraVent import cventana
-from estilos import configurar_estilos
+
 
 #--------------------- Registros en la tabla ususarios la loguearse ----------------
 def ventana_registro():
     registro = tk.Toplevel(bg="#ecf0f1", pady=30)
-    configurar_estilos()
     registro.title("REGISTRO DE USUARIO")
     registro.geometry("400x300")
     registro.grab_set()

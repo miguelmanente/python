@@ -137,7 +137,7 @@ def ventana_listado(tipo):
 
         styles = getSampleStyleSheet()
 
-        titulo = Paragraph(f"<b>Listado de Profesores {tipo}</b>", styles["Title"])
+        titulo = Paragraph(f"<b>LISTADO DE PROFESORES {tipo}</b>", styles["Title"])
 
         # Espacio
         espacio = Spacer(1, 20)

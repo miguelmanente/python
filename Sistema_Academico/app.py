@@ -13,6 +13,7 @@ from altaAsignaciones import info_asignaciones
 from listados import ventana_listado
 import sesion
 from estilos import configurar_estilos
+from listadoCursos import ventana_listado_curso
 
 
 #Código - Zona de funciones
@@ -31,7 +32,6 @@ def pPrincipal():
     #-------------------------------------- VENTANA PRINCIPAL -------------------------------------
     #Ventana principal 
     ventana = tk.Toplevel()
- 
     ventana.tk.call('tk', 'scaling', 1.0)  # (opcional)
     ventana.title("SISTEMA ACADÉMICO")
     ventana.geometry("1100x700")
@@ -97,6 +97,9 @@ def pPrincipal():
     mListados.add_command(label="Profesores Titulares", command=lambda: ventana_listado("Titular"))
     mListados.add_command(label="Profesores Provisorio", command=lambda: ventana_listado("Provisorio"))
     mListados.add_command(label="Profesores Suplentes",command=lambda: ventana_listado("Suplente"))
+    mListados.add_separator()
+    mListados.add_command(label="Listado por Curso", command=ventana_listado_curso)
+
 
 
   # ---------------------------------- LOGO PRINCIPAL -------------------------------------

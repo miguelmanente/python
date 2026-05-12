@@ -1,3 +1,8 @@
+# =====================================================
+#            MÓDULO SISTEMA EDUCATIVO - APP
+# =====================================================
+
+# ----------------------------- LIBRERÍAS -------------------------------
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
@@ -14,12 +19,13 @@ from listados import ventana_listado
 import sesion
 from estilos import configurar_estilos
 from listadoCursos import ventana_listado_curso
+from historialDocente import ventana_historial
 
 
 #Código - Zona de funciones
 #Crea la tablas de la BD si no están creadas
 
-
+# ----------------------  CREACIÓN DE VENTANA ABRIR SISTEMA --------------------------------------
 def pPrincipal():
     crear_tablas()
 
@@ -100,7 +106,12 @@ def pPrincipal():
     mListados.add_separator()
     mListados.add_command(label="Listado por Curso", command=ventana_listado_curso)
 
-
+    #Menú Historial Docente
+    # Menú Historial
+    mHistorial = tk.Menu(barramenu, tearoff=0)
+    barramenu.add_cascade(label="Historial", menu=mHistorial)
+    mHistorial.add_command(label="Historial Docente", command=ventana_historial
+)
 
   # ---------------------------------- LOGO PRINCIPAL -------------------------------------
     frame_centro = tk.Frame(ventana, bg="#dcdcdc")

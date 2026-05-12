@@ -1,3 +1,8 @@
+# =====================================================
+#            MÓDULO CREACIÓN DE TABLAS DE LA BD
+# =====================================================
+
+# ------------------------ LIBRERÍAS  ---------------------------------
 import sqlite3
 import hashlib
 import os
@@ -99,6 +104,27 @@ def crear_tablas():
         FOREIGN KEY (id_profesor) REFERENCES profesores(id_profesor),
         FOREIGN KEY (id_horario) REFERENCES horarios(id_horario)
     );
+                         
+    CREATE TABLE IF NOT EXISTS historial_docente (
+
+        id_historial INTEGER PRIMARY KEY AUTOINCREMENT,
+
+        id_profesor INTEGER NOT NULL,
+        id_materia INTEGER NOT NULL,
+        id_curso INTEGER NOT NULL,
+
+        situacion TEXT NOT NULL,
+
+        fecha_inicio TEXT NOT NULL,
+        fecha_fin TEXT,
+
+        observaciones TEXT,
+
+        FOREIGN KEY(id_profesor) REFERENCES profesores(id_profesor),
+        FOREIGN KEY(id_materia) REFERENCES materias(id_materia),
+        FOREIGN KEY(id_curso) REFERENCES cursos(id_curso)
+    );
+
     """)
 
     conn.commit()

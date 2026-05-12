@@ -1,3 +1,7 @@
+# ==============================================================
+# MÓDULO CENTRA LAS VENTANAS DEL SISTEMA EN MEDIO DE LA PANTALLA
+# ==============================================================
+
 #Centra la pantalla principal en el centro de la pantalla
 def centrar_ventana(ventana, ancho=1300, alto=700):
     pantalla_ancho = ventana.winfo_screenwidth()

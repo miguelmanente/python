@@ -97,6 +97,25 @@ def ventana_historial():
     )
 
     # =====================================================
+    # ANTIGÜEDAD TOTAL
+    # =====================================================
+
+    lbl_total = ttk.Label(
+        ventana,
+        text="Antigüedad Total: 0 años",
+        font=("Arial", 11, "bold"),
+        foreground="blue"
+    )
+
+    lbl_total.grid(
+        row=3,
+        column=0,
+        sticky="w",
+        padx=10,
+        pady=5
+    )
+
+    # =====================================================
     #      FILTROS PARA SELECCIÓN DE DATOS
     # =====================================================
 
@@ -131,7 +150,8 @@ def ventana_historial():
     # =====================================================
 
     columnas = (
-        "id",
+        "id_historial",
+        "id_profesor",
         "profesor",
         "materia",
         "curso",
@@ -141,14 +161,35 @@ def ventana_historial():
         "antiguedad"
     )
 
-    tree = ttk.Treeview(ventana, columns=columnas, show="headings")
+    tree = ttk.Treeview(
+        ventana,
+        columns=columnas,
+        show="headings"
+    )
 
-    tree.grid(row=2, column=0, sticky="nsew", padx=10, pady=10)
+    tree.grid(
+        row=2,
+        column=0,
+        sticky="nsew",
+        padx=10,
+        pady=10
+    )
 
     for col in columnas:
         tree.heading(col, text=col.capitalize())
 
-    tree.column("id", width=0, stretch=False)
+    # ocultar IDs
+    tree.column("id_historial", width=0, stretch=False)
+    tree.column("id_profesor", width=0, stretch=False)
+
+    # tamaños
+    tree.column("profesor", width=220)
+    tree.column("materia", width=180)
+    tree.column("curso", width=120)
+    tree.column("situacion", width=100)
+    tree.column("inicio", width=100)
+    tree.column("fin", width=100)
+    tree.column("antiguedad", width=120)
 
     # =====================================================
     #     CARGAR COMBOS CON PROFESORES, MATERIAS Y CURSOS
@@ -160,46 +201,73 @@ def ventana_historial():
         cursor = conn.cursor()
 
         # PROFESORES
-        cursor.execute("SELECT id_profesor, apenom FROM profesores")
+        cursor.execute("""
+            SELECT id_profesor, apenom
+            FROM profesores
+        """)
 
         for id_, nombre in cursor.fetchall():
+
             texto = f"{id_} - {nombre}"
+
             profesores_dict[texto] = id_
 
-        combo_profesor["values"] = list(profesores_dict.keys())
+        combo_profesor["values"] = list(
+            profesores_dict.keys()
+        )
 
         # MATERIAS
-        cursor.execute("SELECT id_materia, nombre FROM materias")
+        cursor.execute("""
+            SELECT id_materia, nombre
+            FROM materias
+        """)
 
         for id_, nombre in cursor.fetchall():
+
             texto = f"{id_} - {nombre}"
+
             materias_dict[texto] = id_
 
-        combo_materia["values"] = list(materias_dict.keys())
+        combo_materia["values"] = list(
+            materias_dict.keys()
+        )
 
         # CURSOS
-        cursor.execute("SELECT id_curso, nombre FROM cursos")
+        cursor.execute("""
+            SELECT id_curso, nombre
+            FROM cursos
+        """)
 
         for id_, nombre in cursor.fetchall():
+
             texto = f"{id_} - {nombre}"
+
             cursos_dict[texto] = id_
 
-        combo_curso["values"] = list(cursos_dict.keys())
+        combo_curso["values"] = list(
+            cursos_dict.keys()
+        )
 
         conn.close()
 
     # =====================================================
-    #            ANTIGUEDAD DE DOCENTE
+    #            ANTIGUEDAD INDIVIDUAL
     # =====================================================
 
     def calcular_antiguedad(inicio, fin):
 
         try:
 
-            fecha_inicio = datetime.strptime(inicio, "%d/%m/%Y")
+            fecha_inicio = datetime.strptime(
+                inicio,
+                "%d/%m/%Y"
+            )
 
             if fin:
-                fecha_fin = datetime.strptime(fin, "%d/%m/%Y")
+                fecha_fin = datetime.strptime(
+                    fin,
+                    "%d/%m/%Y"
+                )
             else:
                 fecha_fin = datetime.now()
 
@@ -213,7 +281,7 @@ def ventana_historial():
             return ""
 
     # =====================================================
-    #             CARGAR Y VISUALIZAR TREEVIEW
+    #             CARGAR TREEVIEW
     # =====================================================
 
     def cargar_tree():
@@ -225,52 +293,195 @@ def ventana_historial():
         cursor = conn.cursor()
 
         query = """
-            SELECT h.id_historial,
+            SELECT
+                h.id_historial,
+                h.id_profesor,
                 p.apenom,
                 m.nombre,
                 c.nombre,
                 h.situacion,
                 h.fecha_inicio,
                 h.fecha_fin
+
             FROM historial_docente h
-            JOIN profesores p ON h.id_profesor = p.id_profesor
-            JOIN materias m ON h.id_materia = m.id_materia
-            JOIN cursos c ON h.id_curso = c.id_curso
+
+            JOIN profesores p
+                ON h.id_profesor = p.id_profesor
+
+            JOIN materias m
+                ON h.id_materia = m.id_materia
+
+            JOIN cursos c
+                ON h.id_curso = c.id_curso
+
             WHERE 1=1
         """
 
         parametros = []
 
-        # BUSCAR PROFESOR
+        # filtro profesor
         if buscar_var.get():
 
             query += " AND p.apenom LIKE ?"
-            parametros.append(f"%{buscar_var.get()}%")
 
-        # FILTRO SITUACION
+            parametros.append(
+                f"%{buscar_var.get()}%"
+            )
+
+        # filtro situación
         if filtro_situacion.get() != "Todos":
 
-            query += " AND h.situacion = ?"
-            parametros.append(filtro_situacion.get())
+            query += " AND h.situacion=?"
+
+            parametros.append(
+                filtro_situacion.get()
+            )
 
         query += " ORDER BY p.apenom"
 
         cursor.execute(query, parametros)
 
-        for fila in cursor.fetchall():
+        registros = cursor.fetchall()
 
-            antiguedad = calcular_antiguedad(fila[5], fila[6])
+        for fila in registros:
+
+            antiguedad = calcular_antiguedad(
+                fila[6],
+                fila[7]
+            )
 
             nueva = list(fila)
+
             nueva.append(antiguedad)
 
-            tree.insert("", "end", values=nueva)
+            tree.insert(
+                "",
+                "end",
+                values=nueva
+            )
 
         conn.close()
 
     # =====================================================
+    #             ANTIGÜEDAD TOTAL DEL DOCENTE
+    # =====================================================
+
+    def antiguedad_total(id_profesor):
+
+        conn = conectar()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT fecha_inicio, fecha_fin
+            FROM historial_docente
+            WHERE id_profesor=?
+            ORDER BY fecha_inicio
+        """, (id_profesor,))
+
+        registros = cursor.fetchall()
+
+        conn.close()
+
+        periodos = []
+
+        # ==========================================
+        # CONVERTIR FECHAS
+        # ==========================================
+
+        for inicio, fin in registros:
+
+            try:
+
+                fecha_inicio = datetime.strptime(
+                    inicio,
+                    "%d/%m/%Y"
+                )
+
+                if fin == "" or fin is None:
+
+                    fecha_fin = datetime.today()
+
+                else:
+
+                    fecha_fin = datetime.strptime(
+                        fin,
+                        "%d/%m/%Y"
+                    )
+
+                periodos.append(
+                    (fecha_inicio, fecha_fin)
+                )
+
+            except Exception as e:
+                print(e)
+
+        # ==========================================
+        # NO HAY DATOS
+        # ==========================================
+
+        if not periodos:
+            return "0 años"
+
+        # ==========================================
+        # ORDENAR PERIODOS
+        # ==========================================
+
+        periodos.sort(key=lambda x: x[0])
+
+        # ==========================================
+        # UNIR PERIODOS SUPERPUESTOS
+        # ==========================================
+
+        unidos = []
+
+        actual_inicio, actual_fin = periodos[0]
+
+        for inicio, fin in periodos[1:]:
+
+            # si se superponen
+            if inicio <= actual_fin:
+
+                if fin > actual_fin:
+                    actual_fin = fin
+
+            else:
+
+                unidos.append(
+                    (actual_inicio, actual_fin)
+                )
+
+                actual_inicio = inicio
+                actual_fin = fin
+
+        unidos.append(
+            (actual_inicio, actual_fin)
+        )
+
+        # ==========================================
+        # SUMAR DÍAS REALES
+        # ==========================================
+
+        total_dias = 0
+
+        for inicio, fin in unidos:
+
+            total_dias += (
+                fin - inicio
+            ).days
+
+        anios = total_dias // 365
+
+        meses = (
+            (total_dias % 365) // 30
+        )
+
+        return f"{anios} años - {meses} meses"
+
+
+    # =====================================================
     #          GUARDAR HISTORIAL DOCENTE
     # =====================================================
+
     def guardar():
 
         conn = conectar()
@@ -286,30 +497,47 @@ def ventana_historial():
                 fecha_fin,
                 observaciones
             )
+
             VALUES (?, ?, ?, ?, ?, ?, ?)
         """, (
 
-            profesores_dict[profesor_var.get()],
-            materias_dict[materia_var.get()],
-            cursos_dict[curso_var.get()],
-            situacion_var.get(),
-            inicio_var.get(),
-            fin_var.get(),
-            observacion_var.get()
+            profesores_dict[
+                profesor_var.get()
+            ],
 
+            materias_dict[
+                materia_var.get()
+            ],
+
+            cursos_dict[
+                curso_var.get()
+            ],
+
+            situacion_var.get(),
+
+            inicio_var.get(),
+
+            fin_var.get(),
+
+            observacion_var.get()
         ))
 
         conn.commit()
         conn.close()
 
-        messagebox.showinfo("OK", "Historial guardado", parent=ventana)
+        messagebox.showinfo(
+            "OK",
+            "Historial guardado",
+            parent=ventana
+        )
 
         cargar_tree()
-    
+        limpiar()
 
     # =====================================================
-    #          SELECCIONAR REGISTROS TREEVIEW
+    #          SELECCIONAR REGISTRO
     # =====================================================
+
     def seleccionar(event):
 
         nonlocal id_seleccionado
@@ -319,40 +547,70 @@ def ventana_historial():
         if not item:
             return
 
-        valores = tree.item(item[0], "values")
+        valores = tree.item(
+            item[0],
+            "values"
+        )
 
         id_seleccionado = valores[0]
 
-        # PROFESOR
+        id_profesor = valores[1]
+
+        # ==================================
+        # ANTIGÜEDAD TOTAL
+        # ==================================
+
+        total = antiguedad_total(
+            id_profesor
+        )
+
+        lbl_total.config(
+            text=f"Antigüedad Total: {total}"
+        )
+
+        # ==================================
+        # CARGAR COMBOS
+        # ==================================
+
         for texto in profesores_dict:
-            if valores[1] in texto:
+
+            if valores[2] in texto:
+
                 profesor_var.set(texto)
 
-        # MATERIA
         for texto in materias_dict:
-            if valores[2] in texto:
+
+            if valores[3] in texto:
+
                 materia_var.set(texto)
 
-        # CURSO
         for texto in cursos_dict:
-            if valores[3] in texto:
+
+            if valores[4] in texto:
+
                 curso_var.set(texto)
 
-        situacion_var.set(valores[4])
+        situacion_var.set(valores[5])
 
-        inicio_var.set(valores[5])
+        inicio_var.set(valores[6])
 
-        fin_var.set(valores[6])
+        fin_var.set(valores[7])
+
     tree.bind("<<TreeviewSelect>>", seleccionar)
 
+    # =====================================================
+    #            MODIFICAR HISTORIAL
+    # =====================================================
 
-    # =====================================================
-    #            MODIFICAR DATOS DEL HISTORIAL
-    # =====================================================
     def modificar():
 
         if not id_seleccionado:
-            messagebox.showwarning("Atención", "Seleccione un registro")
+
+            messagebox.showwarning(
+                "Atención",
+                "Seleccione un registro"
+            )
+
             return
 
         conn = conectar()
@@ -368,35 +626,57 @@ def ventana_historial():
                 fecha_inicio=?,
                 fecha_fin=?,
                 observaciones=?
+
             WHERE id_historial=?
         """, (
 
-            profesores_dict[profesor_var.get()],
-            materias_dict[materia_var.get()],
-            cursos_dict[curso_var.get()],
+            profesores_dict[
+                profesor_var.get()
+            ],
+
+            materias_dict[
+                materia_var.get()
+            ],
+
+            cursos_dict[
+                curso_var.get()
+            ],
+
             situacion_var.get(),
+
             inicio_var.get(),
+
             fin_var.get(),
+
             observacion_var.get(),
+
             id_seleccionado
         ))
 
         conn.commit()
         conn.close()
 
-        messagebox.showinfo("OK", "Registro modificado")
+        messagebox.showinfo(
+            "OK",
+            "Registro modificado"
+        )
 
         cargar_tree()
         limpiar()
 
+    # =====================================================
+    #               ELIMINAR HISTORIAL
+    # =====================================================
 
-    # =====================================================
-    #               ELIMINAR DATOS DEL HISTORIAL
-    # =====================================================
     def eliminar():
 
         if not id_seleccionado:
-            messagebox.showwarning("Atención", "Seleccione un registro")
+
+            messagebox.showwarning(
+                "Atención",
+                "Seleccione un registro"
+            )
+
             return
 
         if not messagebox.askyesno(
@@ -408,23 +688,26 @@ def ventana_historial():
         conn = conectar()
         cursor = conn.cursor()
 
-        cursor.execute(
-            "DELETE FROM historial_docente WHERE id_historial=?",
-            (id_seleccionado,)
-        )
+        cursor.execute("""
+            DELETE FROM historial_docente
+            WHERE id_historial=?
+        """, (id_seleccionado,))
 
         conn.commit()
         conn.close()
 
-        messagebox.showinfo("OK", "Registro eliminado")
+        messagebox.showinfo(
+            "OK",
+            "Registro eliminado"
+        )
 
         cargar_tree()
         limpiar()
 
+    # =====================================================
+    #                 LIMPIAR CAMPOS
+    # =====================================================
 
-    # =====================================================
-    #              LIMPIAR ENTRYS DE DATOS
-    # =====================================================
     def limpiar():
 
         nonlocal id_seleccionado
@@ -439,6 +722,9 @@ def ventana_historial():
         fin_var.set("")
         observacion_var.set("")
 
+        lbl_total.config(
+            text="Antigüedad Total: 0 años"
+        )
 
     # =====================================================
     # BOTONES

@@ -28,6 +28,7 @@ def ventana_historial():
     situacion_var = tk.StringVar()
     inicio_var = tk.StringVar()
     fin_var = tk.StringVar()
+    antiguedad_var =tk.StringVar()
     observacion_var = tk.StringVar()
 
     profesores_dict = {}
@@ -46,25 +47,25 @@ def ventana_historial():
     frame.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
 
     # PROFESOR
-    ttk.Label(frame, text="Profesor").grid(row=0, column=0, padx=5, pady=5)
+    ttk.Label(frame, text="Profesor").grid(row=0, column=0, padx=5, pady=10)
 
     combo_profesor = ttk.Combobox(frame, textvariable=profesor_var, width=40, state="readonly")
-    combo_profesor.grid(row=0, column=1, padx=5, pady=5)
+    combo_profesor.grid(row=0, column=1, padx=5, pady=10)
 
     # MATERIA
-    ttk.Label(frame, text="Materia").grid(row=0, column=2)
+    ttk.Label(frame, text="Materia").grid(row=0, column=2, pady=10)
 
     combo_materia = ttk.Combobox(frame, textvariable=materia_var, width=30, state="readonly")
-    combo_materia.grid(row=0, column=3, padx=5)
+    combo_materia.grid(row=0, column=3, padx=10)
 
     # CURSO
-    ttk.Label(frame, text="Curso").grid(row=1, column=0)
+    ttk.Label(frame, text="Curso").grid(row=1, column=0, pady=10)
 
     combo_curso = ttk.Combobox(frame, textvariable=curso_var, width=30, state="readonly")
-    combo_curso.grid(row=1, column=1, padx=5)
+    combo_curso.grid(row=1, column=1, padx=10)
 
     # SITUACION
-    ttk.Label(frame, text="Situación").grid(row=1, column=2)
+    ttk.Label(frame, text="Situación").grid(row=1, column=2, pady=10)
 
     combo_situacion = ttk.Combobox(
         frame,
@@ -76,17 +77,17 @@ def ventana_historial():
     combo_situacion.grid(row=1, column=3)
 
     # FECHA INICIO
-    ttk.Label(frame, text="Fecha Inicio").grid(row=2, column=0)
+    ttk.Label(frame, text="Fecha Inicio").grid(row=2, column=0, pady=10)
 
-    ttk.Entry(frame, textvariable=inicio_var).grid(row=2, column=1)
+    ttk.Entry(frame, textvariable=inicio_var).grid(row=2, column=1, pady=10)
 
     # FECHA FIN
-    ttk.Label(frame, text="Fecha Fin").grid(row=2, column=2)
+    ttk.Label(frame, text="Fecha Fin").grid(row=2, column=2, pady=10)
 
-    ttk.Entry(frame, textvariable=fin_var).grid(row=2, column=3)
+    ttk.Entry(frame, textvariable=fin_var).grid(row=2, column=3, pady=10)
 
     # OBSERVACIONES
-    ttk.Label(frame, text="Observaciones").grid(row=3, column=0)
+    ttk.Label(frame, text="Observaciones").grid(row=3, column=0, pady=10)
 
     ttk.Entry(frame, textvariable=observacion_var, width=80).grid(
         row=3,
@@ -158,7 +159,8 @@ def ventana_historial():
         "situacion",
         "inicio",
         "fin",
-        "antiguedad"
+        "antiguedad",   
+        "observaciones"
     )
 
     tree = ttk.Treeview(
@@ -185,11 +187,12 @@ def ventana_historial():
     # tamaños
     tree.column("profesor", width=220)
     tree.column("materia", width=180)
-    tree.column("curso", width=120)
+    tree.column("curso", width=50)
     tree.column("situacion", width=100)
-    tree.column("inicio", width=100)
-    tree.column("fin", width=100)
-    tree.column("antiguedad", width=120)
+    tree.column("inicio", width=50)
+    tree.column("fin", width=50)
+    tree.column("antiguedad", width=50)
+    tree.column("observaciones", width=100)
 
     # =====================================================
     #     CARGAR COMBOS CON PROFESORES, MATERIAS Y CURSOS
@@ -301,7 +304,9 @@ def ventana_historial():
                 c.nombre,
                 h.situacion,
                 h.fecha_inicio,
-                h.fecha_fin
+                h.fecha_fin,
+                h.observaciones
+                
 
             FROM historial_docente h
 
@@ -352,12 +357,21 @@ def ventana_historial():
 
             nueva = list(fila)
 
-            nueva.append(antiguedad)
-
             tree.insert(
                 "",
                 "end",
-                values=nueva
+                values=(
+                    fila[0],  # id_historial
+                    fila[1],  # id_profesor
+                    fila[2],  # profesor
+                    fila[3],  # materia
+                    fila[4],  # curso
+                    fila[5],  # situacion
+                    fila[6],  # inicio
+                    fila[7],  # fin
+                    antiguedad,
+                    fila[8]   # observaciones
+                )
             )
 
         conn.close()
@@ -596,6 +610,8 @@ def ventana_historial():
 
         fin_var.set(valores[7])
 
+        observacion_var.set(valores[9])
+
     tree.bind("<<TreeviewSelect>>", seleccionar)
 
     # =====================================================
@@ -705,6 +721,210 @@ def ventana_historial():
         limpiar()
 
     # =====================================================
+    #             GENERAR LEGAJO PDF
+    # =====================================================
+
+    def generar_legajo_pdf():
+
+        item = tree.selection()
+
+        if not item:
+
+            messagebox.showwarning(
+                "Atención",
+                "Seleccione un docente"
+            )
+
+            return
+
+        valores = tree.item(
+            item[0],
+            "values"
+        )
+
+        id_profesor = valores[1]
+        nombre_profesor = valores[2]
+
+        from reportlab.platypus import (
+            SimpleDocTemplate,
+            Paragraph,
+            Spacer,
+            Table,
+            TableStyle,
+            Image
+        )
+
+        from reportlab.lib import colors
+        from reportlab.lib.styles import getSampleStyleSheet
+        from reportlab.lib.pagesizes import A4
+
+        doc = SimpleDocTemplate(
+            f"Legajo_{nombre_profesor}.pdf",
+            pagesize=A4
+        )
+
+        elementos = []
+
+        styles = getSampleStyleSheet()
+
+        # ==========================================
+        # LOGO
+        # ==========================================
+
+        try:
+
+            logo = Image(
+                "logos.png",
+                width=120,
+                height=120
+            )
+
+            elementos.append(logo)
+
+        except:
+            pass
+
+        # ==========================================
+        # TITULO
+        # ==========================================
+
+        titulo = Paragraph(
+            "<b>LEGAJO DOCENTE</b>",
+            styles["Title"]
+        )
+
+        elementos.append(titulo)
+
+        elementos.append(
+            Spacer(1, 20)
+        )
+
+        # ==========================================
+        # DATOS DOCENTE
+        # ==========================================
+
+        datos = Paragraph(
+            f"""
+            <b>Profesor:</b> {nombre_profesor}<br/>
+            <b>Antigüedad Total:</b>
+            {antiguedad_total(id_profesor)}
+            """,
+            styles["BodyText"]
+        )
+
+        elementos.append(datos)
+
+        elementos.append(
+            Spacer(1, 20)
+        )
+
+        # ==========================================
+        # OBTENER HISTORIAL
+        # ==========================================
+
+        conn = conectar()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT
+                m.nombre,
+                c.nombre,
+                h.situacion,
+                h.fecha_inicio,
+                h.fecha_fin,
+                h.observaciones
+
+            FROM historial_docente h
+
+            JOIN materias m
+                ON h.id_materia = m.id_materia
+
+            JOIN cursos c
+                ON h.id_curso = c.id_curso
+
+            WHERE h.id_profesor=?
+        """, (id_profesor,))
+
+        registros = cursor.fetchall()
+
+        conn.close()
+
+        # ==========================================
+        # TABLA
+        # ==========================================
+
+        data = [[
+            "Materia",
+            "Curso",
+            "Situación",
+            "Inicio",
+            "Fin",
+            "Observaciones"
+        ]]
+
+        for fila in registros:
+
+            data.append(list(fila))
+
+        tabla = Table(data)
+
+        tabla.setStyle(TableStyle([
+
+            ('BACKGROUND', (0,0), (-1,0),
+                colors.darkblue),
+
+            ('TEXTCOLOR', (0,0), (-1,0),
+                colors.white),
+
+            ('FONTNAME', (0,0), (-1,0),
+                'Helvetica-Bold'),
+
+            ('GRID', (0,0), (-1,-1),
+                1, colors.black),
+
+            ('BACKGROUND', (0,1), (-1,-1),
+                colors.beige),
+
+            ('FONTSIZE', (0,0), (-1,-1),
+                9)
+
+        ]))
+
+        elementos.append(tabla)
+
+        elementos.append(
+            Spacer(1, 40)
+        )
+
+        # ==========================================
+        # FIRMA
+        # ==========================================
+
+        firma = Paragraph(
+            """
+            <br/><br/><br/>
+            ___________________________<br/>
+            Firma Dirección
+            """,
+            styles["BodyText"]
+        )
+
+        elementos.append(firma)
+
+        # ==========================================
+        # CREAR PDF
+        # ==========================================
+
+        doc.build(elementos)
+
+        messagebox.showinfo(
+            "PDF",
+            "Legajo generado correctamente"
+        )
+
+
+
+    # =====================================================
     #                 LIMPIAR CAMPOS
     # =====================================================
 
@@ -762,6 +982,12 @@ def ventana_historial():
         text="❌ Cerrar",
         command=ventana.destroy
     ).grid(row=0, column=4, padx=5)
+
+    ttk.Button(
+        frame_btn,
+        text="📄 Legajo PDF",
+        command=generar_legajo_pdf
+    ).grid(row=0, column=5, padx=5)
 
     # =====================================================
 

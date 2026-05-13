@@ -51,7 +51,7 @@ def ventana_login(root, barramenu, lbl_usuario):
             for i in range(barramenu.index("end") + 1):
                 barramenu.entryconfig(i, state="normal")
 
-            messagebox.showinfo("Bienvenido", f"Bienvenido {usuario}")
+            messagebox.showinfo("Bienvenido", f"Bienvenido, {usuario} ha ingresado Sistema de Gestión Educativa")
 
             login.destroy()
             root.deiconify()  # 🔥 mostrar sistema

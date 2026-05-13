@@ -16,6 +16,8 @@ from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.enums import TA_CENTER
+from datetime import datetime
+
 
 
 def ventana_listado(tipo):
@@ -129,7 +131,15 @@ def ventana_listado(tipo):
         for item in tree.get_children():
             ws.append(tree.item(item)["values"])
 
-        wb.save("listado.xlsx")
+        fecha = datetime.now().strftime("%d-%m-%Y_%H-%M")
+        #wb.save("listado.xlsx")
+        nombre_excel = f"listado_{fecha}.xlsx"
+        ruta_excel = os.path.join(
+            "reportes",
+            "excel",
+            nombre_excel)
+
+        wb.save(ruta_excel)
         messagebox.showinfo("OK", "Exportado a listado.xlsx")
 
     # =========================
@@ -137,8 +147,19 @@ def ventana_listado(tipo):
     # =========================
   
     def exportar_pdf(tipo):
+        
+        fecha = datetime.now().strftime("%d-%m-%Y_%H-%M")
+        #doc = SimpleDocTemplate("listado.pdf")
+        nombre_pdf = f"listado_{fecha}.pdf"
+        ruta_pdf = os.path.join(
+            "reportes",
+            "pdf",
+            nombre_pdf
+        )
+        nombre_pdf(ruta_pdf)
+        messagebox.showinfo("OK", "Exportado a Reportes/pdf")
 
-        doc = SimpleDocTemplate("listado.pdf")
+        doc = SimpleDocTemplate(ruta_pdf)
 
         styles = getSampleStyleSheet()
 
@@ -167,6 +188,7 @@ def ventana_listado(tipo):
         elementos.append(tabla)
 
         doc.build(elementos)
+        
 
     # =========================
     # IMPRIMIR DIRECTO

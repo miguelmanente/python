@@ -14,6 +14,7 @@ from reportlab.platypus import (
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 import os
+from datetime import datetime
 
 
 def ventana_listado_curso():
@@ -181,24 +182,41 @@ def ventana_listado_curso():
 
         for item in tree.get_children():
             ws.append(tree.item(item)["values"])
+        fecha = datetime.now().strftime("%d-%m-%Y_%H-%M")
+        nombre_excel = f"listado_{curso_var.get()}_{fecha}.xlsx"
+        ruta_excel = os.path.join(
+            "reportes",
+            "excel",
+            nombre_excel
+        )
 
-        archivo = f"listado_{curso_var.get()}.xlsx"
-
-        wb.save(archivo)
+        wb.save(ruta_excel)
+        #wb.save(archivo)
 
         messagebox.showinfo(
             "Excel",
-            f"Archivo exportado:\n{archivo}"
+            f"Exportado a /reportes/excel"
         )
 
     # =========================
     # EXPORTAR PDF
     # =========================
     def exportar_pdf():
+   
+        os.makedirs("reportes/pdf", exist_ok=True)
 
-        archivo = f"listado_{curso_var.get()}.pdf"
+        archivo = f"listado_{curso_var.get()}"
+        fecha = datetime.now().strftime("%d-%m-%Y_%H-%M")
 
-        doc = SimpleDocTemplate(archivo)
+        nombre_pdf = f"{archivo}_{fecha}.pdf"
+
+        ruta_pdf = os.path.join(
+            "reportes",
+            "pdf",
+            nombre_pdf
+        )
+
+        doc = SimpleDocTemplate(ruta_pdf)
 
         styles = getSampleStyleSheet()
 
@@ -238,7 +256,7 @@ def ventana_listado_curso():
 
         messagebox.showinfo(
             "PDF",
-            f"PDF generado:\n{archivo}"
+            f"PDF generado:\n{ruta_pdf}"
         )
 
     # =========================

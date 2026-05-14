@@ -8,6 +8,18 @@ from tkinter import ttk, messagebox
 from database import conectar
 from centraVent import centrar_ventana
 from datetime import datetime
+import os
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Paragraph,
+    Spacer,
+    Table,
+    TableStyle,
+    Image
+)
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.pagesizes import A4
 
 def ventana_historial():
 
@@ -745,21 +757,17 @@ def ventana_historial():
         id_profesor = valores[1]
         nombre_profesor = valores[2]
 
-        from reportlab.platypus import (
-            SimpleDocTemplate,
-            Paragraph,
-            Spacer,
-            Table,
-            TableStyle,
-            Image
+
+        nombre_pdf = f"Legajo_{nombre_profesor}.pdf"
+
+        ruta_pdf = os.path.join(
+            "reportes",
+            "pdf",
+            nombre_pdf
         )
 
-        from reportlab.lib import colors
-        from reportlab.lib.styles import getSampleStyleSheet
-        from reportlab.lib.pagesizes import A4
-
         doc = SimpleDocTemplate(
-            f"Legajo_{nombre_profesor}.pdf",
+            ruta_pdf,
             pagesize=A4
         )
 
@@ -979,16 +987,15 @@ def ventana_historial():
 
     ttk.Button(
         frame_btn,
-        text="❌ Cerrar",
-        command=ventana.destroy
+        text="📄 Legajo PDF",
+        command=generar_legajo_pdf
     ).grid(row=0, column=4, padx=5)
 
     ttk.Button(
         frame_btn,
-        text="📄 Legajo PDF",
-        command=generar_legajo_pdf
+        text="❌ Cerrar",
+        command=ventana.destroy
     ).grid(row=0, column=5, padx=5)
-
     # =====================================================
 
     # =====================================================

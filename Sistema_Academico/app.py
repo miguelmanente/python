@@ -20,6 +20,7 @@ import sesion
 from estilos import configurar_estilos
 from listadoCursos import ventana_listado_curso
 from historialDocente import ventana_historial
+from asistenciaDocente import ventana_asistencias
 
 
 #Código - Zona de funciones
@@ -107,11 +108,14 @@ def pPrincipal():
     mListados.add_command(label="Listado por Curso", command=ventana_listado_curso)
 
     #Menú Historial Docente
-    # Menú Historial
     mHistorial = tk.Menu(barramenu, tearoff=0)
     barramenu.add_cascade(label="Historial", menu=mHistorial)
-    mHistorial.add_command(label="Historial Docente", command=ventana_historial
-)
+    mHistorial.add_command(label="Historial Docente", command=ventana_historial)
+
+    # Menú Asistencias Docentes
+    mAsistencias = tk.Menu(barramenu, tearoff=0)
+    barramenu.add_cascade(label="Asistencias", menu=mAsistencias)
+    mAsistencias.add_command(label="Control Docente", command=ventana_asistencias)
 
   # ---------------------------------- LOGO PRINCIPAL -------------------------------------
     frame_centro = tk.Frame(ventana, bg="#dcdcdc")

@@ -58,6 +58,34 @@ def validar_usuario(username, password):
     return usuario
 # ---------------------------- Fin función validación---------------------------------------------------
 
+# def crear_tabla_asistencias():
+
+#     conn = conectar()
+#     cursor = conn.cursor()
+
+#     cursor.execute("""
+#         CREATE TABLE IF NOT EXISTS asistencias_docentes(
+
+#             id_asistencia INTEGER PRIMARY KEY AUTOINCREMENT,
+
+#             id_profesor INTEGER NOT NULL,
+
+#             fecha_desde TEXT NOT NULL,
+
+#             fecha_hasta TEXT NOT NULL,
+
+#             estado TEXT NOT NULL,
+
+#             observacion TEXT,
+
+#             FOREIGN KEY(id_profesor)
+#             REFERENCES profesores(id_profesor)
+#         )
+#     """)
+
+#     conn.commit()
+#     conn.close()
+
 #---------------------  CREAR Y VERIFICAR SI ESTÁN CREADAS LAS TABLAS ----------------
 def crear_tablas():
     conn = conectar()
@@ -123,6 +151,23 @@ def crear_tablas():
         FOREIGN KEY(id_profesor) REFERENCES profesores(id_profesor),
         FOREIGN KEY(id_materia) REFERENCES materias(id_materia),
         FOREIGN KEY(id_curso) REFERENCES cursos(id_curso)
+    );
+    CREATE TABLE IF NOT EXISTS asistencias_docentes(
+
+        id_asistencia INTEGER PRIMARY KEY AUTOINCREMENT,
+
+        id_profesor INTEGER NOT NULL,
+
+        fecha_desde TEXT NOT NULL,
+
+        fecha_hasta TEXT NOT NULL,
+
+        estado TEXT NOT NULL,
+
+        observacion TEXT,
+
+        FOREIGN KEY(id_profesor)
+        REFERENCES profesores(id_profesor)
     );
 
     """)

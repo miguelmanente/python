@@ -121,11 +121,11 @@ def ventana_historial():
     )
 
     lbl_total.grid(
-        row=3,
+        row=4,
         column=0,
         sticky="w",
         padx=10,
-        pady=5
+        pady=2
     )
 
     # =====================================================
@@ -929,6 +929,239 @@ def ventana_historial():
             "PDF",
             "Legajo generado correctamente"
         )
+    # =========================================================================
+
+
+    # =====================================================
+    #         CERTIFICACIÓN DE SERVICIOS
+    # =====================================================
+    def certificacion_servicios():
+
+        item = tree.selection()
+
+        if not item:
+
+            messagebox.showwarning(
+                "Atención",
+                "Seleccione un docente"
+            )
+
+            return
+
+        valores = tree.item(
+            item[0],
+            "values"
+        )
+
+        id_profesor = int(valores[0])
+        nombre_profesor = valores[2]
+
+     
+        # ==========================================
+        # BUSCAR ID DEL PROFESOR
+        # ==========================================
+
+        conn = conectar()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT id_profesor
+            FROM profesores
+            WHERE apenom=?
+        """, (nombre_profesor,))
+
+        resultado = cursor.fetchone()
+
+        if not resultado:
+
+            messagebox.showerror(
+                "Error",
+                "No se encontró el profesor"
+            )
+
+            conn.close()
+            return
+
+        id_profesor = resultado[0]
+
+        # ==========================================
+        # CREAR CARPETA PDF
+        # ==========================================
+
+        os.makedirs(
+            "reportes/pdf",
+            exist_ok=True
+        )
+
+        archivo = os.path.join(
+            "reportes",
+            "pdf",
+            f"Certificacion_{nombre_profesor}.pdf"
+        )
+
+        doc = SimpleDocTemplate(
+            archivo,
+            pagesize=A4,
+            rightMargin=40,
+            leftMargin=40,
+            topMargin=40,
+            bottomMargin=40
+        )
+
+        styles = getSampleStyleSheet()
+
+        elementos = []
+
+        # ==========================================
+        # LOGO
+        # ==========================================
+
+        try:
+
+            logo = Image(
+                "logos.png",
+                width=80,
+                height=80
+            )
+
+            elementos.append(logo)
+
+        except Exception as e:
+            print(e)
+
+        # ==========================================
+        # TITULO
+        # ==========================================
+
+        titulo = Paragraph(
+            "<b>CERTIFICACIÓN DE SERVICIOS</b>",
+            styles["Title"]
+        )
+
+        elementos.append(titulo)
+
+        elementos.append(
+            Spacer(1, 20)
+        )
+
+        # ==========================================
+        # TEXTO CERTIFICACIÓN
+        # ==========================================
+
+        texto = Paragraph(
+            f"""
+            Se certifica que el/la docente
+            <b>{nombre_profesor}</b>
+            presta y/o prestó servicios
+            en esta institución educativa.
+            <br/><br/>
+
+            Antigüedad Total:
+            <b>{antiguedad_total(id_profesor)}</b>
+            """,
+            styles["BodyText"]
+        )
+
+        elementos.append(texto)
+
+        elementos.append(
+            Spacer(1, 20)
+        )
+
+        # ==========================================
+        # OBTENER HISTORIAL
+        # ==========================================
+
+        cursor.execute("""
+            SELECT
+                m.nombre,
+                c.nombre,
+                h.situacion,
+                h.fecha_inicio,
+                h.fecha_fin
+
+            FROM historial_docente h
+
+            JOIN materias m
+                ON h.id_materia = m.id_materia
+
+            JOIN cursos c
+                ON h.id_curso = c.id_curso
+
+            WHERE h.id_profesor=?
+        """, (id_profesor,))
+
+        registros = cursor.fetchall()
+
+        conn.close()
+
+        # ==========================================
+        # TABLA
+        # ==========================================
+
+        data = [[
+            "Materia",
+            "Curso",
+            "Situación",
+            "Inicio",
+            "Fin"
+        ]]
+
+        for fila in registros:
+
+            data.append(list(fila))
+
+        tabla = Table(data)
+
+        tabla.setStyle(TableStyle([
+
+            ('BACKGROUND', (0,0), (-1,0),
+                colors.darkblue),
+
+            ('TEXTCOLOR', (0,0), (-1,0),
+                colors.white),
+
+            ('GRID', (0,0), (-1,-1),
+                1, colors.black),
+
+            ('FONTNAME', (0,0), (-1,0),
+                'Helvetica-Bold')
+
+        ]))
+
+        elementos.append(tabla)
+
+        elementos.append(
+            Spacer(1, 50)
+        )
+
+        # ==========================================
+        # FIRMA
+        # ==========================================
+
+        firma = Paragraph(
+            """
+            ___________________________<br/>
+            Firma Dirección
+            """,
+            styles["BodyText"]
+        )
+
+        elementos.append(firma)
+
+        # ==========================================
+        # CREAR PDF
+        # ==========================================
+
+        doc.build(elementos)
+
+        messagebox.showinfo(
+            "PDF",
+            f"Certificación generada:\n{archivo}"
+        )
+   
+        
+    #========================================================
 
 
 
@@ -965,37 +1198,43 @@ def ventana_historial():
         frame_btn,
         text="💾 Guardar",
         command=guardar
-    ).grid(row=0, column=0, padx=5)
+    ).grid(row=0, column=1, padx=5)
 
     ttk.Button(
         frame_btn,
         text="✏ Modificar",
         command=modificar
-    ).grid(row=0, column=1, padx=5)
+    ).grid(row=0, column=2, padx=5)
 
     ttk.Button(
         frame_btn,
         text="🗑 Eliminar",
         command=eliminar
-    ).grid(row=0, column=2, padx=5)
+    ).grid(row=0, column=3, padx=5)
 
     ttk.Button(
         frame_btn,
         text="🧹 Limpiar",
         command=limpiar
-    ).grid(row=0, column=3, padx=5)
+    ).grid(row=0, column=4, padx=5)
 
     ttk.Button(
         frame_btn,
         text="📄 Legajo PDF",
         command=generar_legajo_pdf
-    ).grid(row=0, column=4, padx=5)
+    ).grid(row=0, column=5, padx=5)
+
+    ttk.Button(
+        frame_btn,
+        text="📑 Certificación",
+        command=certificacion_servicios
+    ).grid(row=0, column=6, padx=5)
 
     ttk.Button(
         frame_btn,
         text="❌ Cerrar",
         command=ventana.destroy
-    ).grid(row=0, column=5, padx=5)
+    ).grid(row=0, column=7, padx=5)
     # =====================================================
 
     # =====================================================

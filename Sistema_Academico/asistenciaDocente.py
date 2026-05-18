@@ -1,5 +1,5 @@
 #===========================================================
-#             MÓDULO DE AISTENCIA DOCENTE
+#             MÓDULO DE ASISTENCIA DOCENTE
 #===========================================================
 
 # ======================   LIBRERÍAS =======================
@@ -124,28 +124,33 @@ def ventana_asistencias():
         "observacion"
     )
 
-    tree = ttk.Treeview(
+    tree = ttk.Treeview(ventana, columns=columnas, show="headings")
+    tree.grid(row=1, column=0, sticky="nsew", padx=10, pady=10)
 
-        ventana,
+     # Encabezados
+    tree.heading("id", text="ID")
+    tree.heading("profesor", text="Profesor")
+    tree.heading("desde", text="Desde el Día")
+    tree.heading("hasta", text="Hasta el Día")
+    tree.heading("dias", text="Cant.de Dias")
+    tree.heading("estado", text="Estado")
+    tree.heading("observacion", text="Observación")
+   
+    tree.column("id", width=0, stretch=False)
+    tree.column("profesor", width=150, anchor="center")
+    tree.column("desde", width=100, anchor="center")
+    tree.column("hasta", width=100, anchor="center")
+    tree.column("dias", width=50, anchor="center")
+    tree.column("estado", width=100, anchor="center")
+    tree.column("observacion", width=200, anchor="w")
 
-        columns=columnas,
+    # ==========  RESUMEN DE INASISTENCIAS POR PROFESOR ========================
+    lbl_resumen = ttk.Label(ventana, text="Resumen de inasistencias: ", font=("Arial", 11, "bold"), foreground="blue")
+    lbl_resumen.grid(row=2, column=0, sticky="w", padx=10, pady=5)
 
-        show="headings"
-    )
-
-    tree.grid(
-        row=1,
-        column=0,
-        sticky="nsew",
-        padx=10,
-        pady=10
-    )
-
-    tree.column(
-        "id",
-        width=0,
-        stretch=False
-    )
+    # =========== MENSAJES DE ALERTAS CUANDO SE SUPERAN LÍMITES ================
+    lbl_alerta = ttk.Label(ventana, text="", font=("Arial", 11, "bold"), foreground="red")
+    lbl_alerta.grid(row=3, column=0, sticky="w", padx=10, pady=5)
 
     # =========================  CARGA DE PROFESORES ============================
     def cargar_profesores():
@@ -201,7 +206,7 @@ def ventana_asistencias():
         cursor.execute("""
 
             INSERT INTO asistencias_docentes(
-
+               
                 id_profesor,
                 fecha_desde,
                 fecha_hasta,
@@ -251,7 +256,8 @@ def ventana_asistencias():
         limpiar()
     
     # ===================== CARGAR TREEVIEW  =====================
-    def cargar_tree():
+
+    def cargar_tree(id_profesor=None):
 
         for item in tree.get_children():
 
@@ -261,7 +267,7 @@ def ventana_asistencias():
 
         cursor = conn.cursor()
 
-        cursor.execute("""
+        query = """
 
             SELECT
 
@@ -277,9 +283,19 @@ def ventana_asistencias():
             JOIN profesores p
             ON a.id_profesor = p.id_profesor
 
-            ORDER BY a.fecha_desde DESC
+        """
 
-        """)
+        parametros = []
+
+        if id_profesor:
+
+            query += " WHERE a.id_profesor=?"
+
+            parametros.append(id_profesor)
+
+        query += " ORDER BY a.fecha_desde DESC"
+
+        cursor.execute(query, parametros)
 
         for fila in cursor.fetchall():
 
@@ -299,7 +315,165 @@ def ventana_asistencias():
             )
 
         conn.close()
-    
+
+
+
+
+    #  ================  RESUMEN DE INASISTENCIAS ==================
+    def resumen_inasistencias(id_profesor):
+
+        conn = conectar()
+
+        cursor = conn.cursor()
+
+        cursor.execute("""
+
+            SELECT
+                estado,
+                fecha_desde,
+                fecha_hasta
+
+            FROM asistencias_docentes
+
+            WHERE id_profesor = ?
+
+        """, (id_profesor,))
+
+        resultados = cursor.fetchall()
+
+        conn.close()
+
+        resumen = {}
+
+        total_general = 0
+
+        for estado, desde, hasta in resultados:
+
+            dias = calcular_dias(desde, hasta)
+
+            total_general += dias
+
+            if estado not in resumen:
+
+                resumen[estado] = 0
+
+            resumen[estado] += dias
+
+        texto = ""
+
+        for estado, total in resumen.items():
+
+            texto += f"{estado}: {total} días\n"
+
+        texto += f"\nTOTAL GENERAL: {total_general} días"
+
+        lbl_resumen.config(text=texto)
+    # =======================================================
+
+
+    # ==================== BUSCA DOCENTES ===================
+    def buscar_docente():
+
+        if profesor_var.get() == "":
+
+            messagebox.showwarning(
+                "Atención",
+                "Seleccione un profesor"
+            )
+
+            return
+
+        id_profesor = profesores_dict[
+            profesor_var.get()
+        ]
+
+        cargar_tree(id_profesor)
+
+        resumen_inasistencias(id_profesor)
+
+        verificar_alertas(id_profesor)
+    # --------------------------------------------------------------
+
+    # ==================  FUNCIÓN DE ALERTAS =======================
+    def verificar_alertas(id_profesor):
+
+        conn = conectar()
+
+        cursor = conn.cursor()
+
+        cursor.execute("""
+
+            SELECT
+                estado,
+                fecha_desde,
+                fecha_hasta
+
+            FROM asistencias_docentes
+
+            WHERE id_profesor = ?
+
+        """, (id_profesor,))
+
+        registros = cursor.fetchall()
+
+        conn.close()
+
+        licencia_medica = 0
+        particular = 0
+        suplente = False
+
+        for estado, desde, hasta in registros:
+
+            dias = calcular_dias(desde, hasta)
+
+            # LICENCIA MÉDICA
+            if estado == "Licencia Médica":
+
+                licencia_medica += dias
+
+            # PARTICULAR / INJUSTIFICADA
+            if estado == "Particular":
+
+                particular += dias
+
+            # NECESITA SUPLENTE
+            if dias >= 5:
+
+                suplente = True
+
+        alertas = ""
+
+        if licencia_medica >= 20:
+
+            alertas += (
+                f"⚠ Supera 20 días de Licencia Médica "
+                f"({licencia_medica} días)\n"
+            )
+
+        if particular >= 5:
+
+            alertas += (
+                f"⚠ Supera 5 faltas particulares "
+                f"({particular} días)\n"
+            )
+
+        if suplente:
+
+            alertas += (
+                "⚠ Necesita designación de suplente\n"
+            )
+
+        if alertas == "":
+
+            alertas = "Sin alertas"
+
+        lbl_alerta.config(text=alertas)
+    # -----------------------------------------------------------------
+
+
+
+
+
     # =====================  LIMPIAR ENTRYS ========================
     def limpiar():
         profesor_var.set("")
@@ -342,11 +516,21 @@ def ventana_asistencias():
 
         frame_btn,
 
+        text="🔍 Buscar Docente",
+
+        command=buscar_docente
+
+    ).grid(row=0, column=2, padx=5)
+
+    ttk.Button(
+
+        frame_btn,
+
         text="❌ Cerrar",
 
         command=ventana.destroy
 
-    ).grid(row=0, column=2, padx=5)
+    ).grid(row=0, column=3, padx=5)
 
     cargar_profesores()
 

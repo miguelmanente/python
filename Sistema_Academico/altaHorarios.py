@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from database import conectar
 from centraVent import centrar_ventana
+from backup import crear_backup
 
 def info_horarios():
 
@@ -192,6 +193,7 @@ def info_horarios():
             ))
 
             conn.commit()
+            crear_backup()
             conn.close()
 
             messagebox.showinfo("OK", "Horario guardado")
@@ -223,6 +225,7 @@ def info_horarios():
         ))
 
         conn.commit()
+        crear_backup()
         conn.close()
 
         cargar_tree()
@@ -243,6 +246,7 @@ def info_horarios():
 
         cursor.execute("DELETE FROM horarios WHERE id_horario=?", (id_seleccionado,))
         conn.commit()
+        crear_backup()
         conn.close()
 
         cargar_tree()

@@ -1,0 +1,27 @@
+import os
+import shutil
+
+
+def crear_backup():
+
+    try:
+
+        carpeta = "backups"
+
+        os.makedirs(carpeta, exist_ok=True)
+
+        destino = os.path.join(
+            carpeta,
+            "profesoresBak.db"
+        )
+
+        shutil.copy2(
+            "profesores.db",
+            destino
+        )
+
+        print("Backup actualizado")
+
+    except Exception as e:
+
+        print("Error backup:", e)

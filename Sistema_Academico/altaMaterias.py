@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from database import conectar
 from centraVent import centrar_ventana
+from backup import crear_backup
 
 def info_materias():
 
@@ -134,6 +135,7 @@ def info_materias():
             ))
 
             conn.commit()
+            crear_backup()
             conn.close()
 
             messagebox.showinfo("Éxito", "Materia guardada correctamente.")
@@ -187,6 +189,7 @@ def info_materias():
         ))
 
         conn.commit()
+        crear_backup()
         conn.close()
 
         cargar_datos_treeview()
@@ -210,6 +213,7 @@ def info_materias():
         cursor.execute("DELETE FROM materias WHERE id_materia = ?", (id_seleccionado))
 
         conn.commit()
+        crear_backup()
         conn.close()
 
         cargar_datos_treeview()

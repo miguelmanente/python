@@ -6,6 +6,7 @@
 import sqlite3
 import hashlib
 import os
+from backup import crear_backup
 
 # ---------------- Ruta dinámica de la base de datos profesores --------------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -58,33 +59,6 @@ def validar_usuario(username, password):
     return usuario
 # ---------------------------- Fin función validación---------------------------------------------------
 
-# def crear_tabla_asistencias():
-
-#     conn = conectar()
-#     cursor = conn.cursor()
-
-#     cursor.execute("""
-#         CREATE TABLE IF NOT EXISTS asistencias_docentes(
-
-#             id_asistencia INTEGER PRIMARY KEY AUTOINCREMENT,
-
-#             id_profesor INTEGER NOT NULL,
-
-#             fecha_desde TEXT NOT NULL,
-
-#             fecha_hasta TEXT NOT NULL,
-
-#             estado TEXT NOT NULL,
-
-#             observacion TEXT,
-
-#             FOREIGN KEY(id_profesor)
-#             REFERENCES profesores(id_profesor)
-#         )
-#     """)
-
-#     conn.commit()
-#     conn.close()
 
 #---------------------  CREAR Y VERIFICAR SI ESTÁN CREADAS LAS TABLAS ----------------
 def crear_tablas():
@@ -173,4 +147,5 @@ def crear_tablas():
     """)
 
     conn.commit()
+    crear_backup()
     conn.close()

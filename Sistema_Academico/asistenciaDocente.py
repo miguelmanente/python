@@ -8,6 +8,11 @@ from tkinter import ttk, messagebox
 from database import conectar
 from centraVent import centrar_ventana
 from datetime import datetime
+from reportlab.platypus import (SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer)
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.pagesizes import A4
+import os
 
 
 # ================== VENTANA DE ASISTENCIA ==========================
@@ -470,9 +475,319 @@ def ventana_asistencias():
         lbl_alerta.config(text=alertas)
     # -----------------------------------------------------------------
 
+    # ================  GENERAR PDFS DE INASISTENCIAS MENSUALES ========
+    def pdf_mensual():
 
+        profesor = profesor_var.get()
 
+        if profesor == "":
 
+            messagebox.showwarning(
+                "Atención",
+                "Seleccione un profesor"
+            )
+
+            return
+
+        id_profesor = profesores_dict[profesor]
+
+        mes_actual = datetime.now().month
+        anio_actual = datetime.now().year
+
+        conn = conectar()
+
+        cursor = conn.cursor()
+
+        cursor.execute("""
+
+            SELECT
+
+                p.apenom,
+                a.fecha_desde,
+                a.fecha_hasta,
+                a.estado
+
+            FROM asistencias_docentes a
+
+            JOIN profesores p
+            ON a.id_profesor = p.id_profesor
+
+            WHERE a.id_profesor = ?
+
+        """, (id_profesor,))
+
+        registros = cursor.fetchall()
+
+        conn.close()
+
+        nombre_pdf = (
+            f"Inasist_Mens_{profesor}.pdf"
+        )
+
+        ruta_pdf = os.path.join(
+            "reportes",
+            "pdf",
+            nombre_pdf
+        )
+
+        doc = SimpleDocTemplate(
+            ruta_pdf,
+            pagesize=A4
+        )
+
+        styles = getSampleStyleSheet()
+
+        elementos = []
+
+        titulo = Paragraph(
+
+            f"<b>INFORME MENSUAL DE ASISTENCIAS</b>",
+
+            styles["Title"]
+
+        )
+
+        elementos.append(titulo)
+
+        elementos.append(Spacer(1, 20))
+
+        nombre_docente = registros[0][0]
+
+        subtitulo = Paragraph(
+
+            f"""
+            <b>Docente:</b> {nombre_docente}<br/>
+            <b>Mes:</b> {mes_actual}/{anio_actual}
+            """,
+
+            styles["BodyText"]
+
+        )
+
+        elementos.append(subtitulo)
+
+        elementos.append(Spacer(1, 20))
+
+        data = [[
+
+            "Desde",
+            "Hasta",
+            "Días",
+            "Estado"
+
+        ]]
+
+        total = 0
+
+        for fila in registros:
+
+            dias = calcular_dias(
+                fila[1],
+                fila[2]
+            )
+
+            total += dias
+
+            data.append([
+
+                fila[1],
+                fila[2],
+                str(dias),
+                fila[3]
+
+            ])
+
+        tabla = Table(data)
+
+        tabla.setStyle(TableStyle([
+
+            ('BACKGROUND', (0,0), (-1,0), colors.darkblue),
+
+            ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+
+            ('GRID', (0,0), (-1,-1), 1, colors.black),
+
+            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold')
+
+        ]))
+
+        elementos.append(tabla)
+
+        elementos.append(Spacer(1, 20))
+
+        total_parrafo = Paragraph(
+
+            f"<b>TOTAL DE INASISTENCIAS:</b> {total} días",
+
+            styles["Heading2"]
+
+        )
+
+        elementos.append(total_parrafo)
+
+        doc.build(elementos)
+
+        messagebox.showinfo(
+
+            "PDF",
+
+            f"Reporte generado:\n{ruta_pdf}"
+
+        )
+    # ----------------------------------------------------------------
+    
+    #=====================  PDF ANUAL ASISTENCIA DOCENTE =============
+    def pdf_anual():
+        profesor = profesor_var.get()
+        if profesor == "":
+            messagebox.showwarning(
+                "Atención",
+                "Seleccione un profesor"
+            )
+            return
+
+        id_profesor = profesores_dict[profesor]
+        anio_actual = datetime.now().year
+        conn = conectar()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT
+                p.apenom,
+                a.fecha_desde,
+                a.fecha_hasta,
+                a.estado
+            FROM asistencias_docentes a
+            JOIN profesores p
+            ON a.id_profesor = p.id_profesor
+            WHERE a.id_profesor = ?
+            ORDER BY a.fecha_desde
+        """, (id_profesor,))
+
+        registros = cursor.fetchall()
+        conn.close()
+
+        if not registros:
+            messagebox.showwarning(
+                "Atención",
+                "No hay registros"
+            )
+            return
+        nombre_docente = registros[0][0]
+        nombre_pdf = (
+            f"RepAnu_{nombre_docente}.pdf"
+        )
+        ruta_pdf = os.path.join(
+            "reportes",
+            "pdf",
+            nombre_pdf
+        )
+
+        doc = SimpleDocTemplate(
+            ruta_pdf,
+            pagesize=A4
+        )
+
+        styles = getSampleStyleSheet()
+        elementos = []
+
+        # ======================================
+        # TITULO
+        # ======================================
+        titulo = Paragraph(
+            f"<b>INFORME ANUAL DE ASISTENCIAS</b>",
+            styles["Title"]
+        )
+
+        elementos.append(titulo)
+        elementos.append(Spacer(1, 20))
+        subtitulo = Paragraph(
+            f"""
+            <b>Docente:</b> {nombre_docente}<br/>
+            <b>Año:</b> {anio_actual}
+            """,
+            styles["BodyText"]
+        )
+
+        elementos.append(subtitulo)
+        elementos.append(Spacer(1, 20))
+
+        # ======================================
+        # TABLA
+        # ======================================
+
+        data = [[
+            "Mes",
+            "Desde",
+            "Hasta",
+            "Días",
+            "Estado"
+        ]]
+
+        total = 0
+        resumen_estados = {}
+
+        for fila in registros:
+            fecha = datetime.strptime(
+                fila[1],
+                "%d/%m/%Y"
+            )
+
+            mes = fecha.strftime("%B")
+            dias = calcular_dias(
+                fila[1],
+                fila[2]
+            )
+
+            total += dias
+            estado = fila[3]
+
+            if estado not in resumen_estados:
+                resumen_estados[estado] = 0
+
+            resumen_estados[estado] += dias
+
+            data.append([
+                mes,
+                fila[1],
+                fila[2],
+                str(dias),
+                estado
+            ])
+
+        tabla = Table(data)
+        tabla.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.darkblue),
+            ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+            ('GRID', (0,0), (-1,-1), 1, colors.black),
+            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold')
+        ]))
+
+        elementos.append(tabla)
+        elementos.append(Spacer(1, 20))
+
+        # ======================================
+        # RESUMEN
+        # ======================================
+
+        resumen = "<b>RESUMEN ANUAL</b><br/><br/>"
+        for estado, dias in resumen_estados.items():
+            resumen += f"{estado}: {dias} días<br/>"
+        resumen += f"<br/><b>TOTAL ANUAL:</b> {total} días"
+        resumen_parrafo = Paragraph(
+            resumen,
+            styles["BodyText"]
+        )
+
+        elementos.append(resumen_parrafo)
+        doc.build(elementos)
+        messagebox.showinfo(
+            "PDF",
+            f"PDF anual generado:\n{ruta_pdf}"
+
+        )
+    # --------------------------------------------------------------
+
+    
 
     # =====================  LIMPIAR ENTRYS ========================
     def limpiar():
@@ -485,52 +800,20 @@ def ventana_asistencias():
     
     # ======================  BOTONES =============================
     frame_btn = ttk.Frame(ventana)
+    frame_btn.grid(row=2, column=0, pady=10)
 
-    frame_btn.grid(
-        row=2,
-        column=0,
-        pady=10
-    )
-
-    ttk.Button(
-
-        frame_btn,
-
-        text="💾 Guardar",
-
-        command=guardar
-
-    ).grid(row=0, column=0, padx=5)
-
-    ttk.Button(
-
-        frame_btn,
-
-        text="🧹 Limpiar",
-
-        command=limpiar
-
-    ).grid(row=0, column=1, padx=5)
-
-    ttk.Button(
-
-        frame_btn,
-
-        text="🔍 Buscar Docente",
-
-        command=buscar_docente
-
-    ).grid(row=0, column=2, padx=5)
-
-    ttk.Button(
-
-        frame_btn,
-
-        text="❌ Cerrar",
-
-        command=ventana.destroy
-
-    ).grid(row=0, column=3, padx=5)
+    # Botón agregar
+    ttk.Button(frame_btn, text="💾 Guardar", command=guardar).grid(row=0, column=0, padx=5)
+    # Botón Limpiar entrys
+    ttk.Button(frame_btn, text="🧹 Limpiar", command=limpiar).grid(row=0, column=1, padx=5)
+    # Botón Buscar Docente
+    ttk.Button(frame_btn, text="🔍 Buscar Docente", command=buscar_docente).grid(row=0, column=2, padx=5)
+    # Botón PDF mensual
+    ttk.Button(frame_btn, text="📄 PDF Mensual", command=pdf_mensual).grid(row=0, column=3, padx=5)
+    # Botón PDF anual
+    ttk.Button(frame_btn, text="📘 PDF Anual", command=pdf_anual).grid(row=0, column=4, padx=5)
+    # Botón Cerrar
+    ttk.Button(frame_btn, text="❌ Cerrar", command=ventana.destroy).grid(row=0, column=5, padx=5)
 
     cargar_profesores()
 

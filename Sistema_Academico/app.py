@@ -21,6 +21,7 @@ from estilos import configurar_estilos
 from listadoCursos import ventana_listado_curso
 from historialDocente import ventana_historial
 from asistenciaDocente import ventana_asistencias
+from rankingAusentismo import ventana_ranking
 
 
 #Código - Zona de funciones
@@ -116,6 +117,8 @@ def pPrincipal():
     mAsistencias = tk.Menu(barramenu, tearoff=0)
     barramenu.add_cascade(label="Asistencias", menu=mAsistencias)
     mAsistencias.add_command(label="Control Docente", command=ventana_asistencias)
+    mAsistencias.add_command(label="Ranking Inasistencias", command=ventana_ranking)
+
 
   # ---------------------------------- LOGO PRINCIPAL -------------------------------------
     frame_centro = tk.Frame(ventana, bg="#dcdcdc")

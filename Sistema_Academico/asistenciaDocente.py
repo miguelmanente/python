@@ -15,10 +15,10 @@ from reportlab.lib.pagesizes import A4
 import os
 
 
-# ================== VENTANA DE ASISTENCIA ==========================
+# ================== VENTANA DE INASISTENCIA ==========================
 def ventana_asistencias():
     ventana = tk.Toplevel()
-    ventana.title("Control de Asistencias")
+    ventana.title("Control de Inasistencias")
     ventana.geometry("1200x700")
     ventana.rowconfigure(1, weight=1)
     ventana.columnconfigure(0, weight=1)
@@ -33,7 +33,7 @@ def ventana_asistencias():
     id_seleccionado = None
 
     # ============ FRAME SUPERIOR =================================
-    frame = ttk.LabelFrame(ventana, text="Asistencia Docente")
+    frame = ttk.LabelFrame(ventana, text="Inasistencia Docente")
     frame.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
 
     # ================ COMBO PROFESORES ============================
@@ -151,11 +151,11 @@ def ventana_asistencias():
 
     # ==========  RESUMEN DE INASISTENCIAS POR PROFESOR ========================
     lbl_resumen = ttk.Label(ventana, text="Resumen de inasistencias: ", font=("Arial", 11, "bold"), foreground="blue")
-    lbl_resumen.grid(row=2, column=0, sticky="w", padx=10, pady=5)
+    lbl_resumen.grid(row=3, column=0, sticky="w", padx=10, pady=5)
 
     # =========== MENSAJES DE ALERTAS CUANDO SE SUPERAN LÍMITES ================
     lbl_alerta = ttk.Label(ventana, text="", font=("Arial", 11, "bold"), foreground="red")
-    lbl_alerta.grid(row=3, column=0, sticky="w", padx=10, pady=5)
+    lbl_alerta.grid(row=4, column=0, sticky="w", padx=10, pady=5)
 
     # =========================  CARGA DE PROFESORES ============================
     def cargar_profesores():
@@ -259,6 +259,103 @@ def ventana_asistencias():
         cargar_tree()
 
         limpiar()
+    # ------------------------------------------------------------
+
+    # ============== MODIFICAR REGISTRO ASISTENCIA ===============
+    def modificar():
+
+        nonlocal id_seleccionado
+
+        if not id_seleccionado:
+
+            messagebox.showwarning(
+                "Atención",
+                "Seleccione un registro"
+            )
+
+            return
+
+        conn = conectar()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+
+            UPDATE asistencias_docentes
+            SET
+
+                id_profesor=?,
+                fecha_desde=?,
+                fecha_hasta=?,
+                estado=?,
+                observacion=?
+
+            WHERE id_asistencia=?
+
+        """, (
+
+            profesores_dict[profesor_var.get()],
+            desde_var.get(),
+            hasta_var.get(),
+            estado_var.get(),
+            observacion_var.get(),
+            id_seleccionado
+
+        ))
+
+        conn.commit()
+        conn.close()
+
+        messagebox.showinfo(
+            "OK",
+            "Registro modificado"
+        )
+
+        cargar_tree()
+        limpiar()
+    # ------------------------------------------------------------
+        # ===================== ELIMINAR =====================
+    def eliminar():
+
+        nonlocal id_seleccionado
+
+        if not id_seleccionado:
+
+            messagebox.showwarning(
+                "Atención",
+                "Seleccione un registro"
+            )
+
+            return
+
+        confirmar = messagebox.askyesno(
+            "Confirmar",
+            "¿Eliminar registro?"
+        )
+
+        if not confirmar:
+            return
+
+        conn = conectar()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+
+            DELETE FROM asistencias_docentes
+            WHERE id_asistencia=?
+
+        """, (id_seleccionado,))
+
+        conn.commit()
+        conn.close()
+
+        messagebox.showinfo(
+            "OK",
+            "Registro eliminado"
+        )
+
+        cargar_tree()
+        limpiar()
+    # ------------------------------------------------------------
     
     # ===================== CARGAR TREEVIEW  =====================
 
@@ -320,7 +417,43 @@ def ventana_asistencias():
             )
 
         conn.close()
+    #------------------------------------------------------------------
 
+    # ============ SELECCIONAR REGISTROS DEL TREEVIEW ==============
+    def seleccionar(event):
+
+        nonlocal id_seleccionado
+
+        item = tree.selection()
+
+        if not item:
+            return
+
+        valores = tree.item(item[0], "values")
+
+        id_seleccionado = valores[0]
+
+        # ======================
+        # CARGAR CAMPOS
+        # ======================
+
+        nombre_profesor = valores[1]
+
+        # buscar texto completo del combo
+        for texto in profesores_dict:
+
+            if nombre_profesor in texto:
+
+                profesor_var.set(texto)
+                break
+
+        desde_var.set(valores[2])
+        hasta_var.set(valores[3])
+        estado_var.set(valores[5])
+        observacion_var.set(valores[6])
+
+    tree.bind("<<TreeviewSelect>>", seleccionar)
+    # --------------------------------------------------------------
 
 
 
@@ -791,12 +924,16 @@ def ventana_asistencias():
 
     # =====================  LIMPIAR ENTRYS ========================
     def limpiar():
+
+        nonlocal id_seleccionado
+
+        id_seleccionado = None
+
         profesor_var.set("")
         desde_var.set("")
         hasta_var.set("")
         estado_var.set("")
         observacion_var.set("")
-
     
     # ======================  BOTONES =============================
     frame_btn = ttk.Frame(ventana)
@@ -804,16 +941,20 @@ def ventana_asistencias():
 
     # Botón agregar
     ttk.Button(frame_btn, text="💾 Guardar", command=guardar).grid(row=0, column=0, padx=5)
+    # Botón Modificar
+    ttk.Button(frame_btn, text="✏ Modificar", command=modificar).grid(row=0, column=1, padx=5)
+    # Botón Eliminar
+    ttk.Button(frame_btn, text="🗑 Eliminar", command=eliminar).grid(row=0, column=2, padx=5)
     # Botón Limpiar entrys
-    ttk.Button(frame_btn, text="🧹 Limpiar", command=limpiar).grid(row=0, column=1, padx=5)
+    ttk.Button(frame_btn, text="🧹 Limpiar", command=limpiar).grid(row=0, column=3, padx=5)
     # Botón Buscar Docente
-    ttk.Button(frame_btn, text="🔍 Buscar Docente", command=buscar_docente).grid(row=0, column=2, padx=5)
+    ttk.Button(frame_btn, text="🔍 Buscar Docente", command=buscar_docente).grid(row=0, column=4, padx=5)
     # Botón PDF mensual
-    ttk.Button(frame_btn, text="📄 PDF Mensual", command=pdf_mensual).grid(row=0, column=3, padx=5)
+    ttk.Button(frame_btn, text="📄 PDF Mensual", command=pdf_mensual).grid(row=0, column=5, padx=5)
     # Botón PDF anual
-    ttk.Button(frame_btn, text="📘 PDF Anual", command=pdf_anual).grid(row=0, column=4, padx=5)
+    ttk.Button(frame_btn, text="📘 PDF Anual", command=pdf_anual).grid(row=0, column=6, padx=5)
     # Botón Cerrar
-    ttk.Button(frame_btn, text="❌ Cerrar", command=ventana.destroy).grid(row=0, column=5, padx=5)
+    ttk.Button(frame_btn, text="❌ Cerrar", command=ventana.destroy).grid(row=0, column=7, padx=5)
 
     cargar_profesores()
 

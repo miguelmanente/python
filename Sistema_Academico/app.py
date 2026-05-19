@@ -22,6 +22,7 @@ from listadoCursos import ventana_listado_curso
 from historialDocente import ventana_historial
 from asistenciaDocente import ventana_asistencias
 from rankingAusentismo import ventana_ranking
+from estadisticasDocentes import ventana_estadisticas
 
 
 #Código - Zona de funciones
@@ -118,6 +119,7 @@ def pPrincipal():
     barramenu.add_cascade(label="Asistencias", menu=mAsistencias)
     mAsistencias.add_command(label="Control Docente", command=ventana_asistencias)
     mAsistencias.add_command(label="Ranking Inasistencias", command=ventana_ranking)
+    mAsistencias.add_command(label="Estadisticas Docentes", command=ventana_estadisticas)
 
 
   # ---------------------------------- LOGO PRINCIPAL -------------------------------------

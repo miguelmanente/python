@@ -186,10 +186,51 @@ def ventana_asistencias():
 
         conn.close()
     
-    # ====================== CÁLCULO DE DÍAS  ============================
-    def calcular_dias(desde, hasta):
+    def calcular_dias(id_profesor, desde, hasta):
 
-        fecha_desde = datetime.strptime(
+        conn = conectar()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+
+            SELECT DISTINCT h.dia
+
+            FROM asignaciones_docentes a
+
+            JOIN horarios h
+            ON a.id_horario = h.id_horario
+
+            WHERE a.id_profesor=?
+
+        """, (id_profesor,))
+
+        resultados = cursor.fetchall()
+
+        conn.close()
+
+        dias_trabajo = [fila[0] for fila in resultados]
+
+        mapa = {
+
+            "Lunes": 0,
+            "Martes": 1,
+            "Miércoles": 2,
+            "Jueves": 3,
+            "Viernes": 4
+
+        }
+
+        dias_validos = []
+
+        for dia in dias_trabajo:
+
+            if dia in mapa:
+
+                dias_validos.append(
+                    mapa[dia]
+                )
+
+        fecha_actual = datetime.strptime(
             desde,
             "%d/%m/%Y"
         )
@@ -199,11 +240,17 @@ def ventana_asistencias():
             "%d/%m/%Y"
         )
 
-        dias = (
-            fecha_hasta - fecha_desde
-        ).days + 1
+        total = 0
 
-        return dias
+        while fecha_actual <= fecha_hasta:
+
+            if fecha_actual.weekday() in dias_validos:
+
+                total += 1
+
+            fecha_actual += timedelta(days=1)
+
+        return total
     # ---------------------------------------------------------------------
         
     # ================= CONTAR DÍAS LABORALES ============================
@@ -305,11 +352,20 @@ def ventana_asistencias():
         conn.commit()
 
         conn.close()
+        id_profesor = profesores_dict[
+            profesor_var.get()
+        ]
 
         dias = calcular_dias(
+            id_profesor,
             desde_var.get(),
             hasta_var.get()
         )
+        # dias = calcular_dias(      
+        #     profesor_var.get(),
+        #     desde_var.get(),
+        #     hasta_var.get()
+        # )
 
         if dias >= 5:
 
@@ -445,6 +501,7 @@ def ventana_asistencias():
             SELECT
 
                 a.id_asistencia,
+                a.id_profesor,
                 p.apenom,
                 a.fecha_desde,
                 a.fecha_hasta,
@@ -472,14 +529,29 @@ def ventana_asistencias():
 
         for fila in cursor.fetchall():
 
+            # dias = calcular_dias(
+            #     fila[2],
+            #     fila[3]
             dias = calcular_dias(
-                fila[2],
-                fila[3]
+                fila[1],
+                fila[3],
+                fila[4]
             )
-
+            
             nueva = list(fila)
 
-            nueva.insert(4, dias)
+            #nueva.insert(4, dias)
+            nueva = [
+
+                fila[0],   # id asistencia
+                fila[2],   # profesor
+                fila[3],   # desde
+                fila[4],   # hasta
+                dias,
+                fila[5],   # estado
+                fila[6]    # observacion
+
+            ]
 
             tree.insert(
                 "",
@@ -558,7 +630,13 @@ def ventana_asistencias():
 
         for estado, desde, hasta in resultados:
 
-            dias = calcular_dias(desde, hasta)
+            for estado, desde, hasta in resultados:
+
+                dias = calcular_dias(
+                    id_profesor,
+                    desde,
+                    hasta
+                )
 
             total_general += dias
 
@@ -606,6 +684,7 @@ def ventana_asistencias():
         for desde, hasta in registros:
 
             total += calcular_dias(
+                id_profesor,
                 desde,
                 hasta
             )
@@ -695,7 +774,11 @@ def ventana_asistencias():
 
         for estado, desde, hasta in registros:
 
-            dias = calcular_dias(desde, hasta)
+            dias = calcular_dias(
+                id_profesor,
+                desde,
+                hasta
+            )
 
             # LICENCIA MÉDICA
             if estado == "Licencia Médica":
@@ -765,16 +848,15 @@ def ventana_asistencias():
         cursor = conn.cursor()
 
         cursor.execute("""
-
             SELECT
 
+                a.id_profesor,
                 p.apenom,
                 a.fecha_desde,
                 a.fecha_hasta,
                 a.estado
 
             FROM asistencias_docentes a
-
             JOIN profesores p
             ON a.id_profesor = p.id_profesor
 
@@ -817,7 +899,7 @@ def ventana_asistencias():
 
         elementos.append(Spacer(1, 20))
 
-        nombre_docente = registros[0][0]
+        nombre_docente = registros[0][1]
 
         subtitulo = Paragraph(
 
@@ -847,19 +929,20 @@ def ventana_asistencias():
 
         for fila in registros:
 
-            dias = calcular_dias(
-                fila[1],
-                fila[2]
+           dias = calcular_dias(
+                fila[0],
+                fila[2],
+                fila[3]
             )
 
-            total += dias
+        total += dias
+     
+        data.append([
 
-            data.append([
-
-                fila[1],
                 fila[2],
+                fila[3],
                 str(dias),
-                fila[3]
+                fila[4]
 
             ])
 
@@ -918,6 +1001,7 @@ def ventana_asistencias():
         cursor = conn.cursor()
         cursor.execute("""
             SELECT
+                a.id_profesor,
                 p.apenom,
                 a.fecha_desde,
                 a.fecha_hasta,
@@ -938,7 +1022,7 @@ def ventana_asistencias():
                 "No hay registros"
             )
             return
-        nombre_docente = registros[0][0]
+        nombre_docente = registros[0][1]
         nombre_pdf = (
             f"RepAnu_{nombre_docente}.pdf"
         )
@@ -994,18 +1078,17 @@ def ventana_asistencias():
 
         for fila in registros:
             fecha = datetime.strptime(
-                fila[1],
+            fila[2],
                 "%d/%m/%Y"
             )
-
             mes = fecha.strftime("%B")
             dias = calcular_dias(
-                fila[1],
-                fila[2]
+                fila[0],
+                fila[2],
+                fila[3]
             )
-
             total += dias
-            estado = fila[3]
+            estado = fila[4]
 
             if estado not in resumen_estados:
                 resumen_estados[estado] = 0
@@ -1014,8 +1097,8 @@ def ventana_asistencias():
 
             data.append([
                 mes,
-                fila[1],
                 fila[2],
+                fila[3],
                 str(dias),
                 estado
             ])

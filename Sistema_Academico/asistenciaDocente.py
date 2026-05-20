@@ -7,7 +7,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from database import conectar
 from centraVent import centrar_ventana
-from datetime import datetime
+from datetime import datetime, timedelta
 from reportlab.platypus import (SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer)
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
@@ -157,6 +157,10 @@ def ventana_asistencias():
     lbl_alerta = ttk.Label(ventana, text="", font=("Arial", 11, "bold"), foreground="red")
     lbl_alerta.grid(row=4, column=0, sticky="w", padx=10, pady=5)
 
+    # ============== Cantidad de días trabajados ===============================
+    lbl_trabajados = ttk.Label(ventana, text="Días trabajados: 0", font=("Arial", 11, "bold"), foreground="green")
+    lbl_trabajados.grid(row=5, column=0, sticky="w", padx=10, pady=5)
+
     # =========================  CARGA DE PROFESORES ============================
     def cargar_profesores():
 
@@ -200,6 +204,72 @@ def ventana_asistencias():
         ).days + 1
 
         return dias
+    # ---------------------------------------------------------------------
+        
+    # ================= CONTAR DÍAS LABORALES ============================
+    def contar_dias_laborales(id_profesor):
+
+        conn = conectar()
+        cursor = conn.cursor()
+
+        # ============================================
+        # OBTENER DÍAS DE TRABAJO DEL DOCENTE
+        # ============================================
+
+        cursor.execute("""
+
+            SELECT DISTINCT h.dia
+
+            FROM asignaciones_docentes a
+
+            JOIN horarios h
+            ON a.id_horario = h.id_horario
+
+            WHERE a.id_profesor=?
+
+        """, (id_profesor,))
+
+        resultados = cursor.fetchall()
+
+        conn.close()
+
+        dias_trabajo = [fila[0] for fila in resultados]
+
+        dias_map = {
+
+            "Lunes": 0,
+            "Martes": 1,
+            "Miércoles": 2,
+            "Jueves": 3,
+            "Viernes": 4
+
+        }
+
+        fecha_inicio = datetime.strptime(
+            "01/03/2026",
+            "%d/%m/%Y"
+        )
+
+        fecha_fin = datetime.today()
+
+        total = 0
+
+        while fecha_inicio <= fecha_fin:
+
+            if fecha_inicio.weekday() in [
+
+                dias_map[dia]
+                for dia in dias_trabajo
+
+            ]:
+
+                total += 1
+
+            fecha_inicio += timedelta(days=1)
+
+        return total
+    # -----------------------------------------------------------------------
+
     
     # ================== GUARDAR DATOS =====================================
     def guardar():
@@ -313,7 +383,8 @@ def ventana_asistencias():
         cargar_tree()
         limpiar()
     # ------------------------------------------------------------
-        # ===================== ELIMINAR =====================
+
+    # ===================== ELIMINAR =====================
     def eliminar():
 
         nonlocal id_seleccionado
@@ -508,6 +579,39 @@ def ventana_asistencias():
         lbl_resumen.config(text=texto)
     # =======================================================
 
+     # ================= TOTAL INASISTENCIAS =================
+    def total_inasistencias(id_profesor):
+
+        conn = conectar()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+
+            SELECT
+                fecha_desde,
+                fecha_hasta
+
+            FROM asistencias_docentes
+
+            WHERE id_profesor=?
+
+        """, (id_profesor,))
+
+        registros = cursor.fetchall()
+
+        conn.close()
+
+        total = 0
+
+        for desde, hasta in registros:
+
+            total += calcular_dias(
+                desde,
+                hasta
+            )
+
+        return total
+    # ------------------------------------------------------------ 
 
     # ==================== BUSCA DOCENTES ===================
     def buscar_docente():
@@ -530,6 +634,35 @@ def ventana_asistencias():
         resumen_inasistencias(id_profesor)
 
         verificar_alertas(id_profesor)
+
+        # =====================================
+        # CALCULAR DÍAS TRABAJADOS
+        # =====================================
+
+        laborales = contar_dias_laborales(
+            id_profesor
+        )
+
+        faltas = total_inasistencias(
+            id_profesor
+        )
+
+        trabajados = laborales - faltas
+
+        porcentaje = round(
+            (trabajados / laborales) * 100,
+            2
+        )
+
+        lbl_trabajados.config(
+
+            text=(
+                f"Días laborales: {laborales} | "
+                f"Trabajados: {trabajados} | "
+                f"Presentismo: {porcentaje}%"
+            )
+
+        )
     # --------------------------------------------------------------
 
     # ==================  FUNCIÓN DE ALERTAS =======================

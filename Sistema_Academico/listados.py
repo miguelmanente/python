@@ -51,16 +51,119 @@ def ventana_listado(tipo):
 
     ttk.Button(frame_filtros, text="Filtrar", command=lambda: cargar()).grid(row=0, column=4, padx=5)
 
+    # # =========================
+    # # TREEVIEW
+    # # =========================
+    # columnas = ("profesor", "curso", "materia", "dia", "entrada", "salida")
+
+    # tree = ttk.Treeview(ventana, columns=columnas, show="headings")
+    # tree.grid(row=1, column=0, sticky="nsew")
+
+    # for col in columnas:
+    #     tree.heading(col, text=col.capitalize())
+    # =========================
+    # FRAME TREEVIEW
+    # =========================
+
+    frame_tree = ttk.Frame(ventana)
+    frame_tree.grid(row=1, column=0, sticky="nsew")
+
+    ventana.rowconfigure(1, weight=1)
+    ventana.columnconfigure(0, weight=1)
+
+    frame_tree.rowconfigure(0, weight=1)
+    frame_tree.columnconfigure(0, weight=1)
+
     # =========================
     # TREEVIEW
     # =========================
-    columnas = ("profesor", "curso", "materia", "dia", "entrada", "salida")
 
-    tree = ttk.Treeview(ventana, columns=columnas, show="headings")
-    tree.grid(row=1, column=0, sticky="nsew")
+    columnas = (
+        "profesor",
+        "curso",
+        "materia",
+        "dia",
+        "entrada",
+        "salida"
+    )
+
+    tree = ttk.Treeview(
+        frame_tree,
+        columns=columnas,
+        show="headings"
+    )
+
+    tree.grid(
+        row=0,
+        column=0,
+        sticky="nsew"
+    )
+
+    # =========================
+    # SCROLL VERTICAL
+    # =========================
+
+    scroll_y = ttk.Scrollbar(
+        frame_tree,
+        orient="vertical",
+        command=tree.yview
+    )
+
+    scroll_y.grid(
+        row=0,
+        column=1,
+        sticky="ns"
+    )
+
+    # =========================
+    # SCROLL HORIZONTAL
+    # =========================
+
+    scroll_x = ttk.Scrollbar(
+        frame_tree,
+        orient="horizontal",
+        command=tree.xview
+    )
+
+    scroll_x.grid(
+        row=1,
+        column=0,
+        sticky="ew"
+    )
+
+    # =========================
+    # CONFIGURAR TREEVIEW
+    # =========================
+
+    tree.configure(
+
+        yscrollcommand=scroll_y.set,
+        xscrollcommand=scroll_x.set
+
+    )
+
+    # =========================
+    # ENCABEZADOS
+    # =========================
 
     for col in columnas:
-        tree.heading(col, text=col.capitalize())
+
+        tree.heading(
+            col,
+            text=col.capitalize()
+        )
+
+    # =========================
+    # ANCHOS
+    # =========================
+
+    tree.column("profesor", width=200)
+    tree.column("curso", width=120)
+    tree.column("materia", width=200)
+    tree.column("dia", width=100)
+    tree.column("entrada", width=100)
+    tree.column("salida", width=100)
+        
 
     # =========================
     # CARGAR CURSOS
@@ -156,7 +259,7 @@ def ventana_listado(tipo):
             "pdf",
             nombre_pdf
         )
-        nombre_pdf(ruta_pdf)
+        #nombre_pdf(ruta_pdf)
         messagebox.showinfo("OK", "Exportado a Reportes/pdf")
 
         doc = SimpleDocTemplate(ruta_pdf)

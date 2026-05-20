@@ -26,7 +26,7 @@ def ventana_login(root, barramenu, lbl_usuario):
 
     login.title("LOGIN DE USUARIOS")
     login.geometry("500x400")
-    login.grab_set()  # 🔥 bloquea la ventana principal
+    #login.grab_set()  # 🔥 bloquea la ventana principal
 
     tk.Label(login, text="Usuario", bg="#ecf0f1", font=("Arial", 12, "bold")).pack(pady=15)
     entry_usuario = tk.Entry(login)

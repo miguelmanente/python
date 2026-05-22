@@ -12,6 +12,7 @@ from database import validar_usuario
 from app import pPrincipal
 from registrar import ventana_registro
 import sesion  # muestra la variable del usuario conectado al sistema
+from backup import crear_backup
 
 
 # ------------------------------------------------ VARIABLE GLOBAL ----------------------------------------
@@ -173,7 +174,7 @@ lbl_logo.image = logo
 
 # ---------------- INICIAR LOGIN AUTOMÁTICO ---------------------------------------------------------------------------
 ventana_login(root, barramenu, lbl_usuario)
-
+crear_backup()
 centrar_ventana(root)
 # ---------------------------------------------------------------------------------------------------------------------
 

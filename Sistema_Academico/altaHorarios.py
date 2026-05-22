@@ -46,7 +46,7 @@ def info_horarios():
 
     ttk.Label(frame_superior, text="Día:").grid(row=1, column=0, sticky="e", padx=5, pady=5)
     combo_dia = ttk.Combobox(frame_superior, textvariable=dia_var,
-                             values=["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"],
+                             values=["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Lunes a Viernes"],
                              state="readonly")
     combo_dia.grid(row=1, column=1, padx=5, pady=5)
 

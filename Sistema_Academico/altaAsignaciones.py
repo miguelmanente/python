@@ -1,10 +1,17 @@
+# ================================================================================
+#                       MÓDULO ASIGNACIONES DOCENTES
+#=================================================================================
+
+# =============================  LIBRERÍAS =======================================
 import tkinter as tk
 from tkinter import ttk, messagebox
 from database import conectar
 from centraVent import centrar_ventana
+# --------------------------------------------------------------------------------
 
+# ====================== PANTALLA PRINCIPAL DE ASIGNACIONES ======================
 def info_asignaciones():
-
+    # -----------------  DEFINICIÓN DE LA VENTANA PRINCIPAL ----------------------
     ventana = tk.Toplevel()
     ventana.title("Asignaciones Docentes")
     ventana.geometry("1100x700")
@@ -72,10 +79,14 @@ def info_asignaciones():
     scrollbar_y = ttk.Scrollbar(frame_inferior, orient="vertical", command=tree.yview)
     tree.configure(yscrollcommand=scrollbar_y.set)
     scrollbar_y.grid(row=0, column=1, sticky="ns")
+    # -----------------------------------------------------------------------------------------
 
-    # =========================
-    # FUNCIONES
-    # =========================
+
+    # ==========================================================================================
+    #                               FUNCIONES O MÓDULOS 
+    # ==========================================================================================
+    
+    # ====================================  LLENA LOS DATOS DE LOS COMBOS ======================
     def cargar_combos():
         conn = conectar()
         cursor = conn.cursor()
@@ -106,8 +117,35 @@ def info_asignaciones():
         combo_horario["values"] = list(horarios_dict.keys())
 
         conn.close()
+    # --------------------------------------------------------------------------------------
+
+    # =========================== MUESTRA DATOS EN EL TREEVIEW  ============================
+    # def cargar_tree():
+    #     for item in tree.get_children():
+    #         tree.delete(item)
+
+    #     conn = conectar()
+    #     cursor = conn.cursor()
+
+    #     cursor.execute("""
+    #         SELECT a.id_asignacion, p.apenom, c.nombre, m.nombre,
+    #             h.dia, h.hentrada, h.hsalida, a.srprofesor
+    #         FROM asignaciones_docentes a
+    #         LEFT JOIN profesores p ON a.id_profesor = p.id_profesor
+    #         LEFT JOIN horarios h ON a.id_horario = h.id_horario
+    #         LEFT JOIN cursos c ON h.id_curso = c.id_curso
+    #         LEFT JOIN materias m ON h.id_materia = m.id_materia
+    #     """)
+
+    #     for fila in cursor.fetchall():
+    #         tree.insert("", "end", values=fila)
+
+    #     conn.close()
+
+    id_seleccionado = None
 
     def cargar_tree():
+
         for item in tree.get_children():
             tree.delete(item)
 
@@ -115,40 +153,121 @@ def info_asignaciones():
         cursor = conn.cursor()
 
         cursor.execute("""
-            SELECT a.id_asignacion, p.apenom, c.nombre, m.nombre,
-                h.dia, h.hentrada, h.hsalida, a.srprofesor
+
+            SELECT
+
+                a.id_asignacion,
+                a.id_profesor,
+                a.id_horario,
+
+                p.apenom,
+                c.nombre,
+                m.nombre,
+                h.dia,
+                h.hentrada,
+                h.hsalida,
+
+                a.srprofesor
+
             FROM asignaciones_docentes a
-            LEFT JOIN profesores p ON a.id_profesor = p.id_profesor
-            LEFT JOIN horarios h ON a.id_horario = h.id_horario
-            LEFT JOIN cursos c ON h.id_curso = c.id_curso
-            LEFT JOIN materias m ON h.id_materia = m.id_materia
+
+            LEFT JOIN profesores p
+            ON a.id_profesor = p.id_profesor
+
+            LEFT JOIN horarios h
+            ON a.id_horario = h.id_horario
+
+            LEFT JOIN cursos c
+            ON h.id_curso = c.id_curso
+
+            LEFT JOIN materias m
+            ON h.id_materia = m.id_materia
+
         """)
 
         for fila in cursor.fetchall():
-            tree.insert("", "end", values=fila)
+
+            tree.insert("", "end", values=(
+
+                fila[0],  # id asignacion
+                fila[3],  # profesor
+                fila[4],  # curso
+                fila[5],  # materia
+                fila[6],  # dia
+                fila[7],  # entrada
+                fila[8],  # salida
+                fila[9]   # situacion
+
+            ))
 
         conn.close()
+    # -------------------------------------------------------------------------------------
 
-    id_seleccionado = None
+    # ============================ SELECCIONAR REGISTRO EN EL TREEVIEW ====================
+    # def seleccionar(event):
+    #     nonlocal id_seleccionado
 
+    #     item = tree.selection()
+    #     if not item:
+    #         return
+
+    #     valores = tree.item(item[0], "values")
+    #     id_seleccionado = valores[0]
+
+    #     profesor_var.set(valores[1])
+    #     situacion_var.set(valores[7])
+
+    # tree.bind("<<TreeviewSelect>>", seleccionar)
     def seleccionar(event):
+
         nonlocal id_seleccionado
 
         item = tree.selection()
+
         if not item:
             return
 
         valores = tree.item(item[0], "values")
+
         id_seleccionado = valores[0]
 
-        profesor_var.set(valores[1])
+        nombre_profesor = valores[1]
+
+        # =========================================
+        # BUSCAR PROFESOR EN EL COMBO
+        # =========================================
+
+        for texto in profesores_dict:
+
+            if nombre_profesor in texto:
+
+                profesor_var.set(texto)
+                break
+
+        # =========================================
+        # BUSCAR HORARIO EN EL COMBO
+        # =========================================
+
+        curso = valores[2]
+        materia = valores[3]
+        dia = valores[4]
+
+        for texto in horarios_dict:
+
+            if curso in texto and materia in texto and dia in texto:
+
+                horario_var.set(texto)
+                break
+
         situacion_var.set(valores[7])
 
     tree.bind("<<TreeviewSelect>>", seleccionar)
+    # -------------------------------------------------------------------------------------
 
+    # =============================  GUARDA aSIGNACIONES EN LA TABLA  ======================
     def guardar():
         if not profesor_var.get() or not horario_var.get() or not situacion_var.get():
-            messagebox.showwarning("Atención", "Complete todos los campos")
+            messagebox.showwarning("Atención", "Complete todos los campos", parent=ventana)
             return
 
         try:
@@ -167,21 +286,77 @@ def info_asignaciones():
             conn.commit()
             conn.close()
 
-            messagebox.showinfo("OK", "Asignación guardada")
+            messagebox.showinfo("OK", "Asignación guardada", parent=ventana)
             cargar_tree()
             limpiar()
 
         except Exception as e:
-            messagebox.showerror("Error", str(e))
+            messagebox.showerror("Error", str(e), parent=ventana)
+    # -------------------------------------------------------------------------------------
 
+    # =============================  Modifica registro de Asignación ========================
+    def modificar():
+
+        nonlocal id_seleccionado
+
+        if not id_seleccionado:
+
+            messagebox.showwarning(
+                "Atención",
+                "Seleccione un registro", parent=ventana
+            )
+
+            return
+
+        conn = conectar()
+
+        cursor = conn.cursor()
+
+        cursor.execute("""
+
+            UPDATE asignaciones_docentes
+
+            SET
+
+                id_profesor=?,
+                id_horario=?,
+                srprofesor=?
+
+            WHERE id_asignacion=?
+
+        """, (
+
+            profesores_dict[profesor_var.get()],
+            horarios_dict[horario_var.get()],
+            situacion_var.get(),
+            id_seleccionado
+
+        ))
+
+        conn.commit()
+
+        conn.close()
+
+        messagebox.showinfo(
+            "OK",
+            "Asignación modificada", parent=ventana
+        )
+
+        cargar_tree()
+
+        limpiar()
+    # -------------------------------------------------------------------------------------
+
+
+    # ================================= ELIMINA ASIGNACIONES ==============================
     def eliminar():
         nonlocal id_seleccionado
 
         if not id_seleccionado:
-            messagebox.showwarning("Atención", "Seleccione un registro")
+            messagebox.showwarning("Atención", "Seleccione un registro", parent=ventana)
             return
 
-        if not messagebox.askyesno("Confirmar", "¿Eliminar asignación?"):
+        if not messagebox.askyesno("Confirmar", "¿Eliminar asignación?", parent=ventana):
             return
 
         conn = conectar()
@@ -193,7 +368,9 @@ def info_asignaciones():
 
         cargar_tree()
         limpiar()
+    # ------------------------------------------------------------------------------------------
 
+    # =============== LIMPIA INFORMACIÓN CONTENIDA EN COMBOS Y ENTRYS ==========================
     def limpiar():
         nonlocal id_seleccionado
         id_seleccionado = None
@@ -201,17 +378,19 @@ def info_asignaciones():
         profesor_var.set("")
         horario_var.set("")
         situacion_var.set("")
+    # -----------------------------------------------------------------------------------------
 
-    # =========================
-    # BOTONES
-    # =========================
+    # ==============================================================================================
+    #                                       BOTONES
+    # ===============================================================================================
     frame_botones = ttk.Frame(frame_superior)
     frame_botones.grid(row=2, column=0, columnspan=4, pady=15)
 
     ttk.Button(frame_botones, text="💾 Guardar", command=guardar).grid(row=0, column=0, padx=5)
-    ttk.Button(frame_botones, text="Eliminar", command=eliminar).grid(row=0, column=1, padx=5)
-    ttk.Button(frame_botones, text="Limpiar", command=limpiar).grid(row=0, column=2, padx=5)
-    ttk.Button(frame_botones, text="Salir", command=ventana.destroy).grid(row=0, column=3, padx=5)
+    ttk.Button(frame_botones, text="✏ Modificar", command=modificar).grid(row=0, column=1, padx=5)
+    ttk.Button(frame_botones, text="🗑 Eliminar", command=eliminar).grid(row=0, column=2, padx=5)
+    ttk.Button(frame_botones, text="🧹 Limpiar", command=limpiar).grid(row=0, column=3, padx=5)
+    ttk.Button(frame_botones, text="❌ Cerrar", command=ventana.destroy).grid(row=0, column=4, padx=5)
 
     # =========================
     # INICIO

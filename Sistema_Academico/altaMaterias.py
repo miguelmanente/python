@@ -118,7 +118,7 @@ def info_materias():
         if not nombre.get() or not descripcion.get():
             messagebox.showwarning(
                 "Campos obligatorios",
-                "Nombres de la Materia y Descripción son obligatorios."
+                "Nombres de la Materia y Descripción son obligatorios.", parent=ventana
             )
             return
         
@@ -135,16 +135,16 @@ def info_materias():
             ))
 
             conn.commit()
-            crear_backup()
+    
             conn.close()
 
-            messagebox.showinfo("Éxito", "Materia guardada correctamente.")
+            messagebox.showinfo("Éxito", "Materia guardada correctamente.", parent=ventana)
 
             cargar_datos_treeview()
            
 
         except Exception as e:
-            messagebox.showerror("Error", f"No se pudieron guardar los datos:\n{e}")
+            messagebox.showerror("Error", f"No se pudieron guardar los datos:\n{e}", parent=ventana)
     # ----------------------------------------------------------------------------------
 
 
@@ -169,10 +169,10 @@ def info_materias():
     # ---------------------------------------------------------------------------------
 
 
-    # ----------------  Modifica registro de profesores --------------------------------
+    # ----------------  Modifica registro MATERIA --------------------------------
     def modificar_materia():
         if not id_seleccionado:
-            messagebox.showwarning("Atención", "Seleccione un registro")
+            messagebox.showwarning("Atención", "Seleccione un registro", parent=ventana)
             return
 
         conn = conectar()
@@ -189,31 +189,31 @@ def info_materias():
         ))
 
         conn.commit()
-        crear_backup()
+    
         conn.close()
 
         cargar_datos_treeview()
         limpiar_campos()
-        messagebox.showinfo("Éxito", "Registro actualizado")
+        messagebox.showinfo("Éxito", "Registro actualizado", parent=ventana)
     # -------------------------------------------------------------------------------------
 
-    # ----------------  Elimina registros de profesores ----------------------------------
+    # ----------------  Elimina registros de Materias ----------------------------------
     def eliminar_materia():
         if not id_seleccionado:
-            messagebox.showwarning("Atención", "Seleccione un registro")
+            messagebox.showwarning("Atención", "Seleccione un registro", parent=ventana)
             return
 
-        confirmar = messagebox.askyesno("Confirmar", "¿Eliminar registro?")
+        confirmar = messagebox.askyesno("Confirmar", "¿Eliminar registro?", parent=ventana)
         if not confirmar:
             return
 
         conn = conectar()
         cursor = conn.cursor()
 
-        cursor.execute("DELETE FROM materias WHERE id_materia = ?", (id_seleccionado))
+        cursor.execute("DELETE FROM materias WHERE id_materia = ?", (id_seleccionado,))
 
         conn.commit()
-        crear_backup()
+   
         conn.close()
 
         cargar_datos_treeview()

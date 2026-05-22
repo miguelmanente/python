@@ -169,66 +169,130 @@ def ventana_asistencias():
         cursor = conn.cursor()
 
         cursor.execute("""
-            SELECT id_profesor, apenom
-            FROM profesores
-            ORDER BY apenom
+
+            SELECT
+
+                pc.id_personal_cargo,
+                p.apenom,
+                c.nombre_cargo
+
+            FROM personal_cargos pc
+
+            JOIN profesores p
+            ON pc.id_profesor = p.id_profesor
+
+            JOIN cargos c
+            ON pc.id_cargo = c.id_cargo
+
+            ORDER BY p.apenom
+
         """)
-
-        for id_, nombre in cursor.fetchall():
-
-            texto = f"{id_} - {nombre}"
-
-            profesores_dict[texto] = id_
-
-        combo_profesor["values"] = list(
-            profesores_dict.keys()
-        )
-
-        conn.close()
-    
-    def calcular_dias(id_profesor, desde, hasta):
-
-        conn = conectar()
-        cursor = conn.cursor()
-
-        cursor.execute("""
-
-            SELECT DISTINCT h.dia
-
-            FROM asignaciones_docentes a
-
-            JOIN horarios h
-            ON a.id_horario = h.id_horario
-
-            WHERE a.id_profesor=?
-
-        """, (id_profesor,))
 
         resultados = cursor.fetchall()
 
+        profesores_dict.clear()
+
+        lista = []
+
+        for id_pc, nombre, cargo in resultados:
+
+            texto = f"{nombre} - {cargo}"
+
+            profesores_dict[texto] = id_pc
+
+            lista.append(texto)
+
+        combo_profesor["values"] = lista
+
+        conn.close()    
+    # -----------------------------------------------------------
+
+    # ======================= CALCULA LOS DÍAS DE INASISTENCIAS =====================
+    def calcular_dias(id_personal_cargo, desde, hasta):
+
+        conn = conectar()
+
+        cursor = conn.cursor()
+
+        # ==========================================
+        # OBTENER CARGO
+        # ==========================================
+
+        cursor.execute("""
+
+            SELECT c.nombre_cargo
+
+            FROM personal_cargos pc
+
+            JOIN cargos c
+            ON pc.id_cargo = c.id_cargo
+
+            WHERE pc.id_personal_cargo=?
+
+        """, (id_personal_cargo,))
+
+        cargo = cursor.fetchone()[0]
+
+        # ==========================================
+        # SI ES PROFESOR → USA HORARIOS
+        # ==========================================
+
+        if cargo == "Profesor":
+
+            id_profesor = obtener_id_profesor(
+                id_personal_cargo
+            )
+
+            cursor.execute("""
+
+                SELECT DISTINCT h.dia
+
+                FROM asignaciones_docentes a
+
+                JOIN horarios h
+                ON a.id_horario = h.id_horario
+
+                WHERE a.id_profesor=?
+
+            """, (id_profesor,))
+
+            resultados = cursor.fetchall()
+
+            dias_trabajo = [fila[0] for fila in resultados]
+
+            mapa = {
+
+                "Lunes": 0,
+                "Martes": 1,
+                "Miércoles": 2,
+                "Jueves": 3,
+                "Viernes": 4
+
+            }
+
+            dias_validos = []
+
+            for dia in dias_trabajo:
+
+                if dia in mapa:
+
+                    dias_validos.append(
+                        mapa[dia]
+                    )
+
+        # ==========================================
+        # SI ES CARGO → LUNES A VIERNES
+        # ==========================================
+
+        else:
+
+            dias_validos = [0, 1, 2, 3, 4]
+
         conn.close()
 
-        dias_trabajo = [fila[0] for fila in resultados]
-
-        mapa = {
-
-            "Lunes": 0,
-            "Martes": 1,
-            "Miércoles": 2,
-            "Jueves": 3,
-            "Viernes": 4
-
-        }
-
-        dias_validos = []
-
-        for dia in dias_trabajo:
-
-            if dia in mapa:
-
-                dias_validos.append(
-                    mapa[dia]
-                )
+        # ==========================================
+        # CONTAR DÍAS
+        # ==========================================
 
         fecha_actual = datetime.strptime(
             desde,
@@ -267,12 +331,15 @@ def ventana_asistencias():
 
             SELECT DISTINCT h.dia
 
-            FROM asignaciones_docentes a
+            FROM personal_cargos pc
+
+            JOIN asignaciones_docentes a
+            ON pc.id_profesor = a.id_profesor
 
             JOIN horarios h
             ON a.id_horario = h.id_horario
 
-            WHERE a.id_profesor=?
+            WHERE pc.id_personal_cargo = ?
 
         """, (id_profesor,))
 
@@ -289,7 +356,6 @@ def ventana_asistencias():
             "Miércoles": 2,
             "Jueves": 3,
             "Viernes": 4
-
         }
 
         fecha_inicio = datetime.strptime(
@@ -303,12 +369,25 @@ def ventana_asistencias():
 
         while fecha_inicio <= fecha_fin:
 
-            if fecha_inicio.weekday() in [
+            # if fecha_inicio.weekday() in [
 
-                dias_map[dia]
-                for dia in dias_trabajo
+            #     dias_map[dia]
+            #     for dia in dias_trabajo
 
-            ]:
+            # ]:
+            dias_validos = []
+
+            for dia in dias_trabajo:
+
+                if dia == "Lunes a Viernes":
+
+                    dias_validos.extend([0, 1, 2, 3, 4])
+
+                elif dia in dias_map:
+
+                    dias_validos.append(dias_map[dia])
+
+            if fecha_inicio.weekday() in dias_validos:
 
                 total += 1
 
@@ -325,11 +404,21 @@ def ventana_asistencias():
 
         cursor = conn.cursor()
 
+        id_personal_cargo = profesores_dict[
+            profesor_var.get()
+        ]
+
+        # OBTENER EL ID DEL PROFESOR REAL
+        id_profesor = obtener_id_profesor(
+            id_personal_cargo
+        )
+
         cursor.execute("""
 
             INSERT INTO asistencias_docentes(
-               
+
                 id_profesor,
+                id_personal_cargo,
                 fecha_desde,
                 fecha_hasta,
                 estado,
@@ -337,11 +426,12 @@ def ventana_asistencias():
 
             )
 
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?)
 
         """, (
 
-            profesores_dict[profesor_var.get()],
+            id_profesor,
+            id_personal_cargo,
             desde_var.get(),
             hasta_var.get(),
             estado_var.get(),
@@ -352,20 +442,12 @@ def ventana_asistencias():
         conn.commit()
 
         conn.close()
-        id_profesor = profesores_dict[
-            profesor_var.get()
-        ]
 
         dias = calcular_dias(
             id_profesor,
             desde_var.get(),
             hasta_var.get()
         )
-        # dias = calcular_dias(      
-        #     profesor_var.get(),
-        #     desde_var.get(),
-        #     hasta_var.get()
-        # )
 
         if dias >= 5:
 
@@ -373,19 +455,51 @@ def ventana_asistencias():
 
                 "ALERTA SUPLENTE",
 
-                "El docente supera 5 días de inasistencia"
+                "El docente supera 5 días de inasistencia", parent=ventana
 
             )
 
         messagebox.showinfo(
             "OK",
-            "Registro guardado"
+            "Registro guardado", parent=ventana
         )
 
         cargar_tree()
 
         limpiar()
     # ------------------------------------------------------------
+
+    # ==========================================================
+    # OBTENER ID DEL PROFESOR DESDE PERSONAL_CARGO
+    # ==========================================================
+    def obtener_id_profesor(id_personal_cargo):
+
+        conn = conectar()
+
+        cursor = conn.cursor()
+
+        cursor.execute("""
+
+            SELECT id_profesor
+
+            FROM personal_cargos
+
+            WHERE id_personal_cargo=?
+
+        """, (id_personal_cargo,))
+
+        resultado = cursor.fetchone()
+
+        conn.close()
+
+        if resultado:
+
+            return resultado[0]
+
+        return None
+    # ----------------------------------------------------------
+
+
 
     # ============== MODIFICAR REGISTRO ASISTENCIA ===============
     def modificar():
@@ -396,7 +510,7 @@ def ventana_asistencias():
 
             messagebox.showwarning(
                 "Atención",
-                "Seleccione un registro"
+                "Seleccione un registro", parent=ventana
             )
 
             return
@@ -409,7 +523,7 @@ def ventana_asistencias():
             UPDATE asistencias_docentes
             SET
 
-                id_profesor=?,
+                id_personal_cargo=?,
                 fecha_desde=?,
                 fecha_hasta=?,
                 estado=?,
@@ -433,7 +547,7 @@ def ventana_asistencias():
 
         messagebox.showinfo(
             "OK",
-            "Registro modificado"
+            "Registro modificado", parent=ventana
         )
 
         cargar_tree()
@@ -449,14 +563,14 @@ def ventana_asistencias():
 
             messagebox.showwarning(
                 "Atención",
-                "Seleccione un registro"
+                "Seleccione un registro", parent=ventana
             )
 
             return
 
         confirmar = messagebox.askyesno(
             "Confirmar",
-            "¿Eliminar registro?"
+            "¿Eliminar registro?", parent=ventana
         )
 
         if not confirmar:
@@ -477,7 +591,7 @@ def ventana_asistencias():
 
         messagebox.showinfo(
             "OK",
-            "Registro eliminado"
+            "Registro eliminado", parent=ventana
         )
 
         cargar_tree()
@@ -485,7 +599,6 @@ def ventana_asistencias():
     # ------------------------------------------------------------
     
     # ===================== CARGAR TREEVIEW  =====================
-
     def cargar_tree(id_profesor=None):
 
         for item in tree.get_children():
@@ -501,8 +614,9 @@ def ventana_asistencias():
             SELECT
 
                 a.id_asistencia,
-                a.id_profesor,
+                a.id_personal_cargo,
                 p.apenom,
+                c.nombre_cargo,
                 a.fecha_desde,
                 a.fecha_hasta,
                 a.estado,
@@ -510,8 +624,14 @@ def ventana_asistencias():
 
             FROM asistencias_docentes a
 
+            JOIN personal_cargos pc
+            ON a.id_personal_cargo = pc.id_personal_cargo
+
             JOIN profesores p
-            ON a.id_profesor = p.id_profesor
+            ON pc.id_profesor = p.id_profesor
+
+            JOIN cargos c
+            ON pc.id_cargo = c.id_cargo
 
         """
 
@@ -519,7 +639,7 @@ def ventana_asistencias():
 
         if id_profesor:
 
-            query += " WHERE a.id_profesor=?"
+            query += " WHERE a.id_personal_cargo=?"
 
             parametros.append(id_profesor)
 
@@ -527,29 +647,29 @@ def ventana_asistencias():
 
         cursor.execute(query, parametros)
 
-        for fila in cursor.fetchall():
+        registros = cursor.fetchall()
 
-            # dias = calcular_dias(
-            #     fila[2],
-            #     fila[3]
+        for fila in registros:
+
             dias = calcular_dias(
-                fila[1],
-                fila[3],
-                fila[4]
-            )
-            
-            nueva = list(fila)
 
-            #nueva.insert(4, dias)
+                fila[1],
+                fila[4],
+                fila[5]
+
+            )
+
+            nombre_completo = f"{fila[2]} - {fila[3]}"
+
             nueva = [
 
                 fila[0],   # id asistencia
-                fila[2],   # profesor
-                fila[3],   # desde
-                fila[4],   # hasta
+                nombre_completo,
+                fila[4],   # desde
+                fila[5],   # hasta
                 dias,
-                fila[5],   # estado
-                fila[6]    # observacion
+                fila[6],   # estado
+                fila[7]    # observacion
 
             ]
 
@@ -560,6 +680,7 @@ def ventana_asistencias():
             )
 
         conn.close()
+    
     #------------------------------------------------------------------
 
     # ============ SELECCIONAR REGISTROS DEL TREEVIEW ==============
@@ -616,7 +737,7 @@ def ventana_asistencias():
 
             FROM asistencias_docentes
 
-            WHERE id_profesor = ?
+            WHERE id_personal_cargo = ?
 
         """, (id_profesor,))
 
@@ -671,7 +792,7 @@ def ventana_asistencias():
 
             FROM asistencias_docentes
 
-            WHERE id_profesor=?
+            WHERE id_personal_cargo=?
 
         """, (id_profesor,))
 
@@ -699,7 +820,7 @@ def ventana_asistencias():
 
             messagebox.showwarning(
                 "Atención",
-                "Seleccione un profesor"
+                "Seleccione un profesor", parent=ventana
             )
 
             return
@@ -760,7 +881,7 @@ def ventana_asistencias():
 
             FROM asistencias_docentes
 
-            WHERE id_profesor = ?
+            WHERE id_personal_cargo = ?
 
         """, (id_profesor,))
 
@@ -791,7 +912,7 @@ def ventana_asistencias():
                 particular += dias
 
             # NECESITA SUPLENTE
-            if dias >= 5:
+            if dias > 5:
 
                 suplente = True
 
@@ -833,7 +954,7 @@ def ventana_asistencias():
 
             messagebox.showwarning(
                 "Atención",
-                "Seleccione un profesor"
+                "Seleccione un profesor", parent = ventana
             )
 
             return
@@ -848,19 +969,28 @@ def ventana_asistencias():
         cursor = conn.cursor()
 
         cursor.execute("""
+
             SELECT
 
-                a.id_profesor,
+                a.id_personal_cargo,
                 p.apenom,
+                c.nombre_cargo,
                 a.fecha_desde,
                 a.fecha_hasta,
                 a.estado
 
             FROM asistencias_docentes a
-            JOIN profesores p
-            ON a.id_profesor = p.id_profesor
 
-            WHERE a.id_profesor = ?
+            JOIN personal_cargos pc
+            ON a.id_personal_cargo = pc.id_personal_cargo
+
+            JOIN profesores p
+            ON pc.id_profesor = p.id_profesor
+
+            JOIN cargos c
+            ON pc.id_cargo = c.id_cargo
+
+            WHERE a.id_personal_cargo = ?
 
         """, (id_profesor,))
 
@@ -899,7 +1029,7 @@ def ventana_asistencias():
 
         elementos.append(Spacer(1, 20))
 
-        nombre_docente = registros[0][1]
+        nombre_docente = f"{registros[0][1]} - {registros[0][2]}"
 
         subtitulo = Paragraph(
 
@@ -929,20 +1059,20 @@ def ventana_asistencias():
 
         for fila in registros:
 
-           dias = calcular_dias(
+            dias = calcular_dias(
                 fila[0],
-                fila[2],
-                fila[3]
+                fila[3],
+                fila[4]
             )
 
-        total += dias
-     
-        data.append([
+            total += dias
 
-                fila[2],
+            data.append([
+
                 fila[3],
+                fila[4],
                 str(dias),
-                fila[4]
+                fila[5]
 
             ])
 
@@ -980,7 +1110,7 @@ def ventana_asistencias():
 
             "PDF",
 
-            f"Reporte generado:\n{ruta_pdf}"
+            f"Reporte generado:\n{ruta_pdf}", parent=ventana
 
         )
     # ----------------------------------------------------------------
@@ -1000,17 +1130,31 @@ def ventana_asistencias():
         conn = conectar()
         cursor = conn.cursor()
         cursor.execute("""
+
             SELECT
-                a.id_profesor,
+
+                a.id_personal_cargo,
                 p.apenom,
+                c.nombre_cargo,
                 a.fecha_desde,
                 a.fecha_hasta,
                 a.estado
+
             FROM asistencias_docentes a
+
+            JOIN personal_cargos pc
+            ON a.id_personal_cargo = pc.id_personal_cargo
+
             JOIN profesores p
-            ON a.id_profesor = p.id_profesor
-            WHERE a.id_profesor = ?
+            ON pc.id_profesor = p.id_profesor
+
+            JOIN cargos c
+            ON pc.id_cargo = c.id_cargo
+
+            WHERE a.id_personal_cargo = ?
+
             ORDER BY a.fecha_desde
+
         """, (id_profesor,))
 
         registros = cursor.fetchall()
@@ -1022,7 +1166,7 @@ def ventana_asistencias():
                 "No hay registros"
             )
             return
-        nombre_docente = registros[0][1]
+        nombre_docente = f"{registros[0][1]} - {registros[0][2]}"
         nombre_pdf = (
             f"RepAnu_{nombre_docente}.pdf"
         )
@@ -1077,28 +1221,34 @@ def ventana_asistencias():
         resumen_estados = {}
 
         for fila in registros:
+
             fecha = datetime.strptime(
-            fila[2],
+                fila[3],
                 "%d/%m/%Y"
             )
+
             mes = fecha.strftime("%B")
+
             dias = calcular_dias(
                 fila[0],
-                fila[2],
-                fila[3]
+                fila[3],
+                fila[4]
             )
+
             total += dias
-            estado = fila[4]
+
+            estado = fila[5]
 
             if estado not in resumen_estados:
+
                 resumen_estados[estado] = 0
 
             resumen_estados[estado] += dias
 
             data.append([
                 mes,
-                fila[2],
                 fila[3],
+                fila[4],
                 str(dias),
                 estado
             ])
@@ -1131,7 +1281,7 @@ def ventana_asistencias():
         doc.build(elementos)
         messagebox.showinfo(
             "PDF",
-            f"PDF anual generado:\n{ruta_pdf}"
+            f"PDF anual generado:\n{ruta_pdf}", parent=ventana
 
         )
     # --------------------------------------------------------------

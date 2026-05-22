@@ -11,6 +11,7 @@ import os
 from database import crear_tablas
 from centraVent import centrar_ventana
 from datos_personales import info_profesor
+from altasCargos import ventana_cargos
 from altaMaterias import info_materias
 from altaCursos import info_cursos
 from altaHorarios import info_horarios
@@ -45,7 +46,7 @@ def pPrincipal():
     ventana.title("SISTEMA ACADÉMICO")
     ventana.geometry("1100x700")
     
-
+    ventana.protocol("WM_DELETE_WINDOW", lambda: None)
     ventana.rowconfigure(0, weight=1)
     ventana.rowconfigure(1, weight=0)
     ventana.columnconfigure(0, weight=1)
@@ -79,6 +80,7 @@ def pPrincipal():
     mProfesor =tk.Menu(barramenu, tearoff=0)
     barramenu.add_cascade(label="Profesor", menu=mProfesor)
     mProfesor.add_command(label="Datos Personales", command=info_profesor)
+    mProfesor.add_command(label="Personal con cargos", command=ventana_cargos)
 
     #Menú Materias
     mMaterias = tk.Menu(barramenu, tearoff=0)

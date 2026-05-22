@@ -74,6 +74,30 @@ def crear_tablas():
         sitrev TEXT,
         fechatp TEXT
     );
+    
+    CREATE TABLE IF NOT EXISTS cargos (
+        id_cargo INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombre_cargo TEXT NOT NULL
+    );
+                         
+    CREATE TABLE IF NOT EXISTS personal_cargos (
+
+        id_personal_cargo INTEGER PRIMARY KEY AUTOINCREMENT,
+
+        id_profesor INTEGER NOT NULL,
+
+        id_cargo INTEGER NOT NULL,
+
+        fecha_desde TEXT,
+
+        fecha_hasta TEXT,
+
+        FOREIGN KEY(id_profesor)
+            REFERENCES profesores(id_profesor),
+
+        FOREIGN KEY(id_cargo)
+            REFERENCES cargos(id_cargo)
+    );
 
     CREATE TABLE IF NOT EXISTS materias (
         id_materia INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -127,21 +151,21 @@ def crear_tablas():
         FOREIGN KEY(id_curso) REFERENCES cursos(id_curso)
     );
     CREATE TABLE IF NOT EXISTS asistencias_docentes(
+         id_asistencia INTEGER PRIMARY KEY AUTOINCREMENT,
 
-        id_asistencia INTEGER PRIMARY KEY AUTOINCREMENT,
+        id_personal_cargo INTEGER NOT NULL,
 
-        id_profesor INTEGER NOT NULL,
+        fecha_desde TEXT,
 
-        fecha_desde TEXT NOT NULL,
+        fecha_hasta TEXT,
 
-        fecha_hasta TEXT NOT NULL,
-
-        estado TEXT NOT NULL,
+        estado TEXT,
 
         observacion TEXT,
 
-        FOREIGN KEY(id_profesor)
-        REFERENCES profesores(id_profesor)
+        FOREIGN KEY(id_personal_cargo)
+        REFERENCES personal_cargos(id_personal_cargo)
+                         
     );
 
     """)

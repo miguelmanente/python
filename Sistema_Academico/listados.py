@@ -243,7 +243,7 @@ def ventana_listado(tipo):
             nombre_excel)
 
         wb.save(ruta_excel)
-        messagebox.showinfo("OK", "Exportado a listado.xlsx")
+        messagebox.showinfo("OK", "Exportado a listado.xlsx", parent=ventana)
 
     # =========================
     # EXPORTAR PDF
@@ -252,21 +252,18 @@ def ventana_listado(tipo):
     def exportar_pdf(tipo):
         
         fecha = datetime.now().strftime("%d-%m-%Y_%H-%M")
-        #doc = SimpleDocTemplate("listado.pdf")
         nombre_pdf = f"listado_{fecha}.pdf"
         ruta_pdf = os.path.join(
             "reportes",
             "pdf",
             nombre_pdf
         )
-        #nombre_pdf(ruta_pdf)
-        messagebox.showinfo("OK", "Exportado a Reportes/pdf")
-
+      
         doc = SimpleDocTemplate(ruta_pdf)
 
         styles = getSampleStyleSheet()
 
-        titulo = Paragraph(f"<b>LISTADO DE PROFESORES {tipo}</b>", styles["Title"])
+        titulo = Paragraph(f"<b>Listado de Profesores {tipo}</b>", styles["Title"])
 
         # Espacio
         espacio = Spacer(1, 20)
@@ -299,9 +296,9 @@ def ventana_listado(tipo):
     def imprimir():
         exportar_pdf(tipo)
         try:
-            os.startfile("listado.pdf", "print")
+            os.startfile("listado_{fecha}.pdf", "print")
         except:
-            messagebox.showwarning("Atención", "Impresión directa solo funciona en Windows")
+            messagebox.showwarning("Atención", "Impresión directa solo funciona en Windows", parent=ventana)
 
     # =========================
     # BOTONES
@@ -311,7 +308,7 @@ def ventana_listado(tipo):
 
     ttk.Button(frame_botones, text="🖨 Imprimir", command=imprimir).grid(row=0, column=0, padx=5)
     ttk.Button(frame_botones, text="📊 Excel", command=exportar_excel).grid(row=0, column=1, padx=5)
-    ttk.Button(frame_botones, text="📄 PDF", command=exportar_pdf(tipo)).grid(row=0, column=2, padx=5)
+    ttk.Button(frame_botones, text="📄 PDF", command=lambda: exportar_pdf(tipo)).grid(row=0, column=2, padx=5)
     ttk.Button(frame_botones, text="❌ Cerrar", command=ventana.destroy).grid(row=0, column=3, padx=5)
 
     cargar_cursos()

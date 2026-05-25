@@ -8,7 +8,7 @@ from tkinter import ttk
 import matplotlib.pyplot as plt
 from database import conectar
 from centraVent import centrar_ventana
-
+from datetime import datetime, timedelta
 from datetime import datetime
 
 
@@ -77,30 +77,61 @@ def ventana_estadisticas():
     conn.close()
 
     # ==========================================================
-    # PROCESAR DATOS
+    # PROCESAR DATOS SIN DUPLICAR DÍAS
     # ==========================================================
+
+    docentes_fechas = {}
+    estados_fechas = {}
+
     for docente, desde, hasta, estado in registros:
 
-        dias = calcular_dias(
-            desde,
-            hasta
-        )
+            if docente not in docentes_fechas:
+                docentes_fechas[docente] = set()
 
-        total_inasistencias += dias
+            if estado not in estados_fechas:
+                estados_fechas[estado] = set()
 
-        # DOCENTES
-        if docente not in docentes:
+            fecha_actual = datetime.strptime(
+                desde,
+                "%d/%m/%Y"
+            )
 
-            docentes[docente] = 0
+            fecha_hasta = datetime.strptime(
+                hasta,
+                "%d/%m/%Y"
+            )
 
-        docentes[docente] += dias
+            while fecha_actual <= fecha_hasta:
 
-        # ESTADOS
-        if estado not in estados:
+                fecha_txt = fecha_actual.strftime(
+                    "%d/%m/%Y"
+                )
 
-            estados[estado] = 0
+                docentes_fechas[docente].add(
+                    fecha_txt
+                )
 
-        estados[estado] += dias
+                estados_fechas[estado].add(
+                    fecha_txt
+                )
+
+                fecha_actual += timedelta(days=1)
+
+        # convertir sets en cantidades
+
+    docentes = {}
+
+    for docente, fechas in docentes_fechas.items():
+
+            docentes[docente] = len(fechas)
+
+    estados = {}
+
+    for estado, fechas in estados_fechas.items():
+
+            estados[estado] = len(fechas)
+
+    total_inasistencias = sum(docentes.values())
 
     # ==========================================================
     # PROMEDIO

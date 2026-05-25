@@ -1,3 +1,7 @@
+# ========================================================================================
+#                  MÓDULO PARA CARGAR DATOS PERSONALES DE LOS DOCENTES
+# ========================================================================================
+
 # ---------------------  Área de declaración de librerías --------------------------------
 import tkinter as tk
 from tkinter import ttk, messagebox
@@ -5,6 +9,7 @@ import re
 from database import conectar
 from centraVent import centrar_ventana
 from estilos import configurar_estilos
+from backup import crear_backup
 
 # ----------- Función que maneja toda la ventana datos personales del profesor ------------
 def info_profesor():
@@ -37,7 +42,7 @@ def info_profesor():
     situacion_revista = tk.StringVar()
     fecha_toma = tk.StringVar()
 
-    # Labels y Entrys distribuidos en dos columnas
+    # -------------- Labels y Entrys distribuidos en dos columnas ------------------------------------------
     ttk.Label(frame_superior, text="Apellido y Nombres:").grid(row=0, column=0, sticky="e", padx=5, pady=5)
     ttk.Entry(frame_superior, textvariable=apellido_nombre).grid(row=0, column=1, sticky="ew", padx=5, pady=5)
  
@@ -50,20 +55,15 @@ def info_profesor():
     
     #Verificación e ingreso de número en DNI
     ttk.Label(frame_superior, text="DNI:").grid(row=0, column=2, sticky="e", padx=5, pady=5)
-    #ttk.Entry(frame_superior, textvariable=dni).grid(row=0, column=3, sticky="ew", padx=5, pady=5)
-    
+   
+    # --------------------------  VERIFICA DATOS INGRESO EN DNI --------------------------------------------
     def solo_numeros(P):
         return P.isdigit() or P == ""
 
     vcmd = (ventana.register(solo_numeros), '%P')
+    # --------------------------------------------------------------------------------------------------------------
 
-    entry_dni = ttk.Entry(
-    frame_superior,
-    textvariable=dni,
-    validate="key",
-    validatecommand=vcmd,
-    style="Valido.TEntry"
-)
+    entry_dni = ttk.Entry(frame_superior, textvariable=dni, validate="key", validatecommand=vcmd, style="Valido.TEntry")
 
     entry_dni.grid(row=0, column=3, sticky="ew", padx=5, pady=5)
 
@@ -382,7 +382,7 @@ def info_profesor():
         situacion_revista.set("")
         fecha_toma.set("")
     #------------------------------------------------------------------------------------------
-    
+    crear_backup()
     centrar_ventana(ventana)
     cargar_datos_treeview()
     # --------------------------- Botones que permiten agregar, modificar etc. ---------------------------

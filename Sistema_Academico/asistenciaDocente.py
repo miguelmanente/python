@@ -13,7 +13,7 @@ from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.pagesizes import A4
 import os
-
+from backup import crear_backup
 
 # ================== VENTANA DE INASISTENCIA ==========================
 def ventana_asistencias():
@@ -369,12 +369,6 @@ def ventana_asistencias():
 
         while fecha_inicio <= fecha_fin:
 
-            # if fecha_inicio.weekday() in [
-
-            #     dias_map[dia]
-            #     for dia in dias_trabajo
-
-            # ]:
             dias_validos = []
 
             for dia in dias_trabajo:
@@ -722,95 +716,145 @@ def ventana_asistencias():
 
 
     #  ================  RESUMEN DE INASISTENCIAS ==================
-    def resumen_inasistencias(id_profesor):
-
-        conn = conectar()
-
-        cursor = conn.cursor()
-
-        cursor.execute("""
-
-            SELECT
-                estado,
-                fecha_desde,
-                fecha_hasta
-
-            FROM asistencias_docentes
-
-            WHERE id_personal_cargo = ?
-
-        """, (id_profesor,))
-
-        resultados = cursor.fetchall()
-
-        conn.close()
-
-        resumen = {}
-
-        total_general = 0
-
-        for estado, desde, hasta in resultados:
-
-            for estado, desde, hasta in resultados:
-
-                dias = calcular_dias(
-                    id_profesor,
-                    desde,
-                    hasta
-                )
-
-            total_general += dias
-
-            if estado not in resumen:
-
-                resumen[estado] = 0
-
-            resumen[estado] += dias
-
-        texto = ""
-
-        for estado, total in resumen.items():
-
-            texto += f"{estado}: {total} días\n"
-
-        texto += f"\nTOTAL GENERAL: {total_general} días"
-
-        lbl_resumen.config(text=texto)
-    # =======================================================
-
-     # ================= TOTAL INASISTENCIAS =================
-    def total_inasistencias(id_profesor):
+    def resumen_inasistencias(id_personal_cargo):
 
         conn = conectar()
         cursor = conn.cursor()
 
         cursor.execute("""
-
-            SELECT
-                fecha_desde,
-                fecha_hasta
-
-            FROM asistencias_docentes
-
+            SELECT id_profesor
+            FROM personal_cargos
             WHERE id_personal_cargo=?
+        """, (id_personal_cargo,))
 
+        resultado = cursor.fetchone()
+
+        if not resultado:
+            conn.close()
+            return
+
+        id_profesor = resultado[0]
+
+        cursor.execute("""
+            SELECT
+                a.estado,
+                a.fecha_desde,
+                a.fecha_hasta
+            FROM asistencias_docentes a
+            JOIN personal_cargos pc
+                ON a.id_personal_cargo = pc.id_personal_cargo
+            WHERE pc.id_profesor=?
         """, (id_profesor,))
 
         registros = cursor.fetchall()
 
         conn.close()
 
-        total = 0
+        resumen = {}
+        dias_unicos = set()
+
+        for estado, desde, hasta in registros:
+
+            fecha_actual = datetime.strptime(
+                desde,
+                "%d/%m/%Y"
+            )
+
+            fecha_hasta = datetime.strptime(
+                hasta,
+                "%d/%m/%Y"
+            )
+
+            while fecha_actual <= fecha_hasta:
+
+                fecha_txt = fecha_actual.strftime(
+                    "%d/%m/%Y"
+                )
+
+                dias_unicos.add(fecha_txt)
+
+                if estado not in resumen:
+                    resumen[estado] = set()
+
+                resumen[estado].add(fecha_txt)
+
+                fecha_actual += timedelta(days=1)
+
+        texto = ""
+
+        for estado, fechas in resumen.items():
+
+            texto += (
+                f"{estado}: "
+                f"{len(fechas)} días\n"
+            )
+
+        texto += (
+            f"\nTOTAL GENERAL: "
+            f"{len(dias_unicos)} días"
+        )
+
+        lbl_resumen.config(text=texto)
+    # ------------------------------------------------------------------------------
+
+     # ================= TOTAL INASISTENCIAS =================
+    def total_inasistencias(id_personal_cargo):
+
+        conn = conectar()
+        cursor = conn.cursor()
+
+        # obtener profesor real
+        cursor.execute("""
+            SELECT id_profesor
+            FROM personal_cargos
+            WHERE id_personal_cargo=?
+        """, (id_personal_cargo,))
+
+        resultado = cursor.fetchone()
+
+        if not resultado:
+            conn.close()
+            return 0
+
+        id_profesor = resultado[0]
+
+        cursor.execute("""
+            SELECT
+                fecha_desde,
+                fecha_hasta
+            FROM asistencias_docentes a
+            JOIN personal_cargos pc
+                ON a.id_personal_cargo = pc.id_personal_cargo
+            WHERE pc.id_profesor = ?
+        """, (id_profesor,))
+
+        registros = cursor.fetchall()
+
+        conn.close()
+
+        dias_unicos = set()
 
         for desde, hasta in registros:
 
-            total += calcular_dias(
-                id_profesor,
+            fecha_actual = datetime.strptime(
                 desde,
-                hasta
+                "%d/%m/%Y"
             )
 
-        return total
+            fecha_hasta = datetime.strptime(
+                hasta,
+                "%d/%m/%Y"
+            )
+
+            while fecha_actual <= fecha_hasta:
+
+                dias_unicos.add(
+                    fecha_actual.strftime("%d/%m/%Y")
+                )
+
+                fecha_actual += timedelta(days=1)
+
+        return len(dias_unicos)
     # ------------------------------------------------------------ 
 
     # ==================== BUSCA DOCENTES ===================
@@ -825,26 +869,26 @@ def ventana_asistencias():
 
             return
 
-        id_profesor = profesores_dict[
+        id_personal_cargo = profesores_dict[
             profesor_var.get()
         ]
 
-        cargar_tree(id_profesor)
+        cargar_tree(id_personal_cargo)
 
-        resumen_inasistencias(id_profesor)
+        resumen_inasistencias(id_personal_cargo)
 
-        verificar_alertas(id_profesor)
+        verificar_alertas(id_personal_cargo)
 
         # =====================================
         # CALCULAR DÍAS TRABAJADOS
         # =====================================
 
         laborales = contar_dias_laborales(
-            id_profesor
+            id_personal_cargo
         )
 
         faltas = total_inasistencias(
-            id_profesor
+            id_personal_cargo
         )
 
         trabajados = laborales - faltas
@@ -866,23 +910,37 @@ def ventana_asistencias():
     # --------------------------------------------------------------
 
     # ==================  FUNCIÓN DE ALERTAS =======================
-    def verificar_alertas(id_profesor):
+    def verificar_alertas(id_personal_cargo):
 
         conn = conectar()
-
         cursor = conn.cursor()
 
+        # Obtener el profesor real
         cursor.execute("""
+            SELECT id_profesor
+            FROM personal_cargos
+            WHERE id_personal_cargo=?
+        """, (id_personal_cargo,))
 
+        resultado = cursor.fetchone()
+
+        if not resultado:
+            conn.close()
+            return
+
+        id_profesor = resultado[0]
+
+        # Buscar TODAS las inasistencias del docente
+        cursor.execute("""
             SELECT
-                estado,
-                fecha_desde,
-                fecha_hasta
-
-            FROM asistencias_docentes
-
-            WHERE id_personal_cargo = ?
-
+                a.estado,
+                a.fecha_desde,
+                a.fecha_hasta,
+                a.id_personal_cargo
+            FROM asistencias_docentes a
+            JOIN personal_cargos pc
+                ON a.id_personal_cargo = pc.id_personal_cargo
+            WHERE pc.id_profesor = ?
         """, (id_profesor,))
 
         registros = cursor.fetchall()
@@ -891,30 +949,40 @@ def ventana_asistencias():
 
         licencia_medica = 0
         particular = 0
-        suplente = False
 
-        for estado, desde, hasta in registros:
+        dias_totales = set()
+
+        for estado, desde, hasta, id_pc in registros:
 
             dias = calcular_dias(
-                id_profesor,
+                id_pc,
                 desde,
                 hasta
             )
 
-            # LICENCIA MÉDICA
             if estado == "Licencia Médica":
-
                 licencia_medica += dias
 
-            # PARTICULAR / INJUSTIFICADA
             if estado == "Particular":
-
                 particular += dias
 
-            # NECESITA SUPLENTE
-            if dias > 5:
+            fecha_actual = datetime.strptime(
+                desde,
+                "%d/%m/%Y"
+            )
 
-                suplente = True
+            fecha_hasta = datetime.strptime(
+                hasta,
+                "%d/%m/%Y"
+            )
+
+            while fecha_actual <= fecha_hasta:
+
+                dias_totales.add(
+                    fecha_actual.strftime("%d/%m/%Y")
+                )
+
+                fecha_actual += timedelta(days=1)
 
         alertas = ""
 
@@ -932,14 +1000,13 @@ def ventana_asistencias():
                 f"({particular} días)\n"
             )
 
-        if suplente:
+        if len(dias_totales) > 5:
 
             alertas += (
-                "⚠ Necesita designación de suplente\n"
+                f"⚠ Necesita suplente ({len(dias_totales)} días)\n"
             )
 
         if alertas == "":
-
             alertas = "Sin alertas"
 
         lbl_alerta.config(text=alertas)
@@ -1286,8 +1353,6 @@ def ventana_asistencias():
         )
     # --------------------------------------------------------------
 
-    
-
     # =====================  LIMPIAR ENTRYS ========================
     def limpiar():
 
@@ -1327,3 +1392,4 @@ def ventana_asistencias():
     cargar_tree()
 
     centrar_ventana(ventana)
+    crear_backup()

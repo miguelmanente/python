@@ -1,9 +1,16 @@
+# ========================================================================================
+#                  MÓDULO PARA CARGAR LOS HORARIOS
+# ========================================================================================
+
+# ------------------------------- LIBRERÍAS  --------------------------------------------
 import tkinter as tk
 from tkinter import ttk, messagebox
 from database import conectar
 from centraVent import centrar_ventana
 from backup import crear_backup
+# ---------------------------------------------------------------------------------------
 
+# ------------------------  FUNCIÓN PRINCIPAL PARA AÑADIR HORARIOS -----------------------
 def info_horarios():
 
     ventana = tk.Toplevel()
@@ -87,11 +94,13 @@ def info_horarios():
     scrollbar_y = ttk.Scrollbar(frame_inferior, orient="vertical", command=tree.yview)
     tree.configure(yscrollcommand=scrollbar_y.set)
     scrollbar_y.grid(row=0, column=1, sticky="ns")
+    # ---------------------------------------------------------------------------------------
 
-    # =========================
-    # FUNCIONES
-    # =========================
+    # =======================================================================================
+    #                            FUNCIONES
+    # ========================================================================================
 
+    # ------------------------  LLENA LOS COMBOBOX CON INFORMACION DE LAS TABLAS -------------
     def cargar_combos():
         conn = conectar()
         cursor = conn.cursor()
@@ -114,14 +123,18 @@ def info_horarios():
         combo_materia["values"] = list(materias_dict.keys())
 
         conn.close()
+    # ---------------------------------------------------------------------------------
 
+    # -------------------- FUNCIÓN CONTROLA EL FORMATO DE FECHA -----------------------
     def validar_hora(hora):
         try:
             h, m = hora.split(":")
             return 0 <= int(h) <= 23 and 0 <= int(m) <= 59
         except:
             return False
+    # ---------------------------------------------------------------------------------
 
+    # -------------------------- LLENA EL TREEVIEW -------------------------------------
     def cargar_tree():
         for item in tree.get_children():
             tree.delete(item)
@@ -142,7 +155,9 @@ def info_horarios():
         conn.close()
 
     id_seleccionado = None
+    # ----------------------------------------------------------------------------------
 
+    # ---------------- FUNCIÓN PARA SELLECIONAR REGISTRO EN EL TREEVIEW ----------------
     def seleccionar(event):
         nonlocal id_seleccionado
 
@@ -167,7 +182,9 @@ def info_horarios():
         salida_var.set(valores[5])
 
     tree.bind("<<TreeviewSelect>>", seleccionar)
+    #------------------------------------------------------------------------------------------
 
+    # ----------------------   GUARDA LOS NUEVOS HORARIOS ---------------------------------------
     def guardar():
         if not curso_var.get() or not materia_var.get() or not dia_var.get():
             messagebox.showwarning("Atención", "Complete todos los campos")
@@ -202,7 +219,9 @@ def info_horarios():
 
         except Exception as e:
             messagebox.showerror("Error", str(e))
+    # -----------------------------------------------------------------------------------------
 
+    # --------------------- MODIFICAR REGISTRO DE LA TABALA ------------------------------------
     def modificar():
         if not id_seleccionado:
             messagebox.showwarning("Atención", "Seleccione un registro")
@@ -230,7 +249,9 @@ def info_horarios():
 
         cargar_tree()
         limpiar()
+    # -----------------------------------------------------------------------------------------
 
+    # ------------------------  ELIMINA REGISTRO DE LA TABLA ----------------------------------
     def eliminar():
         nonlocal id_seleccionado
 
@@ -251,7 +272,9 @@ def info_horarios():
 
         cargar_tree()
         limpiar()
+    # -----------------------------------------------------------------------------------------
 
+    # ------------------------------------  LIMPIAR ENTRYS CON INFORMACIÓN --------------------
     def limpiar():
         nonlocal id_seleccionado
         id_seleccionado = None
@@ -261,6 +284,7 @@ def info_horarios():
         dia_var.set("")
         entrada_var.set("")
         salida_var.set("")
+    # -----------------------------------------------------------------------------------------
 
     # =========================
     # BOTONES
@@ -280,3 +304,4 @@ def info_horarios():
     cargar_combos()
     cargar_tree()
     centrar_ventana(ventana)
+    crear_backup()

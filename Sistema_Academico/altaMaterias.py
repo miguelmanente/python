@@ -1,3 +1,7 @@
+# ========================================================================================
+#                  MÓDULO PARA CARGAR MATERIAS
+# ========================================================================================
+
 # ---------------------  Área de declaración de librerías --------------------------------
 import tkinter as tk
 from tkinter import ttk, messagebox
@@ -278,6 +282,7 @@ def info_materias():
 
     # ----------------------  Muestra toda la información cargada en la BD -------------------------------
     centrar_ventana(ventana)  #centra pantalla Materias
+    crear_backup()
     cargar_datos_treeview()
     # ----------------------------------------------------------------------------------------------------
 

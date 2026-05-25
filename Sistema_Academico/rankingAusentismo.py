@@ -7,7 +7,7 @@ import tkinter as tk
 from tkinter import ttk
 from database import conectar
 from centraVent import centrar_ventana
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # ============== VENTANA PRINCIPAL ===============
 def ventana_ranking():
@@ -79,20 +79,51 @@ def ventana_ranking():
 
         conn.close()
 
-        ranking = {}
+        # ranking = {}
+
+        # for docente, desde, hasta in registros:
+
+        #     dias = calcular_dias(
+        #         desde,
+        #         hasta
+        #     )
+
+        #     if docente not in ranking:
+
+        #         ranking[docente] = 0
+
+        #     ranking[docente] += dias
+        ranking_fechas = {}
 
         for docente, desde, hasta in registros:
 
-            dias = calcular_dias(
+            if docente not in ranking_fechas:
+
+                ranking_fechas[docente] = set()
+
+            fecha_actual = datetime.strptime(
                 desde,
-                hasta
+                "%d/%m/%Y"
             )
 
-            if docente not in ranking:
+            fecha_hasta = datetime.strptime(
+                hasta,
+                "%d/%m/%Y"
+            )
 
-                ranking[docente] = 0
+            while fecha_actual <= fecha_hasta:
 
-            ranking[docente] += dias
+                ranking_fechas[docente].add(
+                    fecha_actual.strftime("%d/%m/%Y")
+                )
+
+                fecha_actual += timedelta(days=1)
+
+        ranking = {}
+
+        for docente, fechas in ranking_fechas.items():
+
+            ranking[docente] = len(fechas)
 
         ordenado = sorted(
 

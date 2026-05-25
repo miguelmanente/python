@@ -46,7 +46,7 @@ def pPrincipal():
     ventana.title("SISTEMA ACADÉMICO")
     ventana.geometry("1100x700")
     
-    ventana.protocol("WM_DELETE_WINDOW", lambda: None)
+    #ventana.protocol("WM_DELETE_WINDOW", lambda: None)  anula de la barra superior LA X para cerrar ventana
     ventana.rowconfigure(0, weight=1)
     ventana.rowconfigure(1, weight=0)
     ventana.columnconfigure(0, weight=1)

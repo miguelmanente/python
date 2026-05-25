@@ -7,6 +7,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from database import conectar
 from centraVent import centrar_ventana
+from backup import crear_backup
 # --------------------------------------------------------------------------------
 
 # ====================== PANTALLA PRINCIPAL DE ASIGNACIONES ======================
@@ -120,28 +121,6 @@ def info_asignaciones():
     # --------------------------------------------------------------------------------------
 
     # =========================== MUESTRA DATOS EN EL TREEVIEW  ============================
-    # def cargar_tree():
-    #     for item in tree.get_children():
-    #         tree.delete(item)
-
-    #     conn = conectar()
-    #     cursor = conn.cursor()
-
-    #     cursor.execute("""
-    #         SELECT a.id_asignacion, p.apenom, c.nombre, m.nombre,
-    #             h.dia, h.hentrada, h.hsalida, a.srprofesor
-    #         FROM asignaciones_docentes a
-    #         LEFT JOIN profesores p ON a.id_profesor = p.id_profesor
-    #         LEFT JOIN horarios h ON a.id_horario = h.id_horario
-    #         LEFT JOIN cursos c ON h.id_curso = c.id_curso
-    #         LEFT JOIN materias m ON h.id_materia = m.id_materia
-    #     """)
-
-    #     for fila in cursor.fetchall():
-    #         tree.insert("", "end", values=fila)
-
-    #     conn.close()
-
     id_seleccionado = None
 
     def cargar_tree():
@@ -204,20 +183,7 @@ def info_asignaciones():
     # -------------------------------------------------------------------------------------
 
     # ============================ SELECCIONAR REGISTRO EN EL TREEVIEW ====================
-    # def seleccionar(event):
-    #     nonlocal id_seleccionado
 
-    #     item = tree.selection()
-    #     if not item:
-    #         return
-
-    #     valores = tree.item(item[0], "values")
-    #     id_seleccionado = valores[0]
-
-    #     profesor_var.set(valores[1])
-    #     situacion_var.set(valores[7])
-
-    # tree.bind("<<TreeviewSelect>>", seleccionar)
     def seleccionar(event):
 
         nonlocal id_seleccionado
@@ -398,3 +364,4 @@ def info_asignaciones():
     cargar_combos()
     cargar_tree()
     centrar_ventana(ventana)
+    crear_backup()

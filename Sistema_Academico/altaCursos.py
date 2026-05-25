@@ -1,8 +1,13 @@
+# ========================================================================================
+#                  MÓDULO PARA CARGAR DATOS LOS CURSOS 
+# ========================================================================================
+
 # ---------------------  Área de declaración de librerías --------------------------------
 import tkinter as tk
 from tkinter import ttk, messagebox
 from database import conectar
 from centraVent import centrar_ventana
+from backup import crear_backup
 
 def info_cursos():
 
@@ -148,7 +153,6 @@ def info_cursos():
     # ----------------------------------------------------------------------------------
 
     # ---  Función que permite selecccionar un registro en el treview ------------------
-  
     def seleccionar_registro(event):
         nonlocal id_seleccionado
 
@@ -289,3 +293,4 @@ def info_cursos():
 
     centrar_ventana(ventana)  #centra pantalla Cursos
     cargar_datos_treeview()
+    crear_backup()

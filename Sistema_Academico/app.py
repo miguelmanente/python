@@ -41,7 +41,14 @@ def pPrincipal():
         win.geometry("400x250")
         win.resizable(False, False)
 
-        ttk.Label(win, text="Sistema Académico", font=("Arial", 16, "bold")).pack(pady=15)
+        imagen = Image.open("logotipo.png")
+        imagen = imagen.resize((120, 120))
+        logo = ImageTk.PhotoImage(imagen)
+        lbl_logo = ttk.Label(win, image=logo)
+        lbl_logo.image = logo
+        lbl_logo.pack(pady=10)
+
+        ttk.Label(win, text="Sistema de Gestión Académica", font=("Arial", 16, "bold")).pack(pady=15)
         ttk.Label(win, text="Versión 1.9", font=("Arial", 11)).pack()
         ttk.Label(win, text="Desarrollado por:\nMiguel Ángel Manente", font=("Arial", 11)).pack(pady=15)
         ttk.Label(win, text="© 2026", font=("Arial", 10)).pack()
@@ -55,7 +62,7 @@ def pPrincipal():
             ventana.destroy()
     #----------------------------------------------------------------------------------------------
 
-    
+
     #------ TKINTER -------------------------------------------------------------------------------
     #-------------------------------------- VENTANA PRINCIPAL -------------------------------------
     #Ventana principal 

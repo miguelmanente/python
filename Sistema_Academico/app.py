@@ -33,11 +33,29 @@ from estadisticasDocentes import ventana_estadisticas
 def pPrincipal():
     crear_tablas()
 
+    # ------------------------------- Pantalla Acerca de la App ----------------------------------
+    def acerca_de():
+
+        win = tk.Toplevel(ventana)
+        win.title("Acerca de")
+        win.geometry("400x250")
+        win.resizable(False, False)
+
+        ttk.Label(win, text="Sistema Académico", font=("Arial", 16, "bold")).pack(pady=15)
+        ttk.Label(win, text="Versión 1.9", font=("Arial", 11)).pack()
+        ttk.Label(win, text="Desarrollado por:\nMiguel Ángel Manente", font=("Arial", 11)).pack(pady=15)
+        ttk.Label(win, text="© 2026", font=("Arial", 10)).pack()
+        ttk.Button(win, text="Cerrar", command=win.destroy).pack(pady=20)
+        centrar_ventana(win)
+    # -----------------------------------------------------------------------------------------------
+
     #-------------------------------  Salir de la aplicación -------------------------------------  
     def salir():
         if messagebox.askyesno("Salir", "¿Desea cerrar Sistema de Gestión Educativo?", parent=ventana):
             ventana.destroy()
     #----------------------------------------------------------------------------------------------
+
+    
     #------ TKINTER -------------------------------------------------------------------------------
     #-------------------------------------- VENTANA PRINCIPAL -------------------------------------
     #Ventana principal 
@@ -123,7 +141,11 @@ def pPrincipal():
     mAsistencias.add_command(label="Ranking Inasistencias", command=ventana_ranking)
     mAsistencias.add_command(label="Estadisticas Docentes", command=ventana_estadisticas)
 
-
+    #Menú Acerca
+    mAcerca = tk.Menu(barramenu, tearoff=0)
+    barramenu.add_cascade(label="Ayuda", menu=mAcerca)
+    mAcerca.add_command(label="Acerca de la App", command=acerca_de)
+    
   # ---------------------------------- LOGO PRINCIPAL -------------------------------------
     frame_centro = tk.Frame(ventana, bg="#dcdcdc")
     frame_centro.pack(fill="both", anchor="w" ) 
@@ -190,8 +212,9 @@ def pPrincipal():
         fg="gray"
     )
     lbl_texto.pack(anchor="w")
-    
     #-------------------------------------------------------------------------------------------
+
+
     configurar_estilos()
     centrar_ventana(ventana)
 

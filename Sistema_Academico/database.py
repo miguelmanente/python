@@ -91,6 +91,10 @@ def crear_tablas():
         fecha_desde TEXT,
 
         fecha_hasta TEXT,
+        dia TEXT,
+        turno TEXT,
+        hentrada,
+        Hsalida,
 
         FOREIGN KEY(id_profesor)
             REFERENCES profesores(id_profesor),

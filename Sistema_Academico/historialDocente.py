@@ -636,7 +636,7 @@ def ventana_historial():
 
             messagebox.showwarning(
                 "Atención",
-                "Seleccione un registro"
+                "Seleccione un registro", parent= ventana
             )
 
             return
@@ -686,7 +686,7 @@ def ventana_historial():
 
         messagebox.showinfo(
             "OK",
-            "Registro modificado"
+            "Registro modificado", parent=ventana
         )
 
         cargar_tree()
@@ -702,14 +702,14 @@ def ventana_historial():
 
             messagebox.showwarning(
                 "Atención",
-                "Seleccione un registro"
+                "Seleccione un registro", parent=ventana
             )
 
             return
 
         if not messagebox.askyesno(
             "Confirmar",
-            "¿Eliminar historial?"
+            "¿Eliminar historial?", parent=ventana
         ):
             return
 
@@ -726,7 +726,7 @@ def ventana_historial():
 
         messagebox.showinfo(
             "OK",
-            "Registro eliminado"
+            "Registro eliminado", parent=ventana
         )
 
         cargar_tree()
@@ -744,7 +744,7 @@ def ventana_historial():
 
             messagebox.showwarning(
                 "Atención",
-                "Seleccione un docente"
+                "Seleccione un docente", parent=ventana
             )
 
             return
@@ -927,7 +927,7 @@ def ventana_historial():
 
         messagebox.showinfo(
             "PDF",
-            "Legajo generado correctamente"
+            "Legajo generado correctamente", parent=ventana
         )
     # =========================================================================
 
@@ -943,7 +943,7 @@ def ventana_historial():
 
             messagebox.showwarning(
                 "Atención",
-                "Seleccione un docente"
+                "Seleccione un docente", parent=ventana
             )
 
             return
@@ -976,7 +976,7 @@ def ventana_historial():
 
             messagebox.showerror(
                 "Error",
-                "No se encontró el profesor"
+                "No se encontró el profesor", parent=ventana
             )
 
             conn.close()
@@ -1159,8 +1159,6 @@ def ventana_historial():
             "PDF",
             f"Certificación generada:\n{archivo}"
         )
-   
-        
     #========================================================
 
 

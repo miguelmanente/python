@@ -26,8 +26,11 @@ def ventana_cargos():
     # ======================================================
 
     personal_var = tk.StringVar()
-
     cargo_var = tk.StringVar()
+    dia_var = tk.StringVar()
+    turno_var = tk.StringVar()
+    entrada_var = tk.StringVar()
+    salida_var = tk.StringVar()
 
     profesores_dict = {}
 
@@ -94,14 +97,42 @@ def ventana_cargos():
         pady=5
     )
 
+    ttk.Label(frame, text="Día").grid(row=2, column=0)
+
+    combo_dia = ttk.Combobox(
+        frame,
+        textvariable=dia_var,
+        values=[
+            "Lunes",
+            "Martes",
+            "Miércoles",
+            "Jueves",
+            "Viernes"
+        ],
+        state="readonly"
+    )
+
+    combo_dia.grid(row=2, column=1)
+
+    ttk.Label(frame, text="Turno").grid(row=2, column=0, padx=5, pady=5)
+    ttk.Combobox(frame, textvariable=turno_var, values=["Mañana", "Tarde", "Noche"], state="readonly", width=37).grid(row=2, column=1, padx=5, pady=5)
+    ttk.Label(frame, text="Hora Entrada").grid(row=3, column=0, padx=5, pady=5)
+    ttk.Entry(frame, textvariable=entrada_var, width=40).grid(row=3, column=1, padx=5, pady=5)
+    ttk.Label(frame, text="Hora Salida").grid(row=4, column=0, padx=5, pady=5)
+    ttk.Entry(frame, textvariable=salida_var, width=40).grid(row=4, column=1, padx=5, pady=5)
+
+
     # ======================================================
     # TREEVIEW
     # ======================================================
 
     columnas = (
-        "id_cargo",
+        "id",
         "persona",
-        "cargo"
+        "cargo",
+        "turno",
+        "entrada",
+        "salida"
     )
 
     tree = ttk.Treeview(
@@ -117,13 +148,19 @@ def ventana_cargos():
         pady=10
     )
 
-    tree.heading("id_cargo", text="ID")
+    tree.heading("id", text="ID")
     tree.heading("persona", text="Personal")
     tree.heading("cargo", text="Cargo")
+    tree.heading("turno", text="Turno")
+    tree.heading("entrada", text="Entrada")
+    tree.heading("salida", text="Salida")
 
-    tree.column("id_cargo", width=50, stretch=False)
+    tree.column("id", width=50, stretch=False)
     tree.column("persona", width=250)
-    tree.column("cargo", width=250)
+    tree.column("cargo", width=200)
+    tree.column("turno", width=120)
+    tree.column("entrada", width=100)
+    tree.column("salida", width=100)
 
     # ======================================================
     # CARGAR PERSONAL
@@ -182,7 +219,7 @@ def ventana_cargos():
 
             FROM cargos
 
-            ORDER BY nombre_cargo
+            ORDER BY orden, nombre_cargo
 
         """)
 
@@ -210,7 +247,7 @@ def ventana_cargos():
 
             messagebox.showwarning(
                 "Atención",
-                "Seleccione una persona"
+                "Seleccione una persona", parent=ventana
             )
 
             return
@@ -219,7 +256,7 @@ def ventana_cargos():
 
             messagebox.showwarning(
                 "Atención",
-                "Seleccione un cargo"
+                "Seleccione un cargo", parent=ventana
             )
 
             return
@@ -268,20 +305,22 @@ def ventana_cargos():
 
         cursor.execute("""
 
-            INSERT INTO personal_cargos(
-
+          INSERT INTO personal_cargos(
                 id_profesor,
-                id_cargo
-
+                id_cargo,
+                dia,
+                turno,
+                hentrada,
+                hsalida
             )
-
-            VALUES (?, ?)
+            VALUES (?, ?, ?, ?, ?)
 
         """, (
-
             id_profesor,
-            id_cargo
-
+            id_cargo,
+            turno_var.get(),
+            entrada_var.get(),
+            salida_var.get()
         ))
 
         conn.commit()
@@ -329,10 +368,12 @@ def ventana_cargos():
 
             UPDATE personal_cargos
 
-            SET
-
-                id_profesor=?,
-                id_cargo=?
+                SET
+                    id_profesor=?,
+                    id_cargo=?,
+                    turno=?,
+                    hentrada=?,
+                    hsalida=?
 
             WHERE id_personal_cargo=?
 
@@ -340,6 +381,9 @@ def ventana_cargos():
 
             id_profesor,
             id_cargo,
+            turno_var.get(),
+            entrada_var.get(),
+            salida_var.get(),
             id_seleccionado
 
         ))
@@ -424,9 +468,12 @@ def ventana_cargos():
 
             SELECT
 
-                pc.id_personal_cargo,
-                p.apenom,
-                c.nombre_cargo
+            pc.id_personal_cargo,
+            p.apenom,
+            c.nombre_cargo,
+            pc.turno,
+            pc.hentrada,
+            pc.hsalida
 
             FROM personal_cargos pc
 

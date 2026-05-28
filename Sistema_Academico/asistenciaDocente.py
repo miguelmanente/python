@@ -438,6 +438,7 @@ def ventana_asistencias():
         conn.close()
 
         dias = calcular_dias(
+            id_personal_cargo,
             id_profesor,
             desde_var.get(),
             hasta_var.get()
@@ -820,14 +821,14 @@ def ventana_asistencias():
 
         cursor.execute("""
             SELECT
-                fecha_desde,
-                fecha_hasta
+                a.fecha_desde,
+                a.fecha_hasta
             FROM asistencias_docentes a
             JOIN personal_cargos pc
                 ON a.id_personal_cargo = pc.id_personal_cargo
             WHERE pc.id_profesor = ?
         """, (id_profesor,))
-
+    
         registros = cursor.fetchall()
 
         conn.close()

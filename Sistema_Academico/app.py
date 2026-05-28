@@ -20,6 +20,7 @@ from listados import ventana_listado
 import sesion
 from estilos import configurar_estilos
 from listadoCursos import ventana_listado_curso
+from listadoTurnos import listado_personal_turnos
 from historialDocente import ventana_historial
 from asistenciaDocente import ventana_asistencias
 from rankingAusentismo import ventana_ranking
@@ -135,6 +136,7 @@ def pPrincipal():
     mListados.add_command(label="Profesores Suplentes",command=lambda: ventana_listado("Suplente"))
     mListados.add_separator()
     mListados.add_command(label="Listado por Curso", command=ventana_listado_curso)
+    mListados.add_command(label="Listados por Turnos", command=listado_personal_turnos)
 
     #Menú Historial Docente
     mHistorial = tk.Menu(barramenu, tearoff=0)

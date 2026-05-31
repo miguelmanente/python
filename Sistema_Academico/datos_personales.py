@@ -41,6 +41,7 @@ def info_profesor():
     email = tk.StringVar()
     situacion_revista = tk.StringVar()
     fecha_toma = tk.StringVar()
+    cuil = tk.StringVar()
 
     # -------------- Labels y Entrys distribuidos en dos columnas ------------------------------------------
     ttk.Label(frame_superior, text="Apellido y Nombres:").grid(row=0, column=0, sticky="e", padx=5, pady=5)
@@ -64,31 +65,36 @@ def info_profesor():
     # --------------------------------------------------------------------------------------------------------------
 
     entry_dni = ttk.Entry(frame_superior, textvariable=dni, validate="key", validatecommand=vcmd, style="Valido.TEntry")
-
     entry_dni.grid(row=0, column=3, sticky="ew", padx=5, pady=5)
 
-    ttk.Label(frame_superior, text="Teléfono:").grid(row=1, column=0, sticky="e", padx=5, pady=5)
-    ttk.Entry(frame_superior, textvariable=telefono).grid(row=1, column=1, sticky="ew", padx=5, pady=5)
+    ttk.Label(frame_superior, text="CUIL:").grid(row=1, column=0, sticky="e", padx=5, pady=5)
+    ttk.Entry(frame_superior, textvariable=cuil).grid(row=1, column=1, sticky="ew", padx=5, pady=5)
 
-    ttk.Label(frame_superior, text="Email:").grid(row=1, column=2, sticky="e", padx=5, pady=5)
+    ttk.Label(frame_superior, text="Teléfono:").grid(row=1, column=2, sticky="e", padx=5, pady=5)
+    ttk.Entry(frame_superior, textvariable=telefono).grid(row=1, column=3, sticky="ew", padx=5, pady=5)
+
+    ttk.Label(frame_superior, text="Email:").grid(row=2, column=0, sticky="e", padx=5, pady=5)
     #ttk.Entry(frame_superior, textvariable=email).grid(row=1, column=3, sticky="ew", padx=5, pady=5)
     entry_email = ttk.Entry(frame_superior, textvariable=email, style="Valido.TEntry")
-    entry_email.grid(row=1, column=3, sticky="ew", padx=5, pady=5)
+    entry_email.grid(row=2, column=1, sticky="ew", padx=5, pady=5)
 
-    ttk.Label(frame_superior, text="Situación de Revista:").grid(row=2, column=0, sticky="e", padx=5, pady=5)
-    ttk.Entry(frame_superior, textvariable=situacion_revista).grid(row=2, column=1, sticky="ew", padx=5, pady=5)
+    ttk.Label(frame_superior, text="Situación de Revista:").grid(row=2, column=2, sticky="e", padx=5, pady=5)
+    ttk.Entry(frame_superior, textvariable=situacion_revista).grid(row=2, column=3, sticky="ew", padx=5, pady=5)
 
-    ttk.Label(frame_superior, text="Fecha Toma de Posesión:").grid(row=2, column=2, sticky="e", padx=5, pady=5)
+    ttk.Label(frame_superior, text="Fecha Toma de Posesión:").grid(row=3, column=0, sticky="e", padx=5, pady=5)
     #ttk.Entry(frame_superior, textvariable=fecha_toma).grid(row=2, column=3, sticky="ew", padx=5, pady=5)
 
     entry_fecha = ttk.Entry(frame_superior, textvariable=fecha_toma)
-    entry_fecha.grid(row=2, column=3, sticky="ew", padx=5, pady=5)
+    entry_fecha.grid(row=3, column=1, sticky="ew", padx=5, pady=5)
+
+
+    
 
     # =========================
     # BOTONES
     # =========================
     frame_botones = ttk.Frame(frame_superior)
-    frame_botones.grid(row=3, column=0, columnspan=4, pady=10)
+    frame_botones.grid(row=4, column=0, columnspan=4, pady=10)
 
     # =========================
     # FRAME INFERIOR (TREEVIEW)
@@ -101,7 +107,7 @@ def info_profesor():
     frame_inferior.columnconfigure(0, weight=1)
 
     #Columnas del Treeview
-    columnas = ("id_profesor","apenom", "dni", "telefono", "email", "sitrev", "fechatp")
+    columnas = ("id_profesor","apenom", "dni", "cuil", "telefono", "email", "sitrev", "fechatp")
 
     tree = ttk.Treeview(frame_inferior, columns=columnas, show="headings")
     tree.grid(row=0, column=0, sticky="nsew")
@@ -110,18 +116,22 @@ def info_profesor():
     tree.heading("id_profesor", text="ID")
     tree.heading("apenom", text="Apellido y Nombres")
     tree.heading("dni", text="DNI")
+    tree.heading("cuil", text="CUIL")
     tree.heading("telefono", text="Teléfono")
     tree.heading("email", text="Email")
     tree.heading("sitrev", text="Situación de Revista")
     tree.heading("fechatp", text="Fecha Toma de Posesión")
     
+    
     tree.column("id_profesor", width=0, stretch=False)
-    tree.column("apenom", width=200, anchor="w")
-    tree.column("dni", width=100, anchor="center")
-    tree.column("telefono", width=120, anchor="center")
-    tree.column("email", width=180, anchor="w")
-    tree.column("sitrev", width=150, anchor="center")
-    tree.column("fechatp", width=140, anchor="center")
+    tree.column("apenom", width=150, anchor="w")
+    tree.column("dni", width=70, anchor="center")
+    tree.column("cuil", width=70, anchor="center")
+    tree.column("telefono", width=70, anchor="center")
+    tree.column("email", width=120, anchor="w")
+    tree.column("sitrev", width=70, anchor="center")
+    tree.column("fechatp", width=70, anchor="center")
+    
 
     # Scrollbars
     scrollbar_y = ttk.Scrollbar(frame_inferior, orient="vertical", command=tree.yview)
@@ -196,10 +206,11 @@ def info_profesor():
 
         apellido_nombre.set(valores[1])
         dni.set(valores[2])
-        telefono.set(valores[3])
-        email.set(valores[4])
+        cuil.set(valores[3])
+        telefono.set(valores[4])
+        email.set(valores[5])
         situacion_revista.set(valores[5])
-        fecha_toma.set(valores[6])
+        fecha_toma.set(valores[7])
 
     tree.bind("<<TreeviewSelect>>", seleccionar_registro) 
     # ---------------------------------------------------------------------------------
@@ -213,7 +224,7 @@ def info_profesor():
         cursor = conn.cursor()
 
         cursor.execute("""
-            SELECT id_profesor, apenom, dni, telefono, email, sitrev, fechatp
+            SELECT id_profesor, apenom, dni, cuil, telefono, email, sitrev, fechatp
             FROM profesores
             ORDER BY apenom
         """)
@@ -248,11 +259,12 @@ def info_profesor():
             cursor = conn.cursor()
 
             cursor.execute("""
-                INSERT INTO profesores (apenom, dni, telefono, email, sitrev, fechatp)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO profesores (apenom, dni, cuil, telefono, email, sitrev, fechatp)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
             """, (
                 apellido_nombre.get(),
                 dni.get(),
+                cuil.get(),
                 telefono.get(),
                 email.get(),
                 situacion_revista.get(),
@@ -282,11 +294,12 @@ def info_profesor():
 
         cursor.execute("""
             UPDATE profesores
-            SET apenom = ?, dni = ?, telefono = ?, email = ?, sitrev = ?, fechatp = ?
+            SET apenom = ?, dni = ?, cuil = ?, telefono = ?, email = ?, sitrev = ?, fechatp = ?
             WHERE id_profesor = ?
         """, (
             apellido_nombre.get(),
             dni.get(),
+            cuil.get(),
             telefono.get(),
             email.get(),
             situacion_revista.get(),
@@ -377,6 +390,7 @@ def info_profesor():
         nonlocal id_seleccionado
         apellido_nombre.set("")
         dni.set("")
+        cuil.set("")
         telefono.set("")
         email.set("")
         situacion_revista.set("")

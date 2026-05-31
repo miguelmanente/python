@@ -78,48 +78,22 @@ def ventana_cargos():
     # COMBO CARGOS
     # ======================================================
 
-    ttk.Label(
-        frame,
-        text="Cargo"
-    ).grid(row=1, column=0, padx=5, pady=5)
+    ttk.Label(frame, text="Cargo").grid(row=1, column=0, padx=5, pady=5)
+    combo_cargo = ttk.Combobox(frame, textvariable=cargo_var, width=40, state="readonly")
+    combo_cargo.grid(row=1, column=1, padx=5, pady=5)
 
-    combo_cargo = ttk.Combobox(
-        frame,
-        textvariable=cargo_var,
-        width=40,
-        state="readonly"
-    )
+    ttk.Label(frame, text="Día").grid(row=2, column=0, padx=5, pady=5)
+    combo_dia = ttk.Combobox(frame, textvariable=dia_var, values=["","Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Lunes a Viernes"],state="readonly", width=42)
+    combo_dia.grid(row=2, column=1, padx=5, pady=5)
 
-    combo_cargo.grid(
-        row=1,
-        column=1,
-        padx=5,
-        pady=5
-    )
-
-    ttk.Label(frame, text="Día").grid(row=2, column=0)
-
-    combo_dia = ttk.Combobox(
-        frame,
-        textvariable=dia_var,
-        values=[
-            "Lunes",
-            "Martes",
-            "Miércoles",
-            "Jueves",
-            "Viernes"
-        ],
-        state="readonly"
-    )
-
-    combo_dia.grid(row=2, column=1)
-
-    ttk.Label(frame, text="Turno").grid(row=2, column=0, padx=5, pady=5)
-    ttk.Combobox(frame, textvariable=turno_var, values=["Mañana", "Tarde", "Noche"], state="readonly", width=37).grid(row=2, column=1, padx=5, pady=5)
-    ttk.Label(frame, text="Hora Entrada").grid(row=3, column=0, padx=5, pady=5)
-    ttk.Entry(frame, textvariable=entrada_var, width=40).grid(row=3, column=1, padx=5, pady=5)
-    ttk.Label(frame, text="Hora Salida").grid(row=4, column=0, padx=5, pady=5)
-    ttk.Entry(frame, textvariable=salida_var, width=40).grid(row=4, column=1, padx=5, pady=5)
+    ttk.Label(frame, text="Turno").grid(row=3, column=0, padx=5, pady=5)
+    ttk.Combobox(frame, textvariable=turno_var, values=["Mañana", "Tarde", "Noche"], state="readonly", width=37).grid(row=3, column=1, padx=5, pady=5)
+    
+    ttk.Label(frame, text="Hora Entrada").grid(row=4, column=0, padx=5, pady=5)
+    ttk.Entry(frame, textvariable=entrada_var, width=40).grid(row=4, column=1, padx=5, pady=5)
+    
+    ttk.Label(frame, text="Hora Salida").grid(row=5, column=0, padx=5, pady=5)
+    ttk.Entry(frame, textvariable=salida_var, width=40).grid(row=5, column=1, padx=5, pady=5)
 
 
     # ======================================================
@@ -313,11 +287,12 @@ def ventana_cargos():
                 hentrada,
                 hsalida
             )
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?)
 
         """, (
             id_profesor,
             id_cargo,
+            dia_var.get(),
             turno_var.get(),
             entrada_var.get(),
             salida_var.get()

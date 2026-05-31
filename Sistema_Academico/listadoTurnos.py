@@ -101,29 +101,9 @@ def listado_personal_turnos():
         """, (turno_var.get(),
             dia_var.get()))
 
-        # cursor.execute("""
-        #     SELECT
-        #         p.apenom,
-        #         c.nombre_cargo,
-        #         pc.hentrada,
-        #         pc.hsalida
-
-        #     FROM personal_cargos pc
-
-        #     JOIN profesores p
-        #         ON pc.id_profesor = p.id_profesor
-
-        #     JOIN cargos c
-        #         ON pc.id_cargo = c.id_cargo
-
-        #     WHERE pc.turno = ?
-
-        #     ORDER BY c.orden, p.apenom
-        # """, (turno_var.get(),))
       
         registros = cursor.fetchall()
-        # print("Cantidad de registros:", len(datos))
-        # print(datos)
+   
         conn.close()
 
         print("Turno seleccionado:", repr(turno_var.get()))
@@ -134,7 +114,7 @@ def listado_personal_turnos():
                 "end",
                 values=fila
             )
-        print("Items en tree:", len(tree.get_children()))
+        
     # -------------------------------------------------------------------------------
 
     # ============================== BOTÓN ============================================

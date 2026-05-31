@@ -379,7 +379,7 @@ def ventana_asistencias():
         )
 
         cargar_tree()
-
+        actualizar_pantalla()
         limpiar()
 
     # ------------------------------------------------------------
@@ -436,6 +436,7 @@ def ventana_asistencias():
         )
 
         cargar_tree()
+        actualizar_pantalla()
         limpiar()
 
     # ------------------------------------------------------------
@@ -481,6 +482,7 @@ def ventana_asistencias():
         )
 
         cargar_tree()
+        actualizar_pantalla()
         limpiar()
     # ------------------------------------------------------------
     
@@ -602,48 +604,29 @@ def ventana_asistencias():
         conn.close()
 
         resumen = {}
-        dias_unicos = set()
+        total_general = 0
 
         for estado, desde, hasta in registros:
 
-            fecha_actual = datetime.strptime(
+            dias = calcular_dias(
+                id_profesor,
                 desde,
-                "%d/%m/%Y"
+                hasta
             )
 
-            fecha_hasta = datetime.strptime(
-                hasta,
-                "%d/%m/%Y"
-            )
+            if estado not in resumen:
+                resumen[estado] = 0
 
-            while fecha_actual <= fecha_hasta:
-
-                fecha_txt = fecha_actual.strftime(
-                    "%d/%m/%Y"
-                )
-
-                dias_unicos.add(fecha_txt)
-
-                if estado not in resumen:
-                    resumen[estado] = set()
-
-                resumen[estado].add(fecha_txt)
-
-                fecha_actual += timedelta(days=1)
+            resumen[estado] += dias
+            total_general += dias
 
         texto = ""
 
-        for estado, fechas in resumen.items():
+        for estado, dias in resumen.items():
 
-            texto += (
-                f"{estado}: "
-                f"{len(fechas)} días\n"
-            )
+            texto += f"{estado}: {dias} días\n"
 
-        texto += (
-            f"\nTOTAL GENERAL: "
-            f"{len(dias_unicos)} días"
-        )
+        texto += f"\nTOTAL GENERAL: {total_general} días"
 
         lbl_resumen.config(text=texto)
 
@@ -667,29 +650,17 @@ def ventana_asistencias():
 
         conn.close()
 
-        dias_unicos = set()
+        total = 0
 
         for desde, hasta in registros:
 
-            fecha_actual = datetime.strptime(
+            total += calcular_dias(
+                id_profesor,
                 desde,
-                "%d/%m/%Y"
+                hasta
             )
 
-            fecha_hasta = datetime.strptime(
-                hasta,
-                "%d/%m/%Y"
-            )
-
-            while fecha_actual <= fecha_hasta:
-
-                dias_unicos.add(
-                    fecha_actual.strftime("%d/%m/%Y")
-                )
-
-                fecha_actual += timedelta(days=1)
-
-        return len(dias_unicos)
+        return total
     # ------------------------------------------------------------
 
     # ==================== BUSCA DOCENTES ===================
@@ -830,6 +801,47 @@ def ventana_asistencias():
         lbl_alerta.config(text=alertas)
 
     # -----------------------------------------------------------------
+
+    # ====================== ACTUALIZA PANTALLA ========================
+    def actualizar_pantalla():
+
+        if profesor_var.get() == "":
+            return
+
+        id_profesor = profesores_dict[
+            profesor_var.get()
+        ]
+
+        cargar_tree(id_profesor)
+
+        resumen_inasistencias(id_profesor)
+
+        verificar_alertas(id_profesor)
+
+        laborales = contar_dias_laborales(
+            id_profesor
+        )
+
+        faltas = total_inasistencias(
+            id_profesor
+        )
+
+        trabajados = laborales - faltas
+
+        porcentaje = round(
+            (trabajados / laborales) * 100,
+            2
+        ) if laborales > 0 else 0
+
+        lbl_trabajados.config(
+            text=(
+                f"Días laborales: {laborales} | "
+                f"Trabajados: {trabajados} | "
+                f"Presentismo: {porcentaje}%"
+            )
+        )
+    # ------------------------------------------------------------------
+
 
     # ================  GENERAR PDFS DE INASISTENCIAS MENSUALES ========
     def pdf_mensual():

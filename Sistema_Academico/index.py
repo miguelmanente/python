@@ -8,6 +8,7 @@ from tkinter import ttk
 from tkinter import messagebox
 from PIL import Image, ImageTk
 from centraVent import centrar_ventana, cventana
+from database import validar_usuario, crear_tablas  # ¡Agregá crear_tablas acá!
 from database import validar_usuario
 from app import pPrincipal
 from registrar import ventana_registro
@@ -22,7 +23,7 @@ usuario_logueado = None
 # --------------------------------------------- LOGIN -----------------------------------------------------
 def ventana_login(root, barramenu, lbl_usuario):
     global usuario_logueado
-
+    crear_tablas()
     login = tk.Toplevel(root, bg="#ecf0f1", pady=30)
 
     login.title("LOGIN DE USUARIOS")
@@ -38,34 +39,34 @@ def ventana_login(root, barramenu, lbl_usuario):
     entry_password.pack()
 
     def iniciar_sesion():
+      
         global usuario_logueado
 
         usuario = entry_usuario.get()
         password = entry_password.get()
 
+
+        # 1. Hacemos una única validación a la base de datos
         if validar_usuario(usuario, password):
             usuario_logueado = usuario
             sesion.usuario_actual = usuario
             lbl_usuario.config(text=f"Usuario: {usuario}")
 
-            # habilitar menú
+            # Habilitar menú
             for i in range(barramenu.index("end") + 1):
                 barramenu.entryconfig(i, state="normal")
 
-            messagebox.showinfo("Bienvenido", f"Bienvenido, {usuario} ha ingresado Sistema de Gestión Educativa")
+            messagebox.showinfo("Bienvenido", f"Bienvenido, {usuario} ha ingresado al Sistema de Gestión Educativa")
 
             login.destroy()
-            root.deiconify()  # 🔥 mostrar sistema
+            root.deiconify()  # Mostrar sistema principal
 
         else:
-            messagebox.showerror("Error!!!", "Usuario o contraseña incorrectos o no está registrado", parent=login)
-
-            if not(validar_usuario(usuario, password)):
-                respuesta = messagebox.askyesno("Registrar Usuarios", "Desea Registrarse (Si/No)?")
-                if respuesta:
-                    ventana_registro()
-                else:
-                    ventana_login(root, barramenu, lbl_usuario)
+            messagebox.showerror("Error de Acceso", "Usuario o contraseña incorrectos.", parent=login)
+            # Limpiamos los campos para que intente de nuevo
+            entry_usuario.delete(0, tk.END)
+            entry_password.delete(0, tk.END)
+            entry_usuario.focus()
     # ----------------------------------------------------------------------------------------------------------------
 
     # ------------------------------------------- SALIR DE LA APLICACIÓN ---------------------------------------------
@@ -110,6 +111,15 @@ root.config(menu=barramenu)
 mArchivo = tk.Menu(barramenu, tearoff=0)
 barramenu.add_cascade(label="Archivo", menu=mArchivo)
 mArchivo.add_command(label="Abrir Sistema", command=pPrincipal)
+
+# 🔥 NUEVO: Menú Seguridad (Solo accesible desde adentro)
+mSeguridad = tk.Menu(barramenu, tearoff=0)
+barramenu.add_cascade(label="Seguridad", menu=mSeguridad)
+mSeguridad.add_command(label="Registrar Nuevo Usuario", command=ventana_registro)
+
+# 🔒 DESHABILITAR MENÚ (Esto se mantiene igual, bloquea todo hasta que se logueen)
+for i in range(barramenu.index("end") + 1):
+    barramenu.entryconfig(i, state="disabled")
 mArchivo.add_separator()
 mArchivo.add_command(label="Salir", command=root.destroy)
 

@@ -33,8 +33,7 @@ from parte_diario import abrir_parte_diario
 
 # ----------------------  CREACIÓN DE VENTANA ABRIR SISTEMA --------------------------------------
 def pPrincipal():
-    crear_tablas()
-
+    
     # ------------------------------- Pantalla Acerca de la App ----------------------------------
     def acerca_de():
 

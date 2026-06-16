@@ -65,7 +65,14 @@ def crear_tablas():
     conn = conectar()
     cursor = conn.cursor()
 
+    # 1. Creamos todas las tablas usando SQL puro dentro de executescript
     cursor.executescript("""
+    CREATE TABLE IF NOT EXISTS usuarios (
+        id_usuario INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE,
+        password TEXT
+    );
+                         
     CREATE TABLE IF NOT EXISTS profesores (
         id_profesor INTEGER PRIMARY KEY AUTOINCREMENT,
         apenom TEXT,
@@ -88,7 +95,6 @@ def crear_tablas():
         turno TEXT,
         desde TEXT,
         hasta TEXT,
-
         FOREIGN KEY (id_profesor) REFERENCES profesores(id_profesor),
         FOREIGN KEY (id_cargo) REFERENCES cargos(id_cargo)
     );
@@ -126,24 +132,19 @@ def crear_tablas():
     );
                          
     CREATE TABLE IF NOT EXISTS historial_docente (
-
         id_historial INTEGER PRIMARY KEY AUTOINCREMENT,
-
         id_profesor INTEGER NOT NULL,
         id_materia INTEGER NOT NULL,
         id_curso INTEGER NOT NULL,
-
         situacion TEXT NOT NULL,
-
         fecha_inicio TEXT NOT NULL,
         fecha_fin TEXT,
-
         observaciones TEXT,
-
         FOREIGN KEY(id_profesor) REFERENCES profesores(id_profesor),
         FOREIGN KEY(id_materia) REFERENCES materias(id_materia),
         FOREIGN KEY(id_curso) REFERENCES cursos(id_curso)
     );
+    
     CREATE TABLE IF NOT EXISTS asistencias_docentes(
         id_asistencia INTEGER PRIMARY KEY AUTOINCREMENT,
         id_profesor INTEGER NOT NULL,
@@ -151,12 +152,20 @@ def crear_tablas():
         fecha_hasta TEXT,
         estado TEXT,
         observacion TEXT,
-
-        FOREIGN KEY(id_profesor)
-            REFERENCES profesores(id_profesor)
+        FOREIGN KEY(id_profesor) REFERENCES profesores(id_profesor)
     );
-
     """)
+
+    # 2. Controlamos la inserción del Administrador Encriptado desde Python
+    cursor.execute("SELECT COUNT(*) FROM usuarios")
+    if cursor.fetchone()[0] == 0:
+        # Encriptamos la clave usando tu función existente hash_password()
+        clave_encriptada = hash_password("admin123")
+        cursor.execute(
+            "INSERT INTO usuarios (username, password) VALUES (?, ?)", 
+            ('admin', clave_encriptada)
+        )
+        print("--> ¡Usuario administrador inicial creado con éxito!")
 
     conn.commit()
     crear_backup()

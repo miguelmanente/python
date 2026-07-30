@@ -214,8 +214,9 @@ def generar_reporte(mes, anio):
 
     reporte = tk.Toplevel()
     reporte.title("Reporte mensual")
-    reporte.geometry("1000x700")
-
+    #reporte.geometry("1300x900")
+    reporte.attributes("-zoomed",True)
+    
     total_ingresos = obtener_total_ingresos_mes(mes, anio)
     total_gastos = obtener_total_gastos_mes(mes, anio)
     balance = total_ingresos - total_gastos
@@ -575,7 +576,6 @@ combo_mes.current(mes_actual - 1)
 
 combo_mes.grid(row=0, column=1, padx=5, sticky="w")
 
-
 def cargar_categorias_filtro():
     categorias = obtener_categorias()
     combo_categoria["values"] = ["Todas"] + categorias
@@ -795,6 +795,8 @@ def actualizar():
 
 tk.Button(frame_form, text="Actualizar", command=actualizar).grid(row=10, column=0, columnspan=2, pady=5)
 
+btn_reset = tk.Button(frame_filtros, text="Actualizar Ingresos", command=actualizar_resumen)
+btn_reset.grid(row=0, column=4, padx=5)
 
 # Footer con logo y texto
 logo = tk.PhotoImage(file="logo_mam.png")

@@ -204,7 +204,6 @@ def ventana_ingresos(mes, anio):
             eliminar_ingreso(id_ingreso_seleccionado)
 
             cargar_treeview_ingresos()
-            actualizar_total()
 
             id_ingreso_seleccionado = None
 
@@ -222,6 +221,7 @@ def ventana_ingresos(mes, anio):
     
         cargar_treeview_ingresos()
         actualizar_total()
+    
 
     # función para actualizar un ingreso en la base de datos y refrescar el Treeview con los nuevos datos
     def actualizar_ingreso(id_ingreso, fecha, descripcion, monto):
@@ -306,7 +306,6 @@ def ventana_ingresos(mes, anio):
             total = 0
 
         cargar_treeview_ingresos()
-        actualizar_total()
 
         return total
      
@@ -319,8 +318,6 @@ def ventana_ingresos(mes, anio):
         lbl_total_ingresos.config(text=f"$ {total_formateado}")
 
         cargar_treeview_ingresos()
-        actualizar_total()
-
 
     def salir():
             if messagebox.askyesno("Salir", "¿Desea la ventana Ingresos?", parent=ventana):
@@ -336,7 +333,8 @@ def ventana_ingresos(mes, anio):
     # tk.Button(frame_form, text="Limpiar Ingresos", command=limpiar_mes_actual).grid(row=7,column=0, columnspan=2,pady=5)
     tk.Button(frame_form, text="Salir", command=salir).grid(row=8, column=0, columnspan=2, pady=20)
 
-    
+    cargar_treeview_ingresos()
+    actualizar_total()
     centrar_ventana(ventana)
    
   

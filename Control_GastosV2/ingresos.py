@@ -4,6 +4,7 @@ from tkinter import messagebox
 from database import conectar, conn
 from database import insertar_ingreso
 from database import total_gastos, total_ingresos
+from centraVent import centrar_ventana
 
 
 def limpiar_ingresos_mes(mes, anio):
@@ -171,24 +172,6 @@ def ventana_ingresos(mes, anio):
         font=("Arial", 11, "bold")
     )
     lbl_total_ingresos.pack(side="right")
-    
-    # función para agregar un ingreso a la base de datos y refrescar el Treeview con los nuevos datos
-    # def agregar():
-
-    #     fecha = entry_fecha.get()
-    #     descripcion = entry_desc.get()
-    #     monto = float(entry_monto.get())
-
-    #     insertar_ingreso(fecha, descripcion, monto)
-
-    #     cargar_treeview_ingresos()   # ← refresca la tabla
-
-    #     entry_fecha.delete(0, tk.END)
-    #     entry_desc.delete(0, tk.END)
-    #     entry_monto.delete(0, tk.END)
-            
-    #     cargar_treeview_ingresos()
-    #     actualizar_total()
 
     from datetime import datetime
 
@@ -208,12 +191,12 @@ def ventana_ingresos(mes, anio):
         global id_ingreso_seleccionado
 
         if id_ingreso_seleccionado is None:
-            messagebox.showwarning("Aviso", "Seleccione un ingreso")
+            messagebox.showwarning("Aviso", "Seleccione un ingreso", parent=ventana)
             return
 
         respuesta = messagebox.askyesno(
             "Eliminar",
-            "¿Eliminar ingreso seleccionado?"
+            "¿Eliminar ingreso seleccionado?", parent=ventana
         )
 
         if respuesta:
@@ -238,6 +221,7 @@ def ventana_ingresos(mes, anio):
         conn.commit()
     
         cargar_treeview_ingresos()
+        actualizar_total()
 
     # función para actualizar un ingreso en la base de datos y refrescar el Treeview con los nuevos datos
     def actualizar_ingreso(id_ingreso, fecha, descripcion, monto):
@@ -267,7 +251,7 @@ def ventana_ingresos(mes, anio):
         global id_ingreso_seleccionado
 
         if id_ingreso_seleccionado is None:
-            messagebox.showwarning("Aviso", "Seleccione un ingreso")
+            messagebox.showwarning("Aviso", "Seleccione un ingreso", parent=ventana)
             return
 
         try:
@@ -292,7 +276,7 @@ def ventana_ingresos(mes, anio):
             id_ingreso_seleccionado = None
 
         except ValueError:
-            messagebox.showerror("Error", "Monto inválido")
+            messagebox.showerror("Error", "Monto inválido", parent=ventana)
     
         cargar_treeview_ingresos()
         actualizar_total()
@@ -321,6 +305,9 @@ def ventana_ingresos(mes, anio):
         if total is None:
             total = 0
 
+        cargar_treeview_ingresos()
+        actualizar_total()
+
         return total
      
     # función para actualizar el total de ingresos cada vez que se agrega, elimina o actualiza un ingreso
@@ -332,31 +319,11 @@ def ventana_ingresos(mes, anio):
         lbl_total_ingresos.config(text=f"$ {total_formateado}")
 
         cargar_treeview_ingresos()
+        actualizar_total()
 
 
-    cargar_treeview_ingresos()
-    actualizar_total()
-
-
-
-
-    # def limpiar_mes_actual():
-    #     messagebox.askyesno(
-    #         "Confirmar",
-    #         "Se borrarán TODOS los datos del mes actual.\n¿Continuar?"
-    #     )
-
-    #      # Limpiar tabla
-    #     for row in tree.get_children():
-    #         tree.delete(row)
-
-            
-    #     messagebox.showinfo("OK", "Mes limpio")
-
-
-    # función para cerrar la ventana de ingresos
     def salir():
-            if messagebox.askyesno("Salir", "¿Desea la ventana Ingresos?"):
+            if messagebox.askyesno("Salir", "¿Desea la ventana Ingresos?", parent=ventana):
                 ventana.destroy()
 
 
@@ -370,7 +337,7 @@ def ventana_ingresos(mes, anio):
     tk.Button(frame_form, text="Salir", command=salir).grid(row=8, column=0, columnspan=2, pady=20)
 
     
-
+    centrar_ventana(ventana)
    
   
  

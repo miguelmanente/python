@@ -1,8 +1,5 @@
 from database import conectar, cursor,conn
 
-
-
-
 def agregar_gasto(fecha, descripcion, categoria, monto):
     cursor.execute(
         "INSERT INTO gastos (fecha, descripcion, categoria, monto) VALUES (?, ?, ?, ?)",

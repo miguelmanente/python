@@ -2,6 +2,7 @@ import tkinter as tk
 import sqlite3
 from tkinter import messagebox
 from database import cursor, conn, obtener_categorias
+from centraVent import centrar_ventana
 
 
 def abrir_ventana_categorias(ventana_principal, refrescar_combobox):
@@ -39,7 +40,7 @@ def abrir_ventana_categorias(ventana_principal, refrescar_combobox):
             entry.delete(0, tk.END)
 
         except sqlite3.IntegrityError:
-            messagebox.showerror("Error", "La categoría ya existe")
+            messagebox.showerror("Error", "La categoría ya existe", parent=ventana_cat)
 
     def eliminar():
         seleccion = listbox.curselection()
@@ -68,9 +69,9 @@ def abrir_ventana_categorias(ventana_principal, refrescar_combobox):
                 refrescar_combobox["values"] = obtener_categorias()
                 entry.delete(0, tk.END)
             except:
-                messagebox.showerror("Error", "Categoría ya existe")
+                messagebox.showerror("Error", "Categoría ya existe", parent=ventana_cat)
     def salir():
-        if messagebox.askyesno("Salir", "¿Desea la ventana Categorias?"):
+        if messagebox.askyesno("Salir", "¿Desea la ventana Categorias?", parent=ventana_cat):
             ventana_cat.destroy()
 
 
@@ -79,4 +80,5 @@ def abrir_ventana_categorias(ventana_principal, refrescar_combobox):
     tk.Button(ventana_cat, text="Eliminar", command=eliminar).pack(pady=3)
     tk.Button(ventana_cat, text="Salir", command=salir).pack(pady=3)
 
+    centrar_ventana(ventana_cat)
     cargar()

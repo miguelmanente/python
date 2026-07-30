@@ -4,6 +4,7 @@ from tkinter import messagebox
 from database import conn
 import pandas as pd
 from tkinter import filedialog
+from centraVent import centrar_ventana
 from database import obtener_categorias
 from database import crear_tablas, obtener_categorias
 from categorias import abrir_ventana_categorias
@@ -17,6 +18,17 @@ from database import total_ingresos_mes, total_gastos_mes
 from gastos import limpiar_gastos_mes
 from ingresos import ventana_ingresos, limpiar_ingresos_mes
 from database import obtener_total_gastos_mes
+import pandas as pd
+from tkinter import filedialog
+from database import conectar
+import os
+from datetime import datetime
+import sys
+from datetime import datetime
+import calendar
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import tkinter as tk
 
 id_gasto_seleccionado = None
 
@@ -30,7 +42,7 @@ def formatear_monto(valor):
 
 #  Salir de la aplicación
 def salir():
-    if messagebox.askyesno("Salir", "¿Desea cerrar la aplicación?"):
+    if messagebox.askyesno("Salir", "¿Desea cerrar la aplicación?", parent=ventana):
         ventana.destroy()
 
    
@@ -53,13 +65,14 @@ def obtener_ingresos_mes(mes, anio):
     datos = cursor.fetchall()
 
     conn.close()
+    actualizar_resumen()
     return datos
 
 
 def limpiar_mes_actual():
     respuesta = messagebox.askyesno(
         "Confirmar",
-        "Se borrarán los ingresos del mes actual.\n¿Continuar?"
+        "Se borrarán los ingresos del mes actual.\n¿Continuar?", parent=ventana
     )
 
     if not respuesta:
@@ -70,7 +83,7 @@ def limpiar_mes_actual():
     cargar_ingresos_treeview(mes_actual, anio_actual)
     actualizar_resumen()
 
-    messagebox.showinfo("OK", "Ingresos del mes eliminados")
+    messagebox.showinfo("OK", "Ingresos del mes eliminados", parent=ventana)
 
 def cargar_ingresos_treeview(mes_actual, anio_actual):
 
@@ -101,7 +114,7 @@ def nuevo_mes_limpio():
     cargar_ingresos_treeview(mes_actual, anio_actual)
     actualizar_resumen()
 
-    messagebox.showinfo("OK", "Ingresos del mes eliminados")
+    messagebox.showinfo("OK", "Ingresos del mes eliminados", parent=ventana)
 
 #Función que permite obtener el ingreso total mensual
 def obtener_total_ingresos():
@@ -142,7 +155,7 @@ def gastos_por_categoria():
 
     if otros > 0:
         resultado.append(("Otros", otros))
-
+    actualizar_resumen()
     return resultado
 
 
@@ -190,16 +203,14 @@ def obtener_total_ingresos_mes(mes, anio):
 
     total = cursor.fetchone()[0]
     conn.close()
-
+    actualizar_resumen()
     return total if total else 0
 
 
 
 # Función que permite genera el reporte mensual con ingresos, gastos y balance
 def generar_reporte(mes, anio):
-    from matplotlib.figure import Figure
-    from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-    import tkinter as tk
+
 
     reporte = tk.Toplevel()
     reporte.title("Reporte mensual")
@@ -239,12 +250,6 @@ def generar_reporte(mes, anio):
 
 
 # Función para exportar el reporte mensual a Excel
-import pandas as pd
-from tkinter import filedialog
-from database import conectar
-import os
-from datetime import datetime
-import sys
 
 def exportar_excel_pro(mes, anio):
     conn = conectar()
@@ -315,7 +320,7 @@ def exportar_excel_pro(mes, anio):
         df_cat.to_excel(writer, sheet_name="Gastos por Categoria", index=False)
 
     from tkinter import messagebox
-    messagebox.showinfo("Reporte", f"Reporte guardado en:\n{archivo}")
+    messagebox.showinfo("Reporte", f"Reporte guardado en:\n{archivo}", parent=ventana)
 
 # Función para hacer backup al cerrar la aplicación
 def al_cerrar():
@@ -377,8 +382,6 @@ def filtrar_por_categoria(event=None):
     #lbl_registros.config(text=f"Registros: {len(resultados)}")
 
 
-
-from tkinter import messagebox
 # Función para mostrar información sobre la aplicación
 def acerca_de():
     messagebox.showinfo(
@@ -386,7 +389,7 @@ def acerca_de():
         "Control de Gastos\n\n"
         "Versión 1.0\n"
         "Desarrollado por Miguel Manente\n"
-        "Año 2026"
+        "Año 2026", parent=ventana
     )
 
 
@@ -554,8 +557,7 @@ frame_form.columnconfigure(0, weight=1)
 
 
 # Selector de mes y año
-from datetime import datetime
-import calendar
+
 
 tk.Label(frame_form, text="Mes:").grid(row=0, column=0, padx=5, sticky="e")
 
@@ -628,23 +630,6 @@ tk.Label(frame_form, text="Monto").grid(row=7, column=0, sticky="w", pady=8)
 entry_monto = tk.Entry(frame_form)
 entry_monto.grid(row=7, column=1, sticky="ew", pady=8)
 
-#print("Total gastos:", calcular_total_gastos())
-
-# def cargar_treeview(mes_actual, anio_actual):
-
-#     for fila in tree.get_children():
-#         tree.delete(fila)
-
-#     for gasto in obtener_gastos():
-
-#         id_gasto, fecha, descripcion, categoria, monto = gasto
-
-#         tree.insert(
-#             "",
-#             "end",
-#             values=(id_gasto, fecha, descripcion, categoria, formatear_monto(monto))
- #       )
-
 def cargar_treeview(mes, anio):
 
     for fila in tree.get_children():
@@ -692,37 +677,14 @@ def agregar():
         entry_monto.delete(0, tk.END)
 
     except ValueError:
-        messagebox.showerror("Error", "Monto inválido")
+        messagebox.showerror("Error", "Monto inválido",parent=ventana)
 
     except ValueError:
-        messagebox.showerror("Error", "Monto inválido")
+        messagebox.showerror("Error", "Monto inválido", parent=ventana)
 
 tk.Button(frame_form, text="Agregar Gasto", command=agregar)\
     .grid(row=8, column=0, columnspan=2, pady=20)
 
-# def seleccionar_gasto(event):
-
-#     global id_gasto_seleccionado
-
-#     item = tree.selection()
-
-#     if not item:
-#         return
-
-#     valores = tree.item(item[0], "values")
-
-#     id_gasto_seleccionado = valores[0]
-
-#     entry_fecha.delete(0, tk.END)
-#     entry_fecha.insert(0, valores[0])
-
-#     entry_descripcion.delete(0, tk.END)
-#     entry_descripcion.insert(0, valores[1])
-
-#     combo_categoria.set(valores[2])
-
-#     entry_monto.delete(0, tk.END)
-#     entry_monto.insert(0, valores[3].replace(".", "").replace(",", "."))
 
 def seleccionar_gasto(event):
     global id_gasto_seleccionado
@@ -777,7 +739,7 @@ def eliminar():
     seleccion = tree.selection()
 
     if not seleccion:
-        messagebox.showwarning("Aviso", "Seleccione un gasto")
+        messagebox.showwarning("Aviso", "Seleccione un gasto", parent=ventana)
         return
 
     item = seleccion[0]
@@ -788,7 +750,7 @@ def eliminar():
 
     respuesta = messagebox.askyesno(
         "Eliminar",
-        "¿Desea eliminar el gasto seleccionado?"
+        "¿Desea eliminar el gasto seleccionado?", parent=ventana
     )
 
     if respuesta:
@@ -801,45 +763,12 @@ def eliminar():
 
 tk.Button(frame_form, text="Eliminar", command=eliminar).grid(row=9, column=0, columnspan=2, pady=5)
 
-# def actualizar():
-
-#     global id_gasto_seleccionado
-
-#     if id_gasto_seleccionado is None:
-#         messagebox.showwarning("Aviso", "Seleccione un gasto")
-#         return
-
-#     try:
-
-#         fecha = entry_fecha.get()
-#         descripcion = entry_descripcion.get()
-#         categoria = combo_categoria.get()
-#         monto = float(entry_monto.get())
-
-#         actualizar_gasto(
-#             id_gasto_seleccionado,
-#             fecha,
-#             descripcion,
-#             categoria,
-#             monto
-#         )
-
-#         cargar_treeview(mes_actual, anio_actual)
-#         actualizar_resumen()
-
-#         entry_descripcion.delete(0, tk.END)
-#         entry_monto.delete(0, tk.END)
-
-#         id_gasto_seleccionado = None
-
-#     except ValueError:
-#         messagebox.showerror("Error", "Monto inválido")
 
 def actualizar():
     global id_gasto_seleccionado
 
     if id_gasto_seleccionado is None:
-        messagebox.showwarning("Atención", "Seleccione un gasto")
+        messagebox.showwarning("Atención", "Seleccione un gasto", parent=ventana)
         return
 
     fecha = entry_fecha.get()
@@ -860,9 +789,9 @@ def actualizar():
     conn.commit()
     conn.close()
 
-    messagebox.showinfo("OK", "Gasto actualizado")
-cargar_treeview(mes_actual, anio_actual)
-actualizar_resumen()
+    messagebox.showinfo("OK", "Gasto actualizado", parent=ventana)
+    cargar_treeview(mes_actual, anio_actual)
+    actualizar_resumen()
 
 tk.Button(frame_form, text="Actualizar", command=actualizar).grid(row=10, column=0, columnspan=2, pady=5)
 
@@ -890,6 +819,7 @@ lbl_texto.pack(anchor="w")
 lbl_logo.image = logo
 
 # Cargar gastos al iniciar la aplicación
+centrar_ventana(ventana)
 cargar_treeview(mes_actual, anio_actual)
 actualizar_resumen()
 cargar_categorias_filtro()

@@ -2,6 +2,7 @@ import tkinter as tk
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from database import conn
+from centraVent import centrar_ventana
 
 cursor = conn.cursor()
 
@@ -113,3 +114,5 @@ def abrir_estadisticas(mes, anio):
     canvas = FigureCanvasTkAgg(fig, master=frame)
     canvas.draw()
     canvas.get_tk_widget().pack(fill="both", expand=True)
+
+    centrar_ventana(ventana)

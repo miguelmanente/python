@@ -1,4 +1,4 @@
-#!/home/miguelangel/python/Control_GastosV2/venv/bin/python
+#!/home/miguelangel/python/Control_GastosV2/venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys
